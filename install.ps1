@@ -8,6 +8,7 @@
       1. Core     <repo>\core                                   always
       2. Personal <repo>\personal  (or -Personal <path>)        if it exists
       3. Company  %USERPROFILE%\.config\eng-agents\overlay      if it exists
+                  (on Mac/Linux: ~/.config/eng-agents/overlay)
 
     What gets written to -Target (your opencode config folder):
       agents\*.md, commands\*.md   later layer replaces same-named file
@@ -22,8 +23,10 @@
                                    cleaned up next time
       eng-agents\backup\<time>\    copies of anything overwritten
 
-    The token {{ENG_HOME}} in any installed .md or .json is replaced with the
-    full path of <Target>\eng-agents.
+    Tokens replaced in every installed .md and .json:
+      {{ENG_HOME}}  full path of <Target>\eng-agents
+      {{PS}}        "powershell" when installed from Windows PowerShell 5.1,
+                    "pwsh" when installed from PowerShell 7 (Mac, Linux, or Windows)
 
 .EXAMPLE
     .\install.ps1
@@ -36,9 +39,9 @@
 #>
 [CmdletBinding()]
 param(
-    [string]$Target = (Join-Path $env:USERPROFILE ".config\opencode"),
+    [string]$Target = (Join-Path $(if ($env:USERPROFILE) { $env:USERPROFILE } else { $HOME }) ".config/opencode"),
     [string]$Personal = (Join-Path $PSScriptRoot "personal"),
-    [string]$Company = (Join-Path $env:USERPROFILE ".config\eng-agents\overlay"),
+    [string]$Company = (Join-Path $(if ($env:USERPROFILE) { $env:USERPROFILE } else { $HOME }) ".config/eng-agents/overlay"),
     [switch]$CoreOnly,
     [switch]$DryRun
 )
@@ -64,7 +67,7 @@ function Read-Text {
 
 function Expand-Tokens {
     param([string]$Text)
-    return $Text.Replace("{{ENG_HOME}}", $script:EngHomeToken)
+    return $Text.Replace("{{ENG_HOME}}", $script:EngHomeToken).Replace("{{PS}}", $script:PsToken)
 }
 
 function ConvertTo-Ordered {
@@ -122,6 +125,7 @@ if (-not $CoreOnly) {
 
 $engHome = Join-Path $Target "eng-agents"
 $script:EngHomeToken = $engHome.Replace("\", "/")
+$script:PsToken = if ($PSVersionTable.PSEdition -eq "Core") { "pwsh" } else { "powershell" }
 $stamp = (Get-Date).ToString("yyyyMMdd-HHmmss")
 $backupDir = Join-Path $engHome "backup\$stamp"
 
@@ -301,7 +305,7 @@ if (-not $DryRun) {
 
 Write-Host ""
 Write-Host "Checks:"
-$cfg = Join-Path $env:USERPROFILE ".config\eng-agents\config.json"
+$cfg = Join-Path $(if ($env:USERPROFILE) { $env:USERPROFILE } else { $HOME }) ".config/eng-agents/config.json"
 if (Test-Path $cfg) { Write-Host "  [ok]   ADO config found: $cfg" }
 else { Write-Host "  [todo] ADO config missing: $cfg (copy core\scripts\ado\config.example.json). /start will use offline mode until then." }
 

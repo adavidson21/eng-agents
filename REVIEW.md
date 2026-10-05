@@ -92,6 +92,13 @@ All files below are **built**. Checked boxes are **reviewed**.
 - [ ] **`personal-template/commands/standup.md`**: `/standup [days]`. Drafts Yesterday / Today / Blockers from all `.work` progress logs. An optional example command; each person keeps or deletes it in their fork.
 - [ ] **`personal-template/README.md`** and **`personal-template/CHECKLIST.md`**: how to set up a personal layer, and a per-person setup checklist.
 
+### Practice run
+
+- [ ] **`practice/README.md`**: step-by-step dry run. Tier 1 needs only opencode, git, and PowerShell 7. Tier 2 adds .NET 10 and Node.
+- [ ] **`practice/New-PracticeWorkspace.ps1`**: creates `~/eng-practice` with three git repos, local bare remotes, the practice repo map, and an empty `.work`. Tested with PowerShell 7 on Linux.
+- [ ] **`practice/repos/`**: `shared-lib` and `orders-api` (.NET, **not compiled here**: no .NET SDK was available, so the first `dotnet test` on your machine is the real check) and `orders-ui` (Angular 19: unit tests, Playwright tests, and build all pass).
+- [ ] **`practice/work-items/`** and **`practice/answer-keys/`**: four work items and what good output looks like.
+
 ### Scripts and docs
 
 - [ ] **`install.ps1`**: layers Core, Personal, Company into your opencode config. Keeps your provider and model settings, backs up anything it changes, cleans up files it previously installed. Tested with PowerShell 7 on Linux; written to also run on Windows PowerShell 5.1.

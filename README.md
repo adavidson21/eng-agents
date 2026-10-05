@@ -297,6 +297,15 @@ eng-agents/
   docs/
     pipeline.md                     design rationale, gates, lanes, recovery
     setup-at-work.md                step-by-step first-day setup and verification
+  practice/                         dry run on made-up repos (see practice/README.md)
+    README.md                       step-by-step practice run (Mac or Windows)
+    New-PracticeWorkspace.ps1       creates ~/eng-practice with git repos and local remotes
+    repos/                          shared-lib, orders-api (planted bug), orders-ui
+    work-items/                     4 practice work items: bug, feature, spike, docs
+    answer-keys/                    what good output looks like for each step
+    workspace/AGENTS.md             filled-in practice repo map
+    overlay/AGENTS.md               practice Company layer
+    findings-template.md            log for the practice run
 ```
 
 ### What install.ps1 writes
@@ -311,6 +320,8 @@ eng-agents/
 | `eng-agents\backup\<time>\` | A copy of anything that was overwritten. |
 
 Use `-DryRun` to preview, `-CoreOnly` to skip Personal and Company, `-Target`, `-Personal`, `-Company` to change locations.
+
+It also runs on Mac and Linux with PowerShell 7 (`pwsh ./install.ps1`), installing to `~/.config/opencode`. The `{{PS}}` token in commands becomes `pwsh` there and `powershell` when installed from Windows PowerShell 5.1.
 
 ### Work PC only (Layer 3)
 
@@ -347,6 +358,10 @@ The base repo holds Core only. Each person works from their own private copy tha
    ```
 3. **Add your Personal layer:** copy `personal-template\` to `personal\`, fill it in, and commit it to your copy. See `personal-template\README.md`.
 4. **Track your setup** in `personal\CHECKLIST.md`.
+
+### Practice run (recommended before work)
+
+Run the whole pipeline on made-up repos first. See [practice/README.md](practice/README.md). It works on Mac or Windows and does not need ADO.
 
 ### Day to day
 

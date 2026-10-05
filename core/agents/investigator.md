@@ -31,6 +31,18 @@ permission:
     "grep *": allow
     "where *": allow
     "where.exe *": allow
+    "head *": allow
+    "tail *": allow
+    "wc *": allow
+    "find *": allow
+    "echo *": allow
+    "which *": allow
+    "file *": allow
+    "stat *": allow
+    "sort *": allow
+    "uniq *": allow
+    "diff *": allow
+    "tree*": allow
     "dotnet --info*": allow
     "dotnet --version*": allow
     "dotnet --list-sdks*": allow
@@ -76,6 +88,8 @@ permission:
     "npx ng lint*": allow
     "npx ng build*": allow
     "npx playwright test*": allow
+    "npm run e2e*": allow
+    "npm --prefix * run e2e*": allow
     "npx eslint*": allow
     "npx prettier --check*": allow
     "npx tsc --noEmit*": allow
@@ -97,6 +111,11 @@ permission:
     "* rm *": ask
     "* del *": ask
     "* mv *": ask
+    "*-exec*": ask
+    "*xargs*": ask
+    "*| sh*": ask
+    "*| bash*": ask
+    "*sed -i*": ask
     "git push*": deny
     "git -C * push*": deny
     "git reset --hard*": deny
@@ -111,6 +130,7 @@ permission:
     "*dotnet ef migrations remove*": deny
     "*Remove-Item*-Recurse*": deny
     "*rm -rf*": deny
+    "*-delete*": deny
     "*rm -r *": deny
     "*rd /s*": deny
     "*rmdir /s*": deny

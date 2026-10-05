@@ -21,14 +21,14 @@ Follow these steps in order. Do not skip any step.
 Run exactly this command:
 
 ```
-powershell -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/ado/Get-WorkItem.ps1" -Id $1 -WorkRoot ".work"
+{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/ado/Get-WorkItem.ps1" -Id $1 -WorkRoot ".work"
 ```
 
 - If it succeeds, the last line of output is the new folder path. Remember it.
 - If it fails, show the engineer the error in one line, then ask: "Paste the work item title." When they answer, run:
 
 ```
-powershell -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/ado/Get-WorkItem.ps1" -Id $1 -WorkRoot ".work" -Title "<the title they pasted>"
+{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/ado/Get-WorkItem.ps1" -Id $1 -WorkRoot ".work" -Title "<the title they pasted>"
 ```
 
   This creates the folder with an empty `workitem.md`. Ask the engineer to paste the description, acceptance criteria, and repro steps into that file and reply "done". Wait.

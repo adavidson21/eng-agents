@@ -1,0 +1,9 @@
+# Build and test output from the practice repos
+**/bin/
+**/obj/
+**/node_modules/
+**/dist/
+**/.angular/
+**/test-results/
+**/playwright-report/
+**/TestResults/

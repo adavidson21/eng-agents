@@ -30,7 +30,7 @@ param(
     # Offline mode: create the folder from this title without calling ADO.
     [string]$Title,
 
-    [string]$ConfigPath = (Join-Path $env:USERPROFILE ".config\eng-agents\config.json"),
+    [string]$ConfigPath = (Join-Path $(if ($env:USERPROFILE) { $env:USERPROFILE } else { $HOME }) ".config/eng-agents/config.json"),
 
     # Also fetch comments. Uses a preview API that some ADO Server versions lack.
     [switch]$IncludeComments

@@ -1,9 +1,8 @@
 <!--
 PERSONAL LAYER. Your preferences, applied to every session after the Core rules.
 - Keep this generic: no company, product, repo, or customer names. It is committed to this repo.
-- Lines marked SAMPLE are starting points. Keep, edit, or delete them.
-- Lines marked TODO(you) need your input. install.ps1 warns until they are gone.
 - If a rule here conflicts with Core, this one wins. Company rules win over this file.
+- This comment is stripped by install.ps1 and never reaches the model.
 -->
 
 ## How to talk to me
@@ -15,17 +14,16 @@ PERSONAL LAYER. Your preferences, applied to every session after the Core rules.
 
 ## Code preferences
 
-- SAMPLE: Prefer clear names over comments. Only comment to explain *why*, never *what*.
-- SAMPLE: Prefer small methods with early returns over deep nesting.
-- SAMPLE: Do not add new NuGet or npm packages without asking me first.
-- TODO(you): Add any patterns you want enforced or avoided in every repo (or delete this line).
+- Prefer clear names over comments. Only comment to explain *why*, never *what*.
+- Prefer small methods with early returns over deep nesting.
+- Do not add new NuGet or npm packages without asking me first.
 
 ## Workflow preferences
 
-- SAMPLE: The implementer commits after each passing task, and I approve each commit. (To commit by hand instead, replace this line with: "Never commit. Stage the files and tell me the commit message to use.")
-- SAMPLE: Task size cap is 3 files. (Lower it if tasks fail often. Raise it once the model proves it can handle more.)
+- The implementer commits after each passing task, and I approve each commit.
+- A task changes at most 3 files.
 
 ## Writing (docs and PR text)
 
-- SAMPLE: PR descriptions stay under 10 lines.
-- SAMPLE: Professional but not combative tone in anything a reviewer or teammate will read.
+- PR descriptions stay under 10 lines.
+- Use a professional but not combative tone in anything a reviewer or teammate will read.

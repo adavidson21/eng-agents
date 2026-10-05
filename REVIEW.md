@@ -10,13 +10,13 @@ Every file in this repo, what it does, and what you need to do with it. Check a 
 
 **Layers:** Core = generic, team-shareable. Personal = your preferences. Company = work PC only (templates here, real files on the work PC).
 
-All files below are **built**. None are **reviewed** yet.
+All files below are **built**. Checked boxes are **reviewed**.
 
 ---
 
 ## Part 1: Needs your input (do these first)
 
-- [ ] **`personal/AGENTS.md`** (Personal, Fill in)
+- [x] **`personal/AGENTS.md`** (Personal, Fill in) *Reviewed 2026-10-05: all sample preferences accepted.*
   Your house rules, appended after Core in every session. Pre-filled with things you have told me (concise, no em dashes, flag uncertainty, ask questions) plus SAMPLE code and workflow preferences.
   Check: keep, edit, or delete each SAMPLE line. Replace the `TODO(you)` line. Keep it free of company names.
 

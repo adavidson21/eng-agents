@@ -1,0 +1,7 @@
+{
+  "serverUrl": "https://ado.example.local/tfs",
+  "collection": "DefaultCollection",
+  "project": "ExampleProject",
+  "apiVersion": "6.0",
+  "auth": "pat"
+}

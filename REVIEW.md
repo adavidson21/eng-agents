@@ -32,17 +32,17 @@ All files below are **built**. Checked boxes are **reviewed**.
   Placeholder ADO connection settings. At work you copy it to `%USERPROFILE%\.config\eng-agents\config.json` and fill in the real server, collection, and project.
   Check: nothing to change here. The real copy is a work-PC task (Part 3).
 
-- [ ] **`core/opencode.json`** (Core, Decide)
-  Global permission baseline merged into your work `opencode.json`. Bash defaults to "ask". Read-only git is allowed. Push, hard reset, clean, and database update commands are denied. Edits default to "ask" for any non-pipeline agent.
-  Check: you are comfortable with this as the baseline. Note it will tighten your current global settings (for example, if you allow all bash today). Loosen in `personal/opencode.json` if needed.
+- [x] **`core/opencode.json`** (Core, Decide) *Reviewed 2026-10-05: switched to tiered permissions.*
+  Global permission baseline merged into your work `opencode.json`. Read and inspect commands and build/test/lint are allowed. Anything that changes state asks. Destructive commands (push, hard reset, clean, recursive delete, database updates) are denied. Edits are allowed except `.git` internals and `.env` files. See "Permission tiers" in the README.
+  Check: nothing further. Revisit after a week of real use.
 
 - [ ] **`core/AGENTS.md`** (Core, Decide)
   The rules every session follows: one step at a time, files are memory, ask when unsure, prove it, stay in scope, stop after 3 failures. Also conventions (branch names, commit style, 3-file task cap), PowerShell rules, and testing rules.
   Check: the Conventions table and Testing rules table match how your team works.
 
-- [ ] **`core/agents/implementer.md`** (Core, Decide)
-  The only agent that edits code. Allowed to run build, test, lint, `git add`. `git commit` asks you each time.
-  Check: the bash allowlist covers your usual commands. Anything not listed will prompt you, which is safe but slower.
+- [x] **`core/agents/implementer.md`** (Core, Decide) *Reviewed 2026-10-05: npm install allowed.*
+  The only agent that edits code. Read, build, test, lint, `npm install`, `dotnet format`, and `git add` run without asking. `git commit` asks you each time. Cannot edit `.git` or `.env` files.
+  Check: nothing further.
 
 ---
 

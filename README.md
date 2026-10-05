@@ -366,11 +366,25 @@ Edit core only when the change would help **anyone** using this pipeline. Keep i
 
 | What | File | Why you might change it |
 |---|---|---|
-| Global permission baseline: bash asks by default, read-only git allowed, push / hard reset / clean / database updates denied | `core\opencode.json` | Safe baseline for everyone. Loosen per person in Personal, not here. |
+| Global permission baseline, in three tiers (see below) | `core\opencode.json` | Safe baseline for everyone. Loosen per person in Personal, not here. |
 | Agent behavior and per-agent permissions (for example, the implementer may run `dotnet`, `npm`, `npx` test/build/lint commands and `git add`; `git commit` asks) | `core\agents\*.md` | Fixing a flaw in how an agent works for everyone. |
 | Command steps | `core\commands\*.md` | Fixing or improving a phase of the pipeline. |
 | Default templates | `core\templates\*.md` | Better structure for specs, plans, tasks, PRs. |
 | Default conventions | `core\AGENTS.md` | Changing a default that should apply to everyone. |
+
+**Permission tiers.** Every agent and the global config use the same tiers. Rules are evaluated top to bottom and the **last match wins**, so the guards at the bottom catch risky commands even when piped after an allowed one.
+
+| Tier | Result | Examples |
+|---|---|---|
+| Read and inspect | Allowed | `Get-Content`, `Get-ChildItem`, `Select-String`, `rg`, read-only `git` (status, diff, log, show, blame), version checks |
+| Build, test, lint | Allowed (not for planner or writer) | `dotnet build/test/restore`, `npm test`, `npm run lint`, `npx ng test`, `npx playwright test` |
+| Anything else | Asks you | Unlisted commands, file moves and copies, redirects to files, network calls, starting processes |
+| Agent extras | Per agent | Implementer: `npm install`, `dotnet format`, `git add` allowed, `git commit` asks. Planner: branch creation, ADO script. |
+| Destructive | Denied | `git push`, `git reset --hard`, `git clean`, `git restore`, recursive deletes, database updates, shutdown |
+
+File reads through opencode's own read, search, and list tools are always allowed inside the workspace. Files outside the workspace ask first. Edits are allowed except `.git` internals and `.env` files (pipeline agents narrow this further).
+
+The tier lists are repeated in each agent file so they apply no matter how opencode merges agent and global rules. When you change one, change it everywhere.
 
 ### Layer 2: Personal (this repo, `personal\`)
 

@@ -27,10 +27,9 @@ Tier 1 already tests most of what can go wrong. Do Tier 2 if you can install the
 
 ## Step 1: Prerequisites (Mac)
 
-```bash
-# PowerShell 7 (runs install.ps1 and the work item script)
-brew install --cask powershell
+**PowerShell 7** (runs `install.ps1` and the work item script): Homebrew no longer offers it, so install Microsoft's package. Download the `.pkg` from the [PowerShell releases page](https://aka.ms/powershell-release?tag=stable) (`osx-arm64` for Apple Silicon, `osx-x64` for Intel) and double-click it.
 
+```bash
 # Tier 2 only
 brew install --cask dotnet-sdk
 brew install node

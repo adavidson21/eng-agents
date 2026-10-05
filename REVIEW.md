@@ -38,7 +38,7 @@ All files below are **built**. Checked boxes are **reviewed**.
   Global permission baseline merged into your work `opencode.json`. Read and inspect commands and build/test/lint are allowed. Anything that changes state asks. Destructive commands (push, hard reset, clean, recursive delete, database updates) are denied. Edits are allowed except `.git` internals and `.env` files. See "Permission tiers" in the README.
   Check: nothing further. Revisit after a week of real use.
 
-- [ ] **`core/AGENTS.md`** (Core, Decide)
+- [x] **`core/AGENTS.md`** (Core, Decide) *Reviewed 2026-10-05: approved as-is.*
   The rules every session follows: one step at a time, files are memory, ask when unsure, prove it, stay in scope, stop after 3 failures. Also conventions (branch names, commit style, 3-file task cap), PowerShell rules, and testing rules.
   Check: the Conventions table and Testing rules table match how your team works.
 

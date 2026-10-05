@@ -114,7 +114,7 @@ if (-not (Test-Path $coreDir)) { throw "Core folder not found at $coreDir. Run t
 $layers = @([pscustomobject]@{ Name = "Core"; Path = $coreDir })
 if (-not $CoreOnly) {
     if (Test-Path $Personal) { $layers += [pscustomobject]@{ Name = "Personal"; Path = (Resolve-Path $Personal).Path } }
-    else { Write-Warning "Personal layer not found at $Personal. Skipping it." }
+    else { Write-Warning "Personal layer not found at $Personal. Skipping it. (To add one: copy personal-template to personal and fill it in.)" }
 
     if (Test-Path $Company) { $layers += [pscustomobject]@{ Name = "Company"; Path = (Resolve-Path $Company).Path } }
     else { Write-Warning "Company overlay not found at $Company. Skipping it. (Expected on a home machine.)" }

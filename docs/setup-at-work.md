@@ -1,6 +1,6 @@
 # Setup at work
 
-Step-by-step first-day setup on the work PC. Run everything in PowerShell. Check off each step in your head (or in [REVIEW.md](../REVIEW.md), Part 3).
+Step-by-step first-day setup on the work PC. Run everything in PowerShell. Track progress in `personal\CHECKLIST.md` in your copy.
 
 Paths below are examples. Change them if you prefer other locations, but keep them consistent.
 
@@ -8,12 +8,14 @@ Paths below are examples. Change them if you prefer other locations, but keep th
 
 ## 1. Get the repo onto the work PC
 
+Clone **your own copy** (your fork, with your `personal\` folder), not the base repo:
+
 ```powershell
 mkdir C:\tools -Force
-git clone https://github.com/adavidson21/eng-agents.git C:\tools\eng-agents
+git clone <your copy's url> C:\tools\eng-agents
 ```
 
-If cloning from personal GitHub is blocked, download the repo as a zip at home and copy it over. Do not email company content back the other way.
+If cloning from GitHub is blocked at work, download your copy as a zip at home and copy it over. Do not send company content back the other way.
 
 ## 2. Find your opencode config folder
 

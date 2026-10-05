@@ -1,6 +1,8 @@
-# Review tracker
+# Core review tracker
 
-Every file in this repo, what it does, and what you need to do with it. Check a box when you have reviewed that file and are happy with it. Commit this file as you go, so you can always see what is left.
+Every shared file in this base repo, what it does, and its review status. This tracks the **shared** files only. Your own setup progress lives in `personal/CHECKLIST.md` in your fork (copied from `personal-template/CHECKLIST.md`).
+
+Maintainers: check a box when a file has been reviewed, and commit this file in the base repo. Forks should not edit it.
 
 **Effort labels**
 
@@ -8,7 +10,7 @@ Every file in this repo, what it does, and what you need to do with it. Check a 
 - **Decide:** works as-is, but contains a default you should consciously accept or change.
 - **Read:** generic prompt or template. Read it once to make sure it matches how you want the pipeline to behave.
 
-**Layers:** Core = generic, team-shareable. Personal = your preferences. Company = work PC only (templates here, real files on the work PC).
+**Layers:** Core = generic, team-shareable. Personal = each person's preferences (template here, real files in each fork). Company = work PC only (templates here, real files on the work PC).
 
 All files below are **built**. Checked boxes are **reviewed**.
 
@@ -16,9 +18,9 @@ All files below are **built**. Checked boxes are **reviewed**.
 
 ## Part 1: Needs your input (do these first)
 
-- [x] **`personal/AGENTS.md`** (Personal, Fill in) *Reviewed 2026-10-05: all sample preferences accepted.*
-  Your house rules, appended after Core in every session. Pre-filled with things you have told me (concise, no em dashes, flag uncertainty, ask questions) plus SAMPLE code and workflow preferences.
-  Check: keep, edit, or delete each SAMPLE line. Replace the `TODO(you)` line. Keep it free of company names.
+- [ ] **`personal-template/AGENTS.md`** (Personal template, Decide)
+  The starting point each person copies to `personal/` in their fork. Generic SAMPLE preferences and `TODO(you)` lines. No one's real preferences.
+  Check: the SAMPLE lines are sensible defaults for anyone on the team.
 
 - [ ] **`workspace-template/AGENTS.md`** (Company template, Fill in at work)
   The repo map. Copied to the workspace root at work. Tells the planner what each repo does, which are shared, how they reference each other by relative path, and which repos usually go together.
@@ -30,7 +32,7 @@ All files below are **built**. Checked boxes are **reviewed**.
 
 - [ ] **`core/scripts/ado/config.example.json`** (Core, Fill in at work)
   Placeholder ADO connection settings. At work you copy it to `%USERPROFILE%\.config\eng-agents\config.json` and fill in the real server, collection, and project.
-  Check: nothing to change here. The real copy is a work-PC task (Part 3).
+  Check: nothing to change here. The real copy is a work-PC task (see `personal-template/CHECKLIST.md`).
 
 - [x] **`core/opencode.json`** (Core, Decide) *Reviewed 2026-10-05: switched to tiered permissions.*
   Global permission baseline merged into your work `opencode.json`. Read and inspect commands and build/test/lint are allowed. Anything that changes state asks. Destructive commands (push, hard reset, clean, recursive delete, database updates) are denied. Edits are allowed except `.git` internals and `.env` files. See "Permission tiers" in the README.
@@ -85,9 +87,10 @@ All files below are **built**. Checked boxes are **reviewed**.
 - [ ] **`core/templates/findings.md`**: spike answer, evidence, options, recommendation.
 - [ ] **`core/templates/repo-agents.md`**: the shape of every repo `AGENTS.md`: commands, Clean Architecture reference rules, patterns to follow, testing, EF Core, cross-repo references.
 
-### Personal extras
+### Personal template extras
 
-- [ ] **`personal/commands/standup.md`**: `/standup [days]`. Drafts Yesterday / Today / Blockers from all `.work` progress logs. An example of an EM-only command. Delete it if you do not want it.
+- [ ] **`personal-template/commands/standup.md`**: `/standup [days]`. Drafts Yesterday / Today / Blockers from all `.work` progress logs. An optional example command; each person keeps or deletes it in their fork.
+- [ ] **`personal-template/README.md`** and **`personal-template/CHECKLIST.md`**: how to set up a personal layer, and a per-person setup checklist.
 
 ### Scripts and docs
 
@@ -96,23 +99,3 @@ All files below are **built**. Checked boxes are **reviewed**.
 - [ ] **`docs/setup-at-work.md`**: first-day steps and the verification checklist.
 - [ ] **`docs/pipeline.md`**: design rationale, gates, lanes, and recovery steps.
 - [ ] **`README.md`**: overview.
-
----
-
-## Part 3: Work PC setup (Company layer, never committed)
-
-Full commands are in [docs/setup-at-work.md](docs/setup-at-work.md).
-
-- [ ] Clone eng-agents to `C:\tools\eng-agents`
-- [ ] Confirm the opencode config folder path
-- [ ] Copy `company-overlay` to `%USERPROFILE%\.config\eng-agents\overlay\` and fill in its `AGENTS.md`
-- [ ] Create a PAT (Work Items Read, Code Read) and set `ADO_PAT`
-- [ ] Create and fill in `%USERPROFILE%\.config\eng-agents\config.json`
-- [ ] Run `install.ps1 -DryRun`, then `install.ps1`
-- [ ] Test `Get-WorkItem.ps1` against a real work item
-- [ ] Clone all repos flat into `C:\src\work`
-- [ ] Write `C:\src\work\AGENTS.md` (repo map) from the template
-- [ ] `/onboard-repo` each repo, shared repos first, and review each generated `AGENTS.md`
-- [ ] Day-one verification checks 1 to 7
-- [ ] Smoke test: one small bug through the bug lane
-- [ ] Fold lessons back: generic fixes into Core, company fixes into the overlay

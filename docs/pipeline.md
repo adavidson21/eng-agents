@@ -1,6 +1,6 @@
 # Pipeline
 
-How each phase works, why it is shaped this way, and what to do when it goes wrong. Daily commands are in the [README](../README.md).
+How each phase works, why it is shaped this way, and what to do when it goes wrong. Daily commands are in the [README](../README.md). Which agent runs each command, and what it may do, is in [Customization](customization.md#agents).
 
 ```
 /start <id> feature    fetch work item, create .work/<id>-<name>/, confirm repos, create branches
@@ -88,11 +88,35 @@ Bug lane rules:
 - Title under 70 characters, one or two sentences, up to 4 bullets, a testing line, the work item link.
 - Never pushes. You push each branch and open the PR.
 
+## Work files
+
+All state lives in the workspace, outside every git repo, and never leaves the work PC.
+
+```
+.work/<id>-<short-name>/
+  workitem.md   repos.md   spec.md   plan.md   tasks.md
+  progress.md   review.md  pr.md     bug.md    findings.md   paused.md
+
+.work/spike-<short-name>/findings.md     spike without a work item
+.work/docs-<short-name>/sources.md       docs lane: claims and their source files
+.work/docs-<short-name>/check.md         docs lane: fact-check results
+.work/_onboard/<repo>-AGENTS.md          onboard draft when the repo already has an AGENTS.md
+```
+
+`<short-name>` is the first 5 words of the work item title, lowercase, filler words dropped, at most 40 characters.
+
 ## Shared repos
 
-- The repo map says which repos are shared and how others reference them (relative paths).
-- `repos.md`, the plan, and tasks put shared repos first. `/review` runs tests in every repo in `repos.md`; add any other consumer that could break so its tests run too.
-- Need a shared repo on two branches at once? Use a worktree instead of a second clone (see [reference](reference.md#shared-repos)).
+- Consumers reference shared code by relative path, so one flat clone in the workspace satisfies all of them. Duplicate clones drift apart.
+- The repo map records which repos depend on each shared repo. `repos.md`, the plan, and tasks put shared repos first.
+- `/review` runs tests in every repo in `repos.md`. Add any other consumer that could break so its tests run too.
+- If a shared repo is consumed as a published package instead, the plan needs a version bump task. Note that in the repo map.
+- Need a shared repo on two branches at once? Add a worktree instead of a second clone, and remove it after the PR merges. Relative-path consumers still point at the main clone.
+
+  ```powershell
+  git -C C:\src\work\<shared-repo> worktree add ..\<shared-repo>-12345 dev/feature/12345-short-name
+  git -C C:\src\work\<shared-repo> worktree remove ..\<shared-repo>-12345
+  ```
 
 ## Pausing and resuming
 

@@ -1,6 +1,31 @@
 # Customization guide
 
-How the three layers combine, which files you can add or override, and how to change templates. For step-by-step setup, see [Personal onboarding](onboarding-personal.md) and [Company onboarding](onboarding-company.md).
+Which files you own, how the layers combine, and how to change agents, templates, and Core. Step-by-step setup is in [Personal onboarding](onboarding-personal.md) and [Company onboarding](onboarding-company.md).
+
+## Files to review
+
+### Files you write
+
+Review these when you set up, and again whenever the agents get something wrong.
+
+| # | File | Layer | Needed | Check that |
+|---|---|---|---|---|
+| 1 | `personal/AGENTS.md` | Personal | Yes | Rules are short instructions, one idea per bullet. No company names. |
+| 2 | `%USERPROFILE%\.config\eng-agents\config.json` | Company | To fetch from ADO | `serverUrl`, `collection`, `apiVersion`, and `auth` match your server. |
+| 3 | `%USERPROFILE%\.config\eng-agents\overlay\AGENTS.md` | Company | Yes | Only rules true in every repo. Base branch and PR target stated if not `main`. |
+| 4 | `C:\src\work\AGENTS.md` (repo map) | Company | Yes | No `TODO(you)` or `(example)` rows left. Products, glossary, dependencies, and change order are correct. |
+| 5 | `C:\src\work\<repo>\AGENTS.md` (one per repo) | Company | Yes | Build and test commands work. Architecture rules match reality. Pattern files are good examples. No `(inferred, verify)` or `TODO(you)` left. Listed in `.git\info\exclude`. |
+| 6 | `overlay\templates\pr.md` | Company | Only if your team has a PR format | Keeps nothing required; any format works. |
+
+### Core defaults to know
+
+Read these once so you know what you are overriding. Change them through your own `AGENTS.md` or an override file, not by editing Core.
+
+| File | What it sets |
+|---|---|
+| [`core/AGENTS.md`](../core/AGENTS.md) | Conventions (base branch, branch names, commit format, 3-file task cap), shell rules, testing rules |
+| [`core/templates/`](../core/templates/) | The format of every file the agents write, especially `spec.md`, `plan.md`, and `pr.md` |
+| [`core/opencode.json`](../core/opencode.json) | The permission tiers every agent shares |
 
 ## How layering works
 
@@ -20,27 +45,39 @@ How the three layers combine, which files you can add or override, and how to ch
 
 Nothing else in a layer folder is installed (for example `TODO.md`). Re-run `install.ps1` after changing Personal or the overlay.
 
-### Where does a change go?
+<details>
+<summary>What install.ps1 writes, and its flags</summary>
+
+| Writes to the opencode config folder | Content |
+|---|---|
+| `agents\`, `commands\` | Layered files |
+| `AGENTS.md` | One section per layer between `eng-agents:begin` / `eng-agents:end` markers. Your text outside the markers is kept. HTML comments are stripped. |
+| `opencode.json` | Layer permissions merged in. Provider and model settings are kept. An `opencode.jsonc` or unparseable file is left alone and the permissions go to `opencode.eng-agents.json` for you to merge. |
+| `eng-agents\templates\`, `eng-agents\scripts\` | Templates and scripts. Commands find them through the `{{ENG_HOME}}` token. |
+| `eng-agents\manifest.json`, `eng-agents\backup\<time>\` | What was installed (so removed files are cleaned up) and copies of anything overwritten |
+
+| Flag | Effect |
+|---|---|
+| `-DryRun` | Preview, write nothing |
+| `-CoreOnly` | Skip Personal and Company |
+| `-Target <path>` | opencode config folder (default `~/.config/opencode`, which is `%USERPROFILE%\.config\opencode` on Windows) |
+| `-Personal <path>`, `-Company <path>` | Other locations for those layers |
+
+A layer with none of `AGENTS.md`, `opencode.json`, `agents/`, `commands/`, `templates/`, or `scripts/` is skipped. Install warns if a Personal or Company `AGENTS.md` still contains `TODO(you)`, refuses to run as root, and ends with two ADO checks.
+
+</details>
+
+## Where does a change go?
 
 Ask in order and stop at the first yes:
 
 1. Does it name or describe a company repo, server, product, team, customer, or work item? **Company** (overlay or a repo `AGENTS.md`).
 2. Is it your preference rather than something everyone needs? **Personal.**
-3. Otherwise it would help anyone: **Core** (see [Contributing](../CONTRIBUTING.md)), then merge it into your fork.
+3. Otherwise it would help anyone: **Core** (see [Changing Core](#changing-core)), then merge it into your fork.
 
-Use the lightest option that works. A rule in `AGENTS.md` keeps you on Core updates; an override file replaces the Core file and stops updates for it.
+Use the lightest option that works. A rule in `AGENTS.md` keeps you on Core updates. An override file replaces the Core file and stops updates for it.
 
-## Personal layer
-
-Lives in `personal/` in your fork. No company names.
-
-| File | Use |
-|---|---|
-| `personal/AGENTS.md` | Your rules for every session: tone, code taste, workflow, writing style |
-| `personal/commands/<name>.md` | Extra commands (for example `/standup`), or a replacement for a Core command |
-| `personal/agents/<name>.md` | Replacement for a Core agent, for example to set a model or temperature |
-| `personal/templates/<name>.md` | Replacement for a Core template |
-| `personal/opencode.json` | Permission entries merged over Core |
+### Personal
 
 | Goal | Do this |
 |---|---|
@@ -51,20 +88,7 @@ Lives in `personal/` in your fork. No company names.
 | Different model for one agent | Copy `core/agents/<agent>.md` to `personal/agents/` and add `model:` |
 | A new command | New file in `personal/commands/` |
 
-## Company layer
-
-Lives on the work PC only. Never committed anywhere.
-
-| File | Use | Loaded | After editing |
-|---|---|---|---|
-| `overlay\AGENTS.md` | Rules for every repo at work: data never to log, required patterns, where standards live, conventions that differ from Core | Every session, last section | Reinstall |
-| `overlay\templates\<name>.md` | Team formats, for example PR sections | By the command that uses the template | Reinstall |
-| `overlay\commands\`, `overlay\agents\` | Company-specific commands or agent changes | Like Core | Reinstall |
-| `overlay\opencode.json` | Permissions for company tools | Merged over Core and Personal | Reinstall |
-| `config.json` (next to `overlay\`) | ADO server, collection, project, api-version, auth | By the ADO script in `/start` | Nothing |
-| `ADO_PAT` environment variable | ADO token | By the ADO script | Reopen PowerShell |
-| `C:\src\work\AGENTS.md` | Repo map: repos, products, glossary, dependencies, change order | Every session started from `C:\src\work` | New session |
-| `C:\src\work\<repo>\AGENTS.md` | Per-repo guide: commands, architecture rules, patterns to follow, test helpers | Read by each command before touching that repo | New session |
+### Company
 
 | Symptom or goal | Do this |
 |---|---|
@@ -74,17 +98,35 @@ Lives on the work PC only. Never committed anywhere.
 | A rule applies to every repo | Add it to `overlay\AGENTS.md` |
 | Base branch or PR target is not `main` | Rule under "Team conventions" in `overlay\AGENTS.md` |
 | Team PR or spec format | `overlay\templates\pr.md` or `spec.md` |
+| Company-specific command, agent, or permission | `overlay\commands\`, `overlay\agents\`, `overlay\opencode.json` |
 
-## Overriding Core files
+| After editing | Do this |
+|---|---|
+| Anything in `overlay\` | Re-run `install.ps1` |
+| Repo map or a repo `AGENTS.md` | Start a new opencode session |
+| `config.json` | Nothing |
+| `ADO_PAT` | Reopen PowerShell |
 
-Any Core agent, command, or template can be replaced from Personal or Company by a file with the same name in the same subfolder. Agents and commands are listed in the [reference](reference.md). When you override an agent, keep its destructive-command denials.
+## Agents
+
+Override an agent by copying its file from `core/agents/` into your layer. Keep its destructive-command denials. Every agent may run read-only commands (file reads, search, read-only `git`, version checks); the table lists what else it can do.
+
+| Agent | Runs | Can edit | Extra shell commands |
+|---|---|---|---|
+| `planner` | `/start`, `/spec`, `/plan`, `/tasks`, `/status`, `/pause`, `/resume` | `.work/` only | `git fetch origin`, branch creation, the ADO script. Switching branches and WIP commits ask. |
+| `implementer` | `/do-task` | Code and tests. `AGENTS.md` asks. | Build, test, lint, `dotnet format`, `npm install` / `ci`, `git add`. `git commit` asks. |
+| `reviewer` | `/review`, `/check-docs` | `.work/` only | Build, test, lint |
+| `investigator` | `/bug`, `/spike`, `/onboard-repo` | `.work/`. A repo `AGENTS.md` and `.git/info/exclude` ask. | Build, test, lint |
+| `writer` | `/pr`, `/docs` | Any `*.md` file, `docs/`, `.work/` | None |
+
+Unlisted commands ask. Denied for every agent: `git push`, `git reset --hard`, `git clean`, `git restore`, `git checkout --`, recursive deletes, `dotnet ef database`, shutdown. Reviewer, investigator, and writer also cannot `git add` or `git commit`. Permission rules are evaluated top to bottom and the last match wins, so the denials at the bottom catch risky commands chained after allowed ones.
 
 ## Customizing templates
 
 Templates set the **format** of what agents write. Commands say "start from `templates/<name>.md`", so whichever layer provides that file decides the format.
 
 - Team or company format: `overlay\templates\`. Only you: `personal/templates/`.
-- Templates replace, they do not merge. If both Personal and Company provide `pr.md`, Company wins. To add your taste on top of a team format, use a rule in `personal/AGENTS.md` instead (for example "In PR descriptions, list the test evidence first").
+- Templates replace, they do not merge. If both Personal and Company provide `pr.md`, Company wins. To add your taste on top of a team format, use a rule in `personal/AGENTS.md` (for example "In PR descriptions, list the test evidence first").
 
 To change one: copy the Core file into your layer, edit it, re-run `install.ps1`, and run the command on a real item. Keep the parts commands depend on:
 
@@ -145,9 +187,20 @@ The template (replace with your team's format):
 - Set limits: "under 70 characters", "at most 5 bullets".
 - Keep it short. Every line is something the model has to fill.
 
+## Changing Core
+
+Open a pull request to eng-agents. Before merging:
+
+- [ ] It would help **anyone**. No company names, no personal preferences.
+- [ ] Permission changes are made in `core/opencode.json` **and** every agent file that repeats the same tier lists.
+- [ ] `Status: DRAFT` lines in the `spec`, `plan`, and `bug` templates, `Status: PAUSED` in `paused`, and `## [ ] Task N:` headings in `tasks` are unchanged.
+- [ ] Docs that describe the behavior are updated.
+- [ ] `pwsh ./install.ps1 -DryRun` runs cleanly.
+- [ ] For a notable release, tag it (`core-v2`, ...) and tell teammates to `git fetch upstream` and `git merge upstream/main` in their forks.
+
 ## Never
 
 - Company names, URLs, code, or work item content in `core/` or `personal/`
-- A pull request to eng-agents that includes your `personal/` folder
+- A pull request to eng-agents that includes a `personal/` folder
 - The PAT in any file
 - An agent that can push, merge, or deploy

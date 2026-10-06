@@ -12,7 +12,7 @@ You need git, [opencode](https://opencode.ai), and PowerShell (built in on Windo
 | `personal/templates/<name>.md` | Optional | Replace a Core template |
 | `personal/opencode.json` | Optional | Permission entries merged over Core |
 
-`personal/TODO.md` is never installed. Leave it so merges from the base stay clean. Details for every file: [customization guide](customization.md#personal-layer).
+`personal/TODO.md` is never installed. Leave it so merges from the base stay clean. What else you can change: [customization guide](customization.md#personal).
 
 ## 1. Create your fork
 

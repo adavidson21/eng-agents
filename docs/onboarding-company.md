@@ -12,7 +12,7 @@ Finish [Personal onboarding](onboarding-personal.md) first.
 | `C:\src\work\AGENTS.md` | Repo map: what each repo is and how they connect. **Most important file.** |
 | `C:\src\work\<repo>\AGENTS.md` | Build, test, and architecture guide per repo |
 
-When each file is loaded and what else you can add: [customization guide](customization.md#company-layer).
+What to check in each file, and what else you can add: [customization guide](customization.md#files-to-review).
 
 ## 1. Clone your fork
 
@@ -105,7 +105,7 @@ Adjust the path if you used `-Target`. It should print a folder path and create 
 
 ## 7. Build the workspace and repo map
 
-Clone every repo **directly** into `C:\src\work`, side by side. Clone shared repos once. Folder names must match the relative paths other repos use. Then write the repo map:
+`C:\src\work` is not a git repo; always launch opencode from it. Clone every repo **directly** into it, side by side, with no per-project subfolders. Clone shared repos once. Folder names must match the relative paths other repos use. Then write the repo map:
 
 ```powershell
 cd C:\src\work

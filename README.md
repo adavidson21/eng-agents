@@ -35,7 +35,5 @@ Something went wrong? See [Recovering from problems](docs/pipeline.md#recovering
 |---|---|
 | [Personal onboarding](docs/onboarding-personal.md) | Your fork and your `personal/` rules |
 | [Company onboarding](docs/onboarding-company.md) | Work PC setup, day-one checks, updating |
-| [Customization](docs/customization.md) | How layers combine, which files you can add or override, templates |
-| [Pipeline](docs/pipeline.md) | How each phase works, gates, lanes, pausing, recovery, tuning |
-| [Reference](docs/reference.md) | Agents and permissions, commands, files, conventions, what `install.ps1` does |
-| [Contributing](CONTRIBUTING.md) | Changing Core (maintainers) |
+| [Customization](docs/customization.md) | Files to review, how layers combine, agents and permissions, templates, changing Core |
+| [Pipeline](docs/pipeline.md) | How each phase works, gates, lanes, work files, pausing, recovery, tuning |

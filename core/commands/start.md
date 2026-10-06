@@ -14,7 +14,8 @@ Follow these steps in order. Do not skip any step.
 
 ## Step 2: Check for existing work
 
-- List the `.work/` folder. If a folder starting with `$1-` already exists, stop. Tell the engineer it exists and suggest `/status $1`.
+- List the `.work/` folder. If `.work/` does not exist, that is fine: Step 3 creates it.
+- If a folder starting with `$1-` already exists, stop. Tell the engineer it exists and suggest `/status $1`.
 
 ## Step 3: Get the work item
 

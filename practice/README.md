@@ -83,7 +83,14 @@ In opencode, in the practice workspace:
 | 6 | Push blocked | Switch to implementer. Ask it to run `git -C orders-api push` | Denied |
 | 7 | Layers merged | Ask: "What does the Company section of your instructions say about logging?" | Mentions not logging personal or payment data |
 
-Delete `.work/_test` afterwards. Start a new session (`/new`) before Step 5.
+Clean up **in a normal terminal, not in opencode** (agents are blocked from recursive deletes on purpose). Delete only the test folder and keep `.work` itself:
+
+```bash
+rm -r ~/eng-practice/.work/_test
+ls -a ~/eng-practice/.work     # should exist and be empty
+```
+
+If `.work` is gone, recreate it with `mkdir ~/eng-practice/.work`. Then start a new session (`/new`) before Step 5.
 
 ## Step 5: Tier 1 runs
 
@@ -185,6 +192,24 @@ Then in opencode, one new session per task:
 ## Step 7: Report back
 
 Paste `FINDINGS.md` back to Claude. Generic problems get fixed in the base repo; you pull them into your copy.
+
+## Troubleshooting: permission errors (Mac)
+
+**Never run `install.ps1`, the practice script, or `opencode` with `sudo`.** Anything it creates becomes owned by root, and later runs fail with `EACCES` or `PermissionDenied`. Both scripts now refuse to run as root.
+
+If something was already run with `sudo`, fix ownership once:
+
+```bash
+sudo chown -R $(whoami) ~/.config ~/.local ~/.cache ~/eng-practice ~/eng-practice-remotes
+```
+
+Then check that nothing is still starting opencode as root:
+
+```bash
+alias | grep -i opencode     # should print nothing
+ls -l $(which opencode)      # should not be a sudo wrapper script
+find ~/eng-practice -user root -print | head    # should print nothing
+```
 
 ## Starting over
 

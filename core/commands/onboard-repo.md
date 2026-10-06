@@ -22,8 +22,8 @@ Read only what you need. Record the file each fact came from.
 4. **Shared repo references:** any `ProjectReference` or path that starts with `..` and leaves this repo. Record the other repo and the example path.
 5. **.NET tests:** test projects, xUnit version, mocking library (Moq, NSubstitute, or FakeItEasy from `PackageReference`), and test naming style from 2 or 3 existing tests.
 6. **EF Core:** the `DbContext` class and the migrations folder.
-7. **Angular:** `package.json` scripts, `angular.json` test builder (Karma or Jest), Angular version.
-8. **Playwright:** `playwright.config.*` (testDir, baseURL, webServer), existing helpers or fixtures that call `page.route`, folders of mock data.
+7. **Angular:** `package.json` scripts, `angular.json` test builder (Karma or Jest), Angular version. Open 2 existing component tests and note how they stub services (for example `jasmine.createSpyObj`) and how they select elements (for example `data-testid` attributes, `By.css`, or CSS classes). Future tasks must copy this style.
+8. **Playwright:** `playwright.config.*` (testDir, baseURL, webServer), existing helpers or fixtures that call `page.route`, folders of mock data, and the selector style the tests use (for example `getByTestId`).
 9. **Lint and format:** `.editorconfig`, ESLint and Prettier config, `dotnet format` usage.
 10. **Patterns to follow:** one good example file for each row in the template's "Patterns to follow" table.
 
@@ -36,7 +36,8 @@ Read only what you need. Record the file each fact came from.
 
 - Start from `{{ENG_HOME}}/templates/repo-agents.md`.
 - Mark every item you inferred but did not confirm with `(inferred, verify)`.
-- Write `TODO(you)` for anything you could not find.
+- Write `TODO(you)` for anything that should exist but you could not find.
+- If a section or table row does not apply to this repo, **delete it**. Do not write "n/a" and do not explain why it does not apply. Examples: Angular and Playwright rows in a .NET-only repo, the Clean Architecture table in a repo with no layers, the EF Core section in a repo without EF Core.
 - Write it to the location chosen in Step 1. Ask the engineer to approve the write if prompted.
 
 ## Step 5: Hide it from git

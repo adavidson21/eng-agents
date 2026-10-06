@@ -15,7 +15,7 @@ Run from the workspace root.
 
 | Purpose | Command |
 |---|---|
-| Build | `dotnet build shared-lib/src/Shared.Common/Shared.Common.csproj` |
+| Build | `dotnet build shared-lib/Shared.slnx` (builds the library and its tests) |
 | All unit tests | `dotnet test shared-lib/tests/Shared.Common.Tests/Shared.Common.Tests.csproj` |
 | One test class | `dotnet test shared-lib/tests/Shared.Common.Tests/Shared.Common.Tests.csproj --filter "FullyQualifiedName~MoneyTests"` |
 | Format check | `dotnet format shared-lib/src/Shared.Common/Shared.Common.csproj --verify-no-changes` |

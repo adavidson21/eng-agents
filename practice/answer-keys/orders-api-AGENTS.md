@@ -16,7 +16,7 @@ Run from the workspace root.
 
 | Purpose | Command |
 |---|---|
-| Build | `dotnet build orders-api/src/Orders.Api/Orders.Api.csproj` |
+| Build | `dotnet build orders-api/Orders.slnx` (builds every project, including tests) |
 | All unit tests | `dotnet test orders-api/tests/Orders.Application.Tests/Orders.Application.Tests.csproj` |
 | One test class | `dotnet test orders-api/tests/Orders.Application.Tests/Orders.Application.Tests.csproj --filter "FullyQualifiedName~GetOrderSummaryHandlerTests"` |
 | Format check | `dotnet format orders-api/src/Orders.Api/Orders.Api.csproj --verify-no-changes` |

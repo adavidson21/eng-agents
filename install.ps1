@@ -111,6 +111,13 @@ function Read-JsonOrdered {
 
 # ------------------------------------------------------------------ layers
 
+# Refuse to run as root on Mac/Linux: files would be owned by root and opencode could not use them.
+if ($PSVersionTable.PSEdition -eq "Core" -and -not $IsWindows) {
+    if ((& id -u) -eq "0") {
+        throw "Do not run this with sudo. Files would be owned by root. If you got a permission error without sudo, fix ownership instead: sudo chown -R `$(whoami) ~/.config ~/.local ~/.cache"
+    }
+}
+
 $coreDir = Join-Path $PSScriptRoot "core"
 if (-not (Test-Path $coreDir)) { throw "Core folder not found at $coreDir. Run this script from the eng-agents repo." }
 

@@ -71,6 +71,9 @@ notepad "$env:USERPROFILE\.config\eng-agents\config.json"
 
 ## 5. Install
 
+Run PowerShell as your normal user, not "Run as administrator". Files created by an elevated session can end up unusable by opencode running as you.
+
+
 ```powershell
 cd C:\tools\eng-agents
 .\install.ps1 -DryRun
@@ -136,7 +139,7 @@ Do these in a scratch session. Each one confirms an assumption the scaffolding d
 | 6 | Push is blocked | Switch to `implementer`. Ask it to run `git -C <repo> push`. It should be denied. | Check the installed `opencode.json` permission block. |
 | 7 | Repo AGENTS.md is read when needed | Run `/status`. Then ask planner what a repo's test command is without naming the file. | Expected: it may not know until it reads the file. Commands always tell it to read the file, so this is fine. |
 
-Delete `.work\_test` when done.
+When done, delete only the test folder yourself in a normal PowerShell window (agents are blocked from recursive deletes on purpose): `Remove-Item C:\src\work\.work\_test -Recurse`. Keep `.work` itself.
 
 ## 10. Smoke test
 

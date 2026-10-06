@@ -7,3 +7,6 @@
 **/test-results/
 **/playwright-report/
 **/TestResults/
+
+# Per-person practice notes
+practice/FINDINGS.md

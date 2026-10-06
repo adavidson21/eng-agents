@@ -35,6 +35,13 @@ function Invoke-Git {
     if ($LASTEXITCODE -ne 0) { throw "git $($gitArgs -join ' ') failed in ${repo}: $out" }
 }
 
+# Refuse to run as root on Mac/Linux: files would be owned by root and opencode could not use them.
+if ($PSVersionTable.PSEdition -eq "Core" -and -not $IsWindows) {
+    if ((& id -u) -eq "0") {
+        throw "Do not run this with sudo. Files would be owned by root. If you got a permission error without sudo, fix ownership instead: sudo chown -R `$(whoami) ~/.config ~/.local ~/.cache ~/eng-practice ~/eng-practice-remotes"
+    }
+}
+
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) { throw "git is not installed." }
 
 $Path = [System.IO.Path]::GetFullPath($Path)

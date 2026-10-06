@@ -121,13 +121,23 @@ if ($PSVersionTable.PSEdition -eq "Core" -and -not $IsWindows) {
 $coreDir = Join-Path $PSScriptRoot "core"
 if (-not (Test-Path $coreDir)) { throw "Core folder not found at $coreDir. Run this script from the eng-agents repo." }
 
+# A layer counts only if it has something to install. A folder holding just TODO.md is skipped.
+function Test-LayerContent {
+    param([string]$Path)
+    if (-not (Test-Path $Path)) { return $false }
+    foreach ($name in @("AGENTS.md", "opencode.json", "agents", "commands", "templates", "scripts")) {
+        if (Test-Path (Join-Path $Path $name)) { return $true }
+    }
+    return $false
+}
+
 $layers = @([pscustomobject]@{ Name = "Core"; Path = $coreDir })
 if (-not $CoreOnly) {
-    if (Test-Path $Personal) { $layers += [pscustomobject]@{ Name = "Personal"; Path = (Resolve-Path $Personal).Path } }
-    else { Write-Warning "Personal layer not found at $Personal. Skipping it. (To add one: copy personal-template to personal and fill it in.)" }
+    if (Test-LayerContent $Personal) { $layers += [pscustomobject]@{ Name = "Personal"; Path = (Resolve-Path $Personal).Path } }
+    else { Write-Warning "Personal layer is empty or missing at $Personal. Skipping it. (See personal/TODO.md.)" }
 
-    if (Test-Path $Company) { $layers += [pscustomobject]@{ Name = "Company"; Path = (Resolve-Path $Company).Path } }
-    else { Write-Warning "Company overlay not found at $Company. Skipping it. (Expected on a home machine.)" }
+    if (Test-LayerContent $Company) { $layers += [pscustomobject]@{ Name = "Company"; Path = (Resolve-Path $Company).Path } }
+    else { Write-Warning "Company overlay not found at $Company. Skipping it. (Expected on a home machine. See company/TODO.md.)" }
 }
 
 $engHome = Join-Path $Target "eng-agents"

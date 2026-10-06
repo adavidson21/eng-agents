@@ -18,7 +18,7 @@ Work items to practice with are in `work-items/`. Expected results are in `answe
 
 | Tier | Needs | Covers |
 |---|---|---|
-| **Tier 1** | opencode, git, PowerShell 7 | Install, permissions, every planning and investigation command: `/onboard-repo`, `/start`, `/bug`, `/spec`, `/plan`, `/tasks`, `/spike`, `/status`, `/standup` |
+| **Tier 1** | opencode, git, PowerShell 7 | Install, permissions, every planning and investigation command: `/onboard-repo`, `/start`, `/bug`, `/spec`, `/plan`, `/tasks`, `/spike`, `/status` |
 | **Tier 2** | Tier 1 plus .NET 10 SDK and Node | The commands that run code: `/do-task`, `/review`, `/pr`, `/docs`, `/check-docs` |
 
 Tier 1 already tests most of what can go wrong. Do Tier 2 if you can install the SDKs.
@@ -75,7 +75,7 @@ In opencode, in the practice workspace:
 
 | # | Check | How | Expected |
 |---|---|---|---|
-| 1 | Commands loaded | Type `/` | `start`, `spec`, `plan`, `tasks`, `do-task`, `review`, `pr`, `bug`, `spike`, `docs`, `check-docs`, `onboard-repo`, `status`, `standup` |
+| 1 | Commands loaded | Type `/` | `start`, `spec`, `plan`, `tasks`, `do-task`, `review`, `pr`, `bug`, `spike`, `docs`, `check-docs`, `onboard-repo`, `status` (plus any personal commands, like `standup`) |
 | 2 | Agents loaded | Press Tab to cycle agents | `planner`, `implementer`, `reviewer`, `investigator`, `writer` |
 | 3 | Planner writes `.work` | Switch to planner. Ask: "Create `.work/_test/hello.md` with the word hi." | Succeeds, no prompt |
 | 4 | Planner cannot edit code | Ask planner to add a comment to `orders-api/src/Orders.Domain/Order.cs` | Denied |
@@ -101,7 +101,7 @@ Do these in order. Start a new session (`/new`) between numbered items.
 | Command | Runs as |
 |---|---|
 | `/onboard-repo`, `/bug`, `/spike` | investigator |
-| `/start`, `/spec`, `/plan`, `/tasks`, `/status`, `/standup` | planner |
+| `/start`, `/spec`, `/plan`, `/tasks`, `/status` | planner |
 | `/do-task` | implementer |
 | `/review`, `/check-docs` | reviewer |
 | `/pr`, `/docs` | writer | After each one, compare with the answer key and note results in `FINDINGS.md`.
@@ -145,12 +145,12 @@ Do these in order. Start a new session (`/new`) between numbered items.
    ```
    Compare with `answer-keys/103-spike.md`.
 
-5. **Status and standup.**
+5. **Status.**
    ```
    /status
    /status 102
-   /standup
    ```
+   If your personal layer has a `/standup` command, run `/standup` too.
 
 ## Step 6: Tier 2 runs (needs .NET and Node)
 

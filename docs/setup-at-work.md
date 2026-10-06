@@ -1,6 +1,6 @@
 # Setup at work
 
-Step-by-step first-day setup on the work PC. Run everything in PowerShell. Track progress in `personal\CHECKLIST.md` in your copy.
+Step-by-step first-day setup on the work PC. Run everything in PowerShell. Track progress with the work PC checklist in `company\TODO.md`.
 
 Paths below are examples. Change them if you prefer other locations, but keep them consistent.
 
@@ -33,12 +33,11 @@ Use whichever exists (or contains your current `opencode.json`). If it is not `%
 ## 3. Create the company overlay
 
 ```powershell
-mkdir "$env:USERPROFILE\.config\eng-agents" -Force
-Copy-Item C:\tools\eng-agents\workspace-template\company-overlay "$env:USERPROFILE\.config\eng-agents\overlay" -Recurse
+mkdir "$env:USERPROFILE\.config\eng-agents\overlay" -Force
 notepad "$env:USERPROFILE\.config\eng-agents\overlay\AGENTS.md"
 ```
 
-Replace the SAMPLE and TODO(you) lines, or delete them. Delete `README.md` from the copied folder if you like (it is not installed either way).
+Write the company-wide rules. `company\TODO.md` lists what belongs there; `practice\overlay\AGENTS.md` is a short example.
 
 ## 4. Set up ADO access
 
@@ -102,12 +101,11 @@ It should print a folder path and create `workitem.md`. Open it and check the de
 cd C:\src\work
 git clone <shared repo url>
 git clone <each other repo url>
-Copy-Item C:\tools\eng-agents\workspace-template\AGENTS.md C:\src\work\AGENTS.md
 notepad C:\src\work\AGENTS.md
 ```
 
 - Clone every repo **directly** into `C:\src\work`, side by side. Shared repos are referenced by relative paths, so folder names must match what the other repos expect.
-- Fill in the repo map. Replace every SAMPLE row. This is the most important file you write.
+- Write the repo map using the skeleton in `company\TODO.md` (`practice\workspace\AGENTS.md` is a filled-in example). This is the most important file you write.
 
 ## 8. Onboard each repo
 
@@ -160,6 +158,8 @@ Pick a small, low-risk bug and run the bug lane end to end:
 Write down every place the model stumbled. Those become fixes in Core (generic problems) or your overlay (company-specific problems).
 
 ## Updating later
+
+`git pull` here only gets your copy. To pick up base repo changes, merge them into your copy first (at home: `git fetch upstream`, `git merge upstream/main`, `git push`). Then:
 
 ```powershell
 cd C:\tools\eng-agents

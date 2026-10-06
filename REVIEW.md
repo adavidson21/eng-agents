@@ -1,6 +1,6 @@
 # Core review tracker
 
-Every shared file in this base repo, what it does, and its review status. This tracks the **shared** files only. Your own setup progress lives in `personal/CHECKLIST.md` in your fork (copied from `personal-template/CHECKLIST.md`).
+Every shared file in this base repo, what it does, and its review status. This tracks the **shared** files only. Your own setup progress lives in the checklists in `personal/TODO.md` and `company/TODO.md`.
 
 Maintainers: check a box when a file has been reviewed, and commit this file in the base repo. Forks should not edit it.
 
@@ -10,7 +10,7 @@ Maintainers: check a box when a file has been reviewed, and commit this file in 
 - **Decide:** works as-is, but contains a default you should consciously accept or change.
 - **Read:** generic prompt or template. Read it once to make sure it matches how you want the pipeline to behave.
 
-**Layers:** Core = generic, team-shareable. Personal = each person's preferences (template here, real files in each fork). Company = work PC only (templates here, real files on the work PC).
+**Layers:** Core = generic, team-shareable. Personal = each person's preferences (`personal/TODO.md` here, real files in each fork). Company = work PC only (`company/TODO.md` here, real files on the work PC).
 
 All files below are **built**. Checked boxes are **reviewed**.
 
@@ -18,21 +18,17 @@ All files below are **built**. Checked boxes are **reviewed**.
 
 ## Part 1: Needs your input (do these first)
 
-- [ ] **`personal-template/AGENTS.md`** (Personal template, Decide)
-  The starting point each person copies to `personal/` in their fork. Generic SAMPLE preferences and `TODO(you)` lines. No one's real preferences.
-  Check: the SAMPLE lines are sensible defaults for anyone on the team.
+- [ ] **`personal/TODO.md`** (Personal placeholder, Read)
+  What belongs in each person's `personal/` folder, ideas for house rules and commands, and a setup checklist. The base repo's `personal/` holds only this file.
+  Check: the guidance is clear enough for a teammate starting from nothing.
 
-- [ ] **`workspace-template/AGENTS.md`** (Company template, Fill in at work)
-  The repo map. Copied to the workspace root at work. Tells the planner what each repo does, which are shared, how they reference each other by relative path, and which repos usually go together.
-  Check: the sections are the ones you want. At work, replace every SAMPLE row with real repos. Do NOT put real content in this repo copy.
-
-- [ ] **`workspace-template/company-overlay/AGENTS.md`** (Company template, Fill in at work)
-  Company-wide rules that override Core and Personal. Copied to `%USERPROFILE%\.config\eng-agents\overlay\` at work.
-  Check: the SAMPLE rules give the right idea. At work, replace them with real standards.
+- [ ] **`company/TODO.md`** (Company placeholder, Read)
+  What to create on the work PC (overlay, ADO config, PAT, repo map, repo guides), a repo map skeleton, and the work PC checklist. The folder itself stays empty and is gitignored.
+  Check: the repo map sections are the ones you want.
 
 - [ ] **`core/scripts/ado/config.example.json`** (Core, Fill in at work)
   Placeholder ADO connection settings. At work you copy it to `%USERPROFILE%\.config\eng-agents\config.json` and fill in the real server, collection, and project.
-  Check: nothing to change here. The real copy is a work-PC task (see `personal-template/CHECKLIST.md`).
+  Check: nothing to change here. The real copy is a work-PC task (see `company/TODO.md`).
 
 - [x] **`core/opencode.json`** (Core, Decide) *Reviewed 2026-10-05: switched to tiered permissions.*
   Global permission baseline merged into your work `opencode.json`. Read and inspect commands and build/test/lint are allowed. Anything that changes state asks. Destructive commands (push, hard reset, clean, recursive delete, database updates) are denied. Edits are allowed except `.git` internals and `.env` files. See "Permission tiers" in the README.
@@ -86,11 +82,6 @@ All files below are **built**. Checked boxes are **reviewed**.
 - [ ] **`core/templates/bug.md`**: symptom, code path, root cause and confidence, fix approach. Has the Status gate.
 - [ ] **`core/templates/findings.md`**: spike answer, evidence, options, recommendation.
 - [ ] **`core/templates/repo-agents.md`**: the shape of every repo `AGENTS.md`: commands, Clean Architecture reference rules, patterns to follow, testing, EF Core, cross-repo references.
-
-### Personal template extras
-
-- [ ] **`personal-template/commands/standup.md`**: `/standup [days]`. Drafts Yesterday / Today / Blockers from all `.work` progress logs. An optional example command; each person keeps or deletes it in their fork.
-- [ ] **`personal-template/README.md`** and **`personal-template/CHECKLIST.md`**: how to set up a personal layer, and a per-person setup checklist.
 
 ### Practice run
 

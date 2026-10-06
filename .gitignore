@@ -10,3 +10,10 @@
 
 # Per-person practice notes
 practice/FINDINGS.md
+
+# Company content never lives in this repo. Only the placeholder is tracked.
+company/*
+!company/TODO.md
+
+# macOS
+.DS_Store

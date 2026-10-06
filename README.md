@@ -43,7 +43,7 @@ Every file in this setup belongs to exactly one layer. The layer decides where t
 |---|---|---|---|
 | **What it is** | The generic pipeline. Works at any company, for any engineer. | How *you* like to work. Your taste, not your employer's details. | Anything that names or describes your employer, its code, or its systems. |
 | **Examples** | Agents, commands, templates, install script, ADO scripts with placeholders | House rules, auto-commit preference, task size limit, model overrides, extra EM commands | Repo map, per-repo `AGENTS.md`, ADO server URL, PAT, test helper locations, team PR sections, all `.work\` state |
-| **Lives in** | `core/` in the base repo | `personal/` in your fork (blank starter in `personal-template/`) | Work PC only |
+| **Lives in** | `core/` in the base repo | `personal/` in your fork (empty in the base, see `personal/TODO.md`) | Work PC only (see `company/TODO.md`) |
 | **Shareable with team?** | Yes, that is the goal | No. Each person writes their own. | Only through company-hosted locations, never this repo |
 
 ### Which layer does this belong in?
@@ -162,7 +162,6 @@ No agent can run `git push`. Pushing is always you.
 | `/check-docs <path>` | reviewer | Fact-checks every claim in a doc against the code. |
 | `/onboard-repo <folder>` | investigator | Scans a repo and drafts its local `AGENTS.md`. **You must review it.** |
 | `/status [id]` | planner | Reads `.work\` and tells you where you left off and what to run next. |
-| `/standup [days]` | planner | **Personal layer example.** Drafts Yesterday / Today / Blockers from all progress logs. |
 
 **Golden rule:** start a fresh opencode session (`/new`) for every `/do-task`. Long sessions are where slower models drift.
 
@@ -229,7 +228,7 @@ A task is not done until its verify command passes and the output is pasted into
 
 ```
 C:\src\work\                       NOT a git repo. Launch opencode from here.
-  AGENTS.md                        repo map (Layer 3, you write it from the template)
+  AGENTS.md                        repo map (Layer 3, you write it from company/TODO.md)
   .work\                           pipeline state (Layer 3)
   <shared-repo>\                   cloned ONCE, used by every project below
   <api-repo-a>\
@@ -262,7 +261,7 @@ A shared monorepo (one that several other repos depend on) gets special handling
 
 ## Repo layout
 
-### Base repo (Layer 1, plus starters for Layers 2 and 3)
+### Base repo (Layer 1, plus placeholders for Layers 2 and 3)
 
 ```
 eng-agents/
@@ -284,16 +283,10 @@ eng-agents/
       ado/
         Get-WorkItem.ps1            reads a work item via REST, creates the .work folder
         config.example.json         placeholder connection settings
-  personal-template/                LAYER 2 starter. Each fork copies it to personal/ (never in the base repo)
-    AGENTS.md                       generic SAMPLE house rules
-    commands/standup.md             optional example command
-    CHECKLIST.md                    per-person setup checklist
-    README.md                       how to set up a personal layer
-  workspace-template/               Layer 3 starting points. Copied to the work PC, filled in there.
-    AGENTS.md                       fill-in-the-blanks repo map (SAMPLE data)
-    company-overlay/
-      AGENTS.md                     company-wide rules (SAMPLE data)
-      README.md                     what you can put in the overlay
+  personal/                         LAYER 2. Empty in the base. Each fork fills it in.
+    TODO.md                         what belongs here, ideas, setup checklist
+  company/                          LAYER 3 placeholder. Always empty in every repo (gitignored).
+    TODO.md                         what to create on the work PC, repo map skeleton, work PC checklist
   docs/
     pipeline.md                     design rationale, gates, lanes, recovery
     setup-at-work.md                step-by-step first-day setup and verification
@@ -356,8 +349,8 @@ The base repo holds Core only. Each person works from their own private copy tha
    ```powershell
    git remote add upstream <base repo url>
    ```
-3. **Add your Personal layer:** copy `personal-template\` to `personal\`, fill it in, and commit it to your copy. See `personal-template\README.md`.
-4. **Track your setup** in `personal\CHECKLIST.md`.
+3. **Add your Personal layer:** follow `personal\TODO.md` to create your files in `personal\`, and commit them to your copy.
+4. **Track your setup** with the checklists in `personal\TODO.md` and `company\TODO.md`.
 
 ### Practice run (recommended before work)
 
@@ -378,17 +371,17 @@ git fetch upstream
 git merge upstream/main
 ```
 
-The base repo never contains a `personal\` folder, so this merge never conflicts with your preferences.
+The base repo's `personal\` folder holds only `TODO.md`, so this merge never conflicts with your own files there.
 
 ### At work (first time)
 
 Full commands and the verification checklist are in [docs/setup-at-work.md](docs/setup-at-work.md). In short:
 
 1. **Clone** this repo somewhere outside the workspace, for example `C:\tools\eng-agents`.
-2. **Create the company overlay:** copy `workspace-template\company-overlay\` to `%USERPROFILE%\.config\eng-agents\overlay\` and fill it in.
+2. **Create the company overlay:** create `%USERPROFILE%\.config\eng-agents\overlay\` and write its `AGENTS.md` (see `company\TODO.md`).
 3. **ADO:** create a PAT, set the `ADO_PAT` environment variable, copy `config.example.json` to `%USERPROFILE%\.config\eng-agents\config.json` and fill it in.
 4. **Install:** run `.\install.ps1 -DryRun`, then `.\install.ps1`. Use `-Target <path>` if your opencode config folder is not the default (see [Assumptions](#assumptions-to-verify-at-work)).
-5. **Workspace:** create `C:\src\work\`, clone all repos flat into it (shared repos once), copy `workspace-template\AGENTS.md` to `C:\src\work\AGENTS.md`, and fill it in.
+5. **Workspace:** create `C:\src\work\`, clone all repos flat into it (shared repos once), and write `C:\src\work\AGENTS.md` (the repo map) using the skeleton in `company\TODO.md`.
 6. **Onboard repos:** from `C:\src\work\`, run `/onboard-repo <repo-folder>` for each repo, shared repos first. It also adds `AGENTS.md` to the repo's `.git\info\exclude`. Review and correct each generated `AGENTS.md`.
 7. **Verify:** run the day-one checks in the setup doc.
 8. **Smoke test:** run `/start` on a small, low-risk bug and walk the bug lane end to end.
@@ -429,16 +422,16 @@ The tier lists are repeated in each agent file so they apply no matter how openc
 
 ### Layer 2: Personal (your copy, `personal\`)
 
-How **you** like to work. Still no company content. Each person writes their own, starting from `personal-template\`.
+How **you** like to work. Still no company content. Each person writes their own, following `personal\TODO.md`.
 
 | What | File | Why it is personal |
 |---|---|---|
 | House rules: naming, patterns you prefer or avoid, how terse output should be, writing style rules (for example, no em dashes) | `personal\AGENTS.md` | Your taste, applied to every session. |
-| Whether the implementer commits after each passing task (core default: yes, with an approval prompt) | A rule in `personal\AGENTS.md` (the template has a SAMPLE line) | Some people prefer committing by hand. |
-| Task size cap (core default: 3 files) | A rule in `personal\AGENTS.md` (the template has a SAMPLE line) | Depends on how much you trust the model after real use. |
+| Whether the implementer commits after each passing task (core default: yes, with an approval prompt) | A rule in `personal\AGENTS.md` | Some people prefer committing by hand. |
+| Task size cap (core default: 3 files) | A rule in `personal\AGENTS.md` | Depends on how much you trust the model after real use. |
 | Looser or tighter shell permissions | `personal\opencode.json` | Your risk tolerance. |
 | Per-agent model override | `model:` in a personal agent override | Only if your setup offers more than one model. |
-| Role-specific extras (`/standup` is included in the template as an example) | `personal\commands\` | Useful to you, not necessarily to everyone. |
+| Role-specific extras (for example a `/standup` command) | `personal\commands\` | Useful to you, not necessarily to everyone. |
 
 ### Layer 3: Company (work PC only)
 
@@ -549,4 +542,4 @@ opencode
 ## Review tracker
 
 - [REVIEW.md](REVIEW.md) tracks review status of the **shared** files in the base repo. Maintainers update it; forks leave it alone.
-- `personal\CHECKLIST.md` (from `personal-template\CHECKLIST.md`) tracks **your own** setup in your copy, including the work PC steps.
+- The checklists in `personal\TODO.md` and `company\TODO.md` track **your own** setup, including the work PC steps.

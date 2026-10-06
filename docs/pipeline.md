@@ -91,7 +91,7 @@ To send a document back for rework, leave it as DRAFT, add your notes under "Ope
 - The repo map in the workspace `AGENTS.md` says which repos are shared and how others reference them (relative paths).
 - `repos.md` lists shared repos first. Tasks in shared repos come first.
 - When a shared repo changes, `/review` runs tests in every repo listed in `repos.md`. If you know another consumer could break, add it to `repos.md` so its tests run too.
-- Need the shared repo on two branches at once? Use `git worktree add` (see README). Remember relative-path consumers still point at the main clone.
+- Need the shared repo on two branches at once? Use `git worktree add` (see [reference](reference.md#shared-repos-used-by-multiple-projects)). Remember relative-path consumers still point at the main clone.
 
 ---
 

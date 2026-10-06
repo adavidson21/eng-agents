@@ -31,7 +31,7 @@ All files below are **built**. Checked boxes are **reviewed**.
   Check: nothing to change here. The real copy is a work-PC task (see `docs/onboarding-company.md`).
 
 - [x] **`core/opencode.json`** (Core, Decide) *Reviewed 2026-10-05: switched to tiered permissions.*
-  Global permission baseline merged into your work `opencode.json`. Read and inspect commands and build/test/lint are allowed. Anything that changes state asks. Destructive commands (push, hard reset, clean, recursive delete, database updates) are denied. Edits are allowed except `.git` internals and `.env` files. See "Permission tiers" in the README.
+  Global permission baseline merged into your work `opencode.json`. Read and inspect commands and build/test/lint are allowed. Anything that changes state asks. Destructive commands (push, hard reset, clean, recursive delete, database updates) are denied. Edits are allowed except `.git` internals and `.env` files. See "Permission tiers" in docs/reference.md.
   Check: nothing further. Revisit after a week of real use.
 
 - [x] **`core/AGENTS.md`** (Core, Decide) *Reviewed 2026-10-05: approved as-is.*
@@ -90,4 +90,5 @@ All files below are **built**. Checked boxes are **reviewed**.
 - [ ] **`docs/field-guide.md`**: short overview of layers, a day of use, and phases.
 - [ ] **`docs/setup-at-work.md`**: first-day steps and the verification checklist.
 - [ ] **`docs/pipeline.md`**: design rationale, gates, lanes, and recovery steps.
-- [ ] **`README.md`**: overview.
+- [ ] **`README.md`**: front page: how it works, install, use.
+- [ ] **`docs/reference.md`**: full detail: layers, agents, commands, permissions, layout, install script.

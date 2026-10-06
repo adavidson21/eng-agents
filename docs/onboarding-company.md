@@ -1,8 +1,8 @@
 # Company onboarding
 
-Set up the Company layer on the work PC. Everything here is created on the work PC and **never committed** to eng-agents or your copy. Do the steps in order. Full commands and the day-one checks are in [setup-at-work.md](setup-at-work.md).
+Set up the Company layer on the work PC. Everything here is created on the work PC and **never committed** to eng-agents or your fork. Do the steps in order. Full commands and the day-one checks are in [setup-at-work.md](setup-at-work.md).
 
-First, clone your copy (with `personal/`) to `C:\tools\eng-agents`.
+First, finish [Personal onboarding](onboarding-personal.md), then clone your fork (with `personal/`) to `C:\tools\eng-agents` on the work PC.
 
 ## Files
 

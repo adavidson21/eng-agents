@@ -1,6 +1,8 @@
 # Personal onboarding
 
-Fill in the `personal/` folder in **your copy** of eng-agents (your fork). One file is required, the rest is optional. No company names anywhere in it.
+Create your own fork of eng-agents and fill in its `personal/` folder: how *you* like the agents to work. One file is required, the rest is optional. No company names anywhere in it.
+
+You need git, [opencode](https://opencode.ai), and PowerShell (built in on Windows; install PowerShell 7 as `pwsh` on Mac or Linux).
 
 ## Files
 
@@ -13,6 +15,20 @@ Fill in the `personal/` folder in **your copy** of eng-agents (your fork). One f
 | `personal/opencode.json` | Optional | Permission tweaks |
 
 Leave `personal/TODO.md` alone. It is never installed.
+
+## 0. Create your fork (required)
+
+Fork eng-agents on GitHub (keep it private), then clone it and link it to the base so you can pull updates:
+
+```bash
+git clone <your fork url> eng-agents
+cd eng-agents
+git remote add upstream <eng-agents url>
+```
+
+If you own eng-agents you cannot fork it into the same account. Create an empty private repo instead and push eng-agents into it.
+
+To pick up base updates later: `git fetch upstream`, `git merge upstream/main`, `git push`.
 
 ## 1. Write your rules (required)
 
@@ -69,7 +85,7 @@ Use `agent: planner` for read-only commands so they cannot change code.
 
 ## 3. Override an agent or template (optional)
 
-`personal/agents/<name>.md` or `personal/templates/<name>.md`. Copy the Core file first, then edit your copy. Example: pick a model for the implementer by adding a `model:` line to its front matter.
+`personal/agents/<name>.md` or `personal/templates/<name>.md`. Copy the Core file first, then edit your fork. Example: pick a model for the implementer by adding a `model:` line to its front matter.
 
 ```bash
 cp core/agents/implementer.md personal/agents/implementer.md
@@ -104,7 +120,7 @@ pwsh ./install.ps1
 - No warning about `TODO(you)`
 - In opencode, ask: "What does the Personal section of your instructions say?"
 
-## 6. Commit to your copy (required)
+## 6. Commit to your fork (required)
 
 ```bash
 git add personal
@@ -112,7 +128,7 @@ git commit -m "Update personal layer"
 git push
 ```
 
-Your copy only. Never send `personal/` to eng-agents.
+Your fork only. Never send `personal/` to eng-agents.
 
 ## When to come back
 

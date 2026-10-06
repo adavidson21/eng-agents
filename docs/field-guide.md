@@ -1,9 +1,9 @@
 # Field guide
 
-A short overview of how eng-agents works. For setup, use the onboarding guides:
+A short overview of how eng-agents works. To set it up, follow the onboarding guides:
 
-- [Personal onboarding](onboarding-personal.md): fill in your `personal/` folder
-- [Company onboarding](onboarding-company.md): set up the work PC
+- [Personal onboarding](onboarding-personal.md): create your fork and fill in `personal/`
+- [Company onboarding](onboarding-company.md): set up your work PC
 
 You run slash commands, approve specs and plans by editing one line, and always push yourself.
 
@@ -12,7 +12,7 @@ You run slash commands, approve specs and plans by editing one line, and always 
 ```mermaid
 flowchart LR
   C["Core<br/>core/ in eng-agents"] --> I["install.ps1"]
-  P["Personal<br/>personal/ in your copy"] --> I
+  P["Personal<br/>personal/ in your fork"] --> I
   W["Company<br/>work PC only"] --> I
   I --> O["opencode config"]
 ```
@@ -20,10 +20,10 @@ flowchart LR
 | Layer | What | Lives in |
 |---|---|---|
 | Core | The pipeline: agents, commands, templates, permissions | `core/` in eng-agents |
-| Personal | Your preferences: tone, code taste, extra commands | `personal/` in your copy |
+| Personal | Your preferences: tone, code taste, extra commands | `personal/` in your fork |
 | Company | Anything naming your employer: repo map, repo guides, ADO settings | Work PC only |
 
-Higher layers win. eng-agents is the shared base, your copy (eng-agents-personal) is the base plus `personal/`, and the work PC clones your copy.
+Higher layers win. eng-agents is the shared base. Each person works from their own fork, which is the base plus their `personal/` folder. The work PC clones that fork.
 
 ## A feature at work
 
@@ -41,27 +41,25 @@ Bugs skip spec, plan and tasks (`/bug` instead). `/status` tells you where you l
 
 ## What lives where
 
-| eng-agents | Your copy | Work PC |
+| eng-agents | Your fork | Your work PC |
 |---|---|---|
 | `core/` | Everything in eng-agents | Company overlay and ADO config |
 | `personal/TODO.md`, `company/TODO.md` | `personal/AGENTS.md` | `C:\src\work\AGENTS.md` (repo map) |
-| `docs/`, `install.ps1` | `personal/commands/` | An `AGENTS.md` in each repo |
+| `docs/`, `install.ps1` | `personal/commands/` (optional) | An `AGENTS.md` in each repo |
 
-## Phases
+## Getting set up
 
-| | Phase | |
+| | Step | Guide |
 |---|---|---|
-| 0 | Build and personalize | Done |
-| 1 | Practice run | Done |
-| 2 | Fold fixes into Core | Done |
-| 3 | **Set up the work PC** ([Company onboarding](onboarding-company.md)), then smoke test one small bug | **You are here** |
-| 4 | Use it on real work for a few weeks, every lane at least once | |
-| 5 | Roll out: teammates copy eng-agents and fill in their own Personal and Company layers | |
+| 1 | Fork eng-agents and fill in `personal/` | [Personal onboarding](onboarding-personal.md) |
+| 2 | Set up the work PC: ADO, overlay, repo map, repo guides | [Company onboarding](onboarding-company.md) |
+| 3 | Smoke test: take one small bug through the bug lane | [Company onboarding](onboarding-company.md#6-verify-and-smoke-test) |
+| 4 | Use it on real work, every lane at least once | |
 
 ## Where does a fix go?
 
 | If it... | Put it in |
 |---|---|
 | Names something at your company | Work PC (overlay or repo guide) |
-| Is just your preference | `personal/` in your copy |
-| Would help anyone | `core/` in eng-agents, then merge into your copy |
+| Is just your preference | `personal/` in your fork |
+| Would help anyone | `core/` in eng-agents (pull request), then merge into your fork |

@@ -8,14 +8,14 @@ Paths below are examples. Change them if you prefer other locations, but keep th
 
 ## 1. Get the repo onto the work PC
 
-Clone **your own copy** (your fork, with your `personal\` folder), not the base repo:
+Clone **your own fork** (with your `personal\` folder), not the base repo:
 
 ```powershell
 mkdir C:\tools -Force
-git clone <your copy's url> C:\tools\eng-agents
+git clone <your fork's url> C:\tools\eng-agents
 ```
 
-If cloning from GitHub is blocked at work, download your copy as a zip at home and copy it over. Do not send company content back the other way.
+If cloning from GitHub is blocked at work, download your fork as a zip at home and copy it over. Do not send company content back the other way.
 
 ## 2. Find your opencode config folder
 
@@ -159,7 +159,7 @@ Write down every place the model stumbled. Those become fixes in Core (generic p
 
 ## Updating later
 
-`git pull` here only gets your copy. To pick up base repo changes, merge them into your copy first (at home: `git fetch upstream`, `git merge upstream/main`, `git push`). Then:
+`git pull` here only gets your fork. To pick up base repo changes, merge them into your fork first (at home: `git fetch upstream`, `git merge upstream/main`, `git push`). Then:
 
 ```powershell
 cd C:\tools\eng-agents

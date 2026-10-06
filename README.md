@@ -9,7 +9,9 @@ It is designed for a capable but slower, less forgiving model (a Qwen-class mode
 3. **You trigger each phase.** Slash commands are explicit. Nothing depends on the model deciding on its own to load a skill.
 4. **Humans gate the expensive decisions.** You approve the spec and the plan before any code is written.
 
-> **Status:** Core v1 built, not yet run at work. This is the **base repo**: it holds Core only. Make your own copy with a Personal layer before using it (see [Setup](#setup)). Shared review status is in [REVIEW.md](REVIEW.md). First-day setup is in [docs/setup-at-work.md](docs/setup-at-work.md). Design rationale and recovery steps are in [docs/pipeline.md](docs/pipeline.md).
+> **Status:** Core v1 built and dry-run tested, not yet run at work. This is the **base repo**: it holds Core only. Make your own copy with a Personal layer before using it (see [Setup](#setup)).
+>
+> **Start here:** [Field guide](docs/field-guide.md) (short overview) · [Personal onboarding](docs/onboarding-personal.md) · [Company onboarding](docs/onboarding-company.md). First-day commands are in [docs/setup-at-work.md](docs/setup-at-work.md). Design rationale and recovery steps are in [docs/pipeline.md](docs/pipeline.md). Review status is in [REVIEW.md](REVIEW.md).
 
 ---
 
@@ -43,7 +45,7 @@ Every file in this setup belongs to exactly one layer. The layer decides where t
 |---|---|---|---|
 | **What it is** | The generic pipeline. Works at any company, for any engineer. | How *you* like to work. Your taste, not your employer's details. | Anything that names or describes your employer, its code, or its systems. |
 | **Examples** | Agents, commands, templates, install script, ADO scripts with placeholders | House rules, auto-commit preference, task size limit, model overrides, extra EM commands | Repo map, per-repo `AGENTS.md`, ADO server URL, PAT, test helper locations, team PR sections, all `.work\` state |
-| **Lives in** | `core/` in the base repo | `personal/` in your fork (empty in the base, see `personal/TODO.md`) | Work PC only (see `company/TODO.md`) |
+| **Lives in** | `core/` in the base repo | `personal/` in your fork (empty in the base, see [onboarding](docs/onboarding-personal.md)) | Work PC only (see [onboarding](docs/onboarding-company.md)) |
 | **Shareable with team?** | Yes, that is the goal | No. Each person writes their own. | Only through company-hosted locations, never this repo |
 
 ### Which layer does this belong in?
@@ -228,7 +230,7 @@ A task is not done until its verify command passes and the output is pasted into
 
 ```
 C:\src\work\                       NOT a git repo. Launch opencode from here.
-  AGENTS.md                        repo map (Layer 3, you write it from company/TODO.md)
+  AGENTS.md                        repo map (Layer 3, see docs/onboarding-company.md)
   .work\                           pipeline state (Layer 3)
   <shared-repo>\                   cloned ONCE, used by every project below
   <api-repo-a>\
@@ -284,21 +286,15 @@ eng-agents/
         Get-WorkItem.ps1            reads a work item via REST, creates the .work folder
         config.example.json         placeholder connection settings
   personal/                         LAYER 2. Empty in the base. Each fork fills it in.
-    TODO.md                         what belongs here, ideas, setup checklist
+    TODO.md                         pointer to docs/onboarding-personal.md
   company/                          LAYER 3 placeholder. Always empty in every repo (gitignored).
-    TODO.md                         what to create on the work PC, repo map skeleton, work PC checklist
+    TODO.md                         pointer to docs/onboarding-company.md
   docs/
+    field-guide.md                  short overview: layers, a day of use, phases
+    onboarding-personal.md          how to fill in personal/
+    onboarding-company.md           how to set up the Company layer on the work PC
     pipeline.md                     design rationale, gates, lanes, recovery
     setup-at-work.md                step-by-step first-day setup and verification
-  practice/                         dry run on made-up repos (see practice/README.md)
-    README.md                       step-by-step practice run (Mac or Windows)
-    New-PracticeWorkspace.ps1       creates ~/eng-practice with git repos and local remotes
-    repos/                          shared-lib, orders-api (planted bug), orders-ui
-    work-items/                     4 practice work items: bug, feature, spike, docs
-    answer-keys/                    what good output looks like for each step
-    workspace/AGENTS.md             filled-in practice repo map
-    overlay/AGENTS.md               practice Company layer
-    findings-template.md            log for the practice run
 ```
 
 ### What install.ps1 writes
@@ -349,12 +345,7 @@ The base repo holds Core only. Each person works from their own private copy tha
    ```powershell
    git remote add upstream <base repo url>
    ```
-3. **Add your Personal layer:** follow `personal\TODO.md` to create your files in `personal\`, and commit them to your copy.
-4. **Track your setup** with the checklists in `personal\TODO.md` and `company\TODO.md`.
-
-### Practice run (recommended before work)
-
-Run the whole pipeline on made-up repos first. See [practice/README.md](practice/README.md). It works on Mac or Windows and does not need ADO.
+3. **Add your Personal layer:** follow [docs/onboarding-personal.md](docs/onboarding-personal.md) and commit `personal\` to your copy.
 
 ### Day to day
 
@@ -378,10 +369,10 @@ The base repo's `personal\` folder holds only `TODO.md`, so this merge never con
 Full commands and the verification checklist are in [docs/setup-at-work.md](docs/setup-at-work.md). In short:
 
 1. **Clone** this repo somewhere outside the workspace, for example `C:\tools\eng-agents`.
-2. **Create the company overlay:** create `%USERPROFILE%\.config\eng-agents\overlay\` and write its `AGENTS.md` (see `company\TODO.md`).
+2. **Create the company overlay:** create `%USERPROFILE%\.config\eng-agents\overlay\` and write its `AGENTS.md` (see [docs/onboarding-company.md](docs/onboarding-company.md)).
 3. **ADO:** create a PAT, set the `ADO_PAT` environment variable, copy `config.example.json` to `%USERPROFILE%\.config\eng-agents\config.json` and fill it in.
 4. **Install:** run `.\install.ps1 -DryRun`, then `.\install.ps1`. Use `-Target <path>` if your opencode config folder is not the default (see [Assumptions](#assumptions-to-verify-at-work)).
-5. **Workspace:** create `C:\src\work\`, clone all repos flat into it (shared repos once), and write `C:\src\work\AGENTS.md` (the repo map) using the skeleton in `company\TODO.md`.
+5. **Workspace:** create `C:\src\work\`, clone all repos flat into it (shared repos once), and write `C:\src\work\AGENTS.md` (the repo map) using the skeleton in [docs/onboarding-company.md](docs/onboarding-company.md).
 6. **Onboard repos:** from `C:\src\work\`, run `/onboard-repo <repo-folder>` for each repo, shared repos first. It also adds `AGENTS.md` to the repo's `.git\info\exclude`. Review and correct each generated `AGENTS.md`.
 7. **Verify:** run the day-one checks in the setup doc.
 8. **Smoke test:** run `/start` on a small, low-risk bug and walk the bug lane end to end.
@@ -422,7 +413,7 @@ The tier lists are repeated in each agent file so they apply no matter how openc
 
 ### Layer 2: Personal (your copy, `personal\`)
 
-How **you** like to work. Still no company content. Each person writes their own, following `personal\TODO.md`.
+How **you** like to work. Still no company content. Each person writes their own, following [docs/onboarding-personal.md](docs/onboarding-personal.md).
 
 | What | File | Why it is personal |
 |---|---|---|
@@ -542,4 +533,4 @@ opencode
 ## Review tracker
 
 - [REVIEW.md](REVIEW.md) tracks review status of the **shared** files in the base repo. Maintainers update it; forks leave it alone.
-- The checklists in `personal\TODO.md` and `company\TODO.md` track **your own** setup, including the work PC steps.
+- The onboarding guides ([personal](docs/onboarding-personal.md), [company](docs/onboarding-company.md)) walk through **your own** setup.

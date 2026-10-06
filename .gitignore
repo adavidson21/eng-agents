@@ -1,16 +1,3 @@
-# Build and test output from the practice repos
-**/bin/
-**/obj/
-**/node_modules/
-**/dist/
-**/.angular/
-**/test-results/
-**/playwright-report/
-**/TestResults/
-
-# Per-person practice notes
-practice/FINDINGS.md
-
 # Company content never lives in this repo. Only the placeholder is tracked.
 company/*
 !company/TODO.md

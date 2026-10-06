@@ -97,7 +97,7 @@ To send a document back for rework, leave it as DRAFT, add your notes under "Ope
 
 ## Scripting the pipeline (opencode run)
 
-The pipeline is designed for the interactive opencode window. If you script it with `opencode run "/spec 12345" ...`, two things differ (observed in the practice run):
+The pipeline is designed for the interactive opencode window. If you script it with `opencode run "/spec 12345" ...`, two things differ (observed in testing):
 
 - Slash commands may not be expanded. The model receives the literal text `/spec 12345` and has to find and read the command file itself.
 - The interactive question tool is not available, so clarifying questions come back as plain text.

@@ -1,4 +1,0 @@
-form { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem; }
-table { border-collapse: collapse; }
-th, td { padding: 0.25rem 0.75rem; text-align: left; }
-.error { color: #b00020; }

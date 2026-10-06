@@ -1,6 +1,6 @@
 # Core review tracker
 
-Every shared file in this base repo, what it does, and its review status. This tracks the **shared** files only. Your own setup progress lives in the checklists in `personal/TODO.md` and `company/TODO.md`.
+Every shared file in this base repo, what it does, and its review status. This tracks the **shared** files only. Your own setup is covered by `docs/onboarding-personal.md` and `docs/onboarding-company.md`.
 
 Maintainers: check a box when a file has been reviewed, and commit this file in the base repo. Forks should not edit it.
 
@@ -18,17 +18,17 @@ All files below are **built**. Checked boxes are **reviewed**.
 
 ## Part 1: Needs your input (do these first)
 
-- [ ] **`personal/TODO.md`** (Personal placeholder, Read)
-  What belongs in each person's `personal/` folder, ideas for house rules and commands, and a setup checklist. The base repo's `personal/` holds only this file.
-  Check: the guidance is clear enough for a teammate starting from nothing.
+- [ ] **`docs/onboarding-personal.md`** (Personal guide, Read)
+  How to fill in `personal/`: which files, starter rules, command ideas, install check. `personal/TODO.md` points here.
+  Check: clear enough for a teammate starting from nothing.
 
-- [ ] **`company/TODO.md`** (Company placeholder, Read)
-  What to create on the work PC (overlay, ADO config, PAT, repo map, repo guides), a repo map skeleton, and the work PC checklist. The folder itself stays empty and is gitignored.
+- [ ] **`docs/onboarding-company.md`** (Company guide, Read)
+  How to set up the work PC: ADO access, overlay rules, repo map skeleton, repo guide review. `company/TODO.md` points here; the folder itself stays empty and is gitignored.
   Check: the repo map sections are the ones you want.
 
 - [ ] **`core/scripts/ado/config.example.json`** (Core, Fill in at work)
   Placeholder ADO connection settings. At work you copy it to `%USERPROFILE%\.config\eng-agents\config.json` and fill in the real server, collection, and project.
-  Check: nothing to change here. The real copy is a work-PC task (see `company/TODO.md`).
+  Check: nothing to change here. The real copy is a work-PC task (see `docs/onboarding-company.md`).
 
 - [x] **`core/opencode.json`** (Core, Decide) *Reviewed 2026-10-05: switched to tiered permissions.*
   Global permission baseline merged into your work `opencode.json`. Read and inspect commands and build/test/lint are allowed. Anything that changes state asks. Destructive commands (push, hard reset, clean, recursive delete, database updates) are denied. Edits are allowed except `.git` internals and `.env` files. See "Permission tiers" in the README.
@@ -83,17 +83,11 @@ All files below are **built**. Checked boxes are **reviewed**.
 - [ ] **`core/templates/findings.md`**: spike answer, evidence, options, recommendation.
 - [ ] **`core/templates/repo-agents.md`**: the shape of every repo `AGENTS.md`: commands, Clean Architecture reference rules, patterns to follow, testing, EF Core, cross-repo references.
 
-### Practice run
-
-- [ ] **`practice/README.md`**: step-by-step dry run. Tier 1 needs only opencode, git, and PowerShell 7. Tier 2 adds .NET 10 and Node.
-- [ ] **`practice/New-PracticeWorkspace.ps1`**: creates `~/eng-practice` with three git repos, local bare remotes, the practice repo map, and an empty `.work`. Tested with PowerShell 7 on Linux.
-- [ ] **`practice/repos/`**: `shared-lib` and `orders-api` (.NET, **not compiled here**: no .NET SDK was available, so the first `dotnet test` on your machine is the real check) and `orders-ui` (Angular 19: unit tests, Playwright tests, and build all pass).
-- [ ] **`practice/work-items/`** and **`practice/answer-keys/`**: four work items and what good output looks like.
-
 ### Scripts and docs
 
 - [ ] **`install.ps1`**: layers Core, Personal, Company into your opencode config. Keeps your provider and model settings, backs up anything it changes, cleans up files it previously installed. Tested with PowerShell 7 on Linux; written to also run on Windows PowerShell 5.1.
 - [ ] **`core/scripts/ado/Get-WorkItem.ps1`**: fetches a work item over REST (PAT or Windows auth) and creates the `.work` folder, or creates it offline from a title. Tested against a mock server, not a real ADO Server.
+- [ ] **`docs/field-guide.md`**: short overview of layers, a day of use, and phases.
 - [ ] **`docs/setup-at-work.md`**: first-day steps and the verification checklist.
 - [ ] **`docs/pipeline.md`**: design rationale, gates, lanes, and recovery steps.
 - [ ] **`README.md`**: overview.

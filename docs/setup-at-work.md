@@ -1,6 +1,6 @@
 # Setup at work
 
-Step-by-step first-day setup on the work PC. Run everything in PowerShell. Track progress with the work PC checklist in `company\TODO.md`.
+Step-by-step first-day setup on the work PC. Run everything in PowerShell. For what to write in each file, see [onboarding-company.md](onboarding-company.md).
 
 Paths below are examples. Change them if you prefer other locations, but keep them consistent.
 
@@ -37,7 +37,7 @@ mkdir "$env:USERPROFILE\.config\eng-agents\overlay" -Force
 notepad "$env:USERPROFILE\.config\eng-agents\overlay\AGENTS.md"
 ```
 
-Write the company-wide rules. `company\TODO.md` lists what belongs there; `practice\overlay\AGENTS.md` is a short example.
+Write the company-wide rules. [onboarding-company.md](onboarding-company.md#2-write-company-wide-rules) lists what belongs there.
 
 ## 4. Set up ADO access
 
@@ -105,7 +105,7 @@ notepad C:\src\work\AGENTS.md
 ```
 
 - Clone every repo **directly** into `C:\src\work`, side by side. Shared repos are referenced by relative paths, so folder names must match what the other repos expect.
-- Write the repo map using the skeleton in `company\TODO.md` (`practice\workspace\AGENTS.md` is a filled-in example). This is the most important file you write.
+- Write the repo map using the skeleton in [onboarding-company.md](onboarding-company.md#4-build-the-workspace-and-repo-map). This is the most important file you write.
 
 ## 8. Onboard each repo
 
@@ -168,3 +168,13 @@ git pull
 ```
 
 Your overlay, config, workspace, and repo `AGENTS.md` files are never touched by an update.
+
+## Mac or Linux
+
+Never run `install.ps1` or `opencode` with `sudo` (install refuses to run as root). If opencode reports permission errors, check that its background service is not running as root:
+
+```bash
+ps -o user,command -A | grep -i '[o]pencode'   # serve --service must not show root
+sudo opencode service stop && opencode service start
+sudo chown -R $(whoami) ~/.config ~/.local ~/.cache
+```

@@ -42,6 +42,8 @@ Run exactly this command:
 ## Step 5: Choose repos
 
 - Read the repo map (the workspace root `AGENTS.md`).
+- Match words in the work item against the repo map's **Products** and **Glossary** tables. Pick the product first, then use that product's repo table and change order.
+- If no product matches, use the "Which repos for which kind of work" table. If that does not settle it, ask the engineer. Do not guess.
 - Decide which repos this work item needs. Shared repos go first.
 - Show the engineer a short list: repo folder and one-line reason for each. Ask: "Is this the right list?" Wait for the answer and apply any changes.
 

@@ -105,7 +105,7 @@ notepad C:\src\work\AGENTS.md
 ```
 
 - Clone every repo **directly** into `C:\src\work`, side by side. Shared repos are referenced by relative paths, so folder names must match what the other repos expect.
-- Write the repo map using the skeleton in [onboarding-company.md](onboarding-company.md#4-build-the-workspace-and-repo-map). This is the most important file you write.
+- Write the repo map from `company\repo-map.template.md` (steps in [onboarding-company.md](onboarding-company.md#4-build-the-workspace-and-repo-map)). This is the most important file you write.
 
 ## 8. Onboard each repo
 

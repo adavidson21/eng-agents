@@ -367,7 +367,7 @@ Full commands and the verification checklist are in [docs/setup-at-work.md](setu
 2. **Create the company overlay:** create `%USERPROFILE%\.config\eng-agents\overlay\` and write its `AGENTS.md` (see [docs/onboarding-company.md](onboarding-company.md)).
 3. **ADO:** create a PAT, set the `ADO_PAT` environment variable, copy `config.example.json` to `%USERPROFILE%\.config\eng-agents\config.json` and fill it in.
 4. **Install:** run `.\install.ps1 -DryRun`, then `.\install.ps1`. Use `-Target <path>` if your opencode config folder is not the default (see [Assumptions](#assumptions-to-verify-at-work)).
-5. **Workspace:** create `C:\src\work\`, clone all repos flat into it (shared repos once), and write `C:\src\work\AGENTS.md` (the repo map) using the skeleton in [docs/onboarding-company.md](onboarding-company.md).
+5. **Workspace:** create `C:\src\work\`, clone all repos flat into it (shared repos once), and write `C:\src\work\AGENTS.md` (the repo map) from `company\repo-map.template.md` (see [docs/onboarding-company.md](onboarding-company.md#4-build-the-workspace-and-repo-map)).
 6. **Onboard repos:** from `C:\src\work\`, run `/onboard-repo <repo-folder>` for each repo, shared repos first. It also adds `AGENTS.md` to the repo's `.git\info\exclude`. Review and correct each generated `AGENTS.md`.
 7. **Verify:** run the day-one checks in the setup doc.
 8. **Smoke test:** run `/start` on a small, low-risk bug and walk the bug lane end to end.

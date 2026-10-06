@@ -76,41 +76,19 @@ cd C:\tools\eng-agents
 
 ## 4. Build the workspace and repo map
 
-Clone every repo directly into `C:\src\work`, side by side. Clone shared repos once. Then write `C:\src\work\AGENTS.md`:
+Clone every repo directly into `C:\src\work`, side by side. Clone shared repos once. Then copy the repo map template and fill it in:
 
-```markdown
-# Workspace repo map
-
-## Repos
-| Folder | What it is | Stack | Shared? |
-|---|---|---|---|
-| shared-lib | (example) Libraries used by several products | .NET, TypeScript | Yes |
-
-## How the repos depend on each other
-All cross-repo references are relative paths, so every repo stays cloned directly in this folder.
-| Repo | Depends on | How | Example reference |
-|---|---|---|---|
-| orders-api | shared-lib | ProjectReference | (example) ..\..\shared-lib\src\Lib\Lib.csproj |
-
-Rule: change a shared repo first, then run the tests of every dependent repo the work item touches.
-
-## Which repos for which kind of work
-| If the work item is about... | Usually involves |
-|---|---|
-
-## Glossary
-| Term | Meaning | Where it shows up in code |
-|---|---|---|
-
-## Local environment notes
-- All tests run without a database. Never point anything at a shared or production environment.
+```powershell
+Copy-Item C:\tools\eng-agents\company\repo-map.template.md C:\src\work\AGENTS.md
+notepad C:\src\work\AGENTS.md
 ```
 
-Replace the example rows. Questions to answer:
+Replace every `TODO(you)` and `(example)` row. Questions to answer:
 
 - What does each repo do, in one line?
 - Which repos reference the shared repo, and what is one exact relative path for each?
-- Which repos usually change together for a typical work item?
+- Which products exist, and which repos does each one span?
+- Which repos usually change together for a typical work item, and in what order?
 - Which domain words show up in work items, and what are they called in code?
 - Is there anything an agent must never touch (generated code, shared environments)?
 

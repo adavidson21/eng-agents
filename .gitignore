@@ -1,6 +1,7 @@
 # Company content never lives in this repo. Only the placeholder is tracked.
 company/*
 !company/TODO.md
+!company/repo-map.template.md
 
 # macOS
 .DS_Store

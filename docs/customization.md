@@ -1,0 +1,139 @@
+# Customization guide
+
+How the Personal and Company layers work, which files you can add or change, and what each one is for. For step-by-step setup, use [Personal onboarding](onboarding-personal.md) and [Company onboarding](onboarding-company.md).
+
+## How layering works
+
+`install.ps1` stacks three layers into your opencode config. Later layers win.
+
+| Order | Layer | Source | Who edits it |
+|---|---|---|---|
+| 1 | Core | `core/` in eng-agents | Maintainers, through pull requests |
+| 2 | Personal | `personal/` in your fork | You |
+| 3 | Company | `%USERPROFILE%\.config\eng-agents\overlay\` on the work PC | You, on the work PC only |
+
+How each kind of file combines:
+
+| File | How layers combine |
+|---|---|
+| `AGENTS.md` | **Appended.** Each layer becomes its own section (Core, then Personal, then Company). When rules conflict, the later section wins. |
+| `agents/<name>.md`, `commands/<name>.md`, `templates/<name>.md`, `scripts/...` | **Replaced.** A same-named file in a later layer replaces the earlier one. A new name adds a new file. |
+| `opencode.json` | **Merged.** Permission entries are combined; a later layer's entry for the same key wins. |
+
+Other files at the top of a layer folder (like `TODO.md`) are never installed. Re-run `install.ps1` after changing anything in Personal or the overlay.
+
+### Which layer?
+
+Ask in order and stop at the first yes:
+
+1. Does it name or describe a company repo, server, product, team, customer, or work item? **Company.**
+2. Is it true at any company, but it is your preference? **Personal.**
+3. Would it help anyone using the pipeline? **Core** (open a pull request to eng-agents).
+
+## Personal layer
+
+Lives in `personal/` in your fork. Committed to your fork, never to eng-agents. No company names.
+
+| File | Use | Change it when |
+|---|---|---|
+| `personal/AGENTS.md` | Your house rules for every session: tone, code taste, workflow, writing style | You want the agents to behave differently for you |
+| `personal/commands/<name>.md` | Extra slash commands, or a replacement for a Core command | You repeat a task that is about your role (for example `/standup`) |
+| `personal/agents/<name>.md` | A replacement for a Core agent | You need a different model or temperature for one agent |
+| `personal/templates/<name>.md` | A replacement for a Core template | You want a different structure for a spec, plan, or PR |
+| `personal/opencode.json` | Permission entries merged over Core | Prompts are too frequent, or you want something to ask that Core allows |
+
+Common customizations:
+
+| Goal | Do this |
+|---|---|
+| Shorter or more detailed answers | Rule in `personal/AGENTS.md` |
+| Commit by hand instead of after each task | Rule: "Never commit. Stage the files and tell me the commit message." |
+| Bigger or smaller tasks (Core: 3 files) | Rule: "A task changes at most N files." |
+| Words or punctuation to avoid | Rule in `personal/AGENTS.md` |
+| A different model for the implementer | Copy `core/agents/implementer.md` to `personal/agents/` and add `model:` |
+| A weekly summary command | New file in `personal/commands/` |
+
+## Company layer
+
+Lives on the work PC only. Never committed to eng-agents or your fork.
+
+| File | Use | Loaded | Reinstall? |
+|---|---|---|---|
+| `overlay\AGENTS.md` | Rules for every repo at work: data that must never be logged, required patterns, where standards live, conventions that differ from Core | Every session, last section | Yes |
+| `overlay\templates\pr.md` | Team PR sections, if your team expects any | By `/pr` | Yes |
+| `overlay\commands\`, `overlay\agents\` | Company-specific commands or agent changes | Like Core | Yes |
+| `overlay\opencode.json` | Permissions for company tools | Merged over Core and Personal | Yes |
+| `config.json` (next to `overlay\`) | ADO server, collection, api-version, auth | By the ADO script in `/start` | No |
+| `ADO_PAT` environment variable | ADO token | By the ADO script | No |
+| `C:\src\work\AGENTS.md` | Repo map: what each repo is, how they depend on each other, which go together, glossary | Every session started from `C:\src\work` | No, new session |
+| `C:\src\work\<repo>\AGENTS.md` | Per-repo guide: build and test commands, architecture rules, patterns to follow, test helpers | Read by each command before touching that repo | No, new session |
+
+Common customizations:
+
+| Goal | Do this |
+|---|---|
+| Plans pick the wrong repos or order | Fix the repo map |
+| Agent uses the wrong build or test command | Fix that repo's `AGENTS.md` |
+| Agent breaks an architecture rule | Add the rule to that repo's `AGENTS.md` |
+| A rule applies to every repo | Add it to `overlay\AGENTS.md` |
+| Different base branch or PR target than `main` | Rule under "Team conventions" in `overlay\AGENTS.md` |
+| Team-specific PR format | `overlay\templates\pr.md` |
+
+## Core files you can override
+
+Any of these can be replaced from Personal or Company by a file with the same name in the same subfolder. Prefer a rule in `AGENTS.md` first: an override replaces the whole file, so you stop getting Core updates for it.
+
+### Agents (`agents/`)
+
+| File | Use |
+|---|---|
+| `planner.md` | Writes specs, plans, and tasks. Reads code, writes only in `.work/`. |
+| `implementer.md` | The only agent that edits code. One task at a time, TDD for .NET, commits with your approval. |
+| `reviewer.md` | Two-pass review: spec compliance, then code quality. Runs tests, cannot edit code. |
+| `investigator.md` | Bugs, spikes, and repo onboarding. Reads and runs code, cannot change it. |
+| `writer.md` | Docs and PR text. Edits markdown only. |
+
+Each agent file lists its own permissions. When you override one, keep the destructive-command denials at the bottom.
+
+### Commands (`commands/`)
+
+| File | Command | Use |
+|---|---|---|
+| `start.md` | `/start <id> <feature\|bug>` | Pull the work item, create `.work/<id>-<name>/`, create branches |
+| `spec.md` | `/spec <id>` | Clarifying questions, then `spec.md` |
+| `plan.md` | `/plan <id>` | `plan.md` from an approved spec |
+| `tasks.md` | `/tasks <id>` | Small tasks with verify commands |
+| `do-task.md` | `/do-task <id> <n>` | Do one task |
+| `review.md` | `/review <id>` | Review the diff |
+| `pr.md` | `/pr <id>` | PR title and description |
+| `bug.md` | `/bug <id>` | Root cause and up to 3 fix tasks |
+| `spike.md` | `/spike <topic>` | Read-only investigation |
+| `docs.md` | `/docs <target>` | Write or update docs |
+| `check-docs.md` | `/check-docs <path>` | Fact-check a doc against the code |
+| `onboard-repo.md` | `/onboard-repo <folder>` | Draft a repo `AGENTS.md` |
+| `status.md` | `/status [id]` | Where an item is and what to run next |
+
+### Templates (`templates/`)
+
+| File | Use |
+|---|---|
+| `workitem.md` | Work item text |
+| `repos.md` | Lane, repos in order, branches |
+| `spec.md` | Goal, acceptance criteria, non-goals, open questions |
+| `plan.md` | Approach, changes per repo, test plan, risks |
+| `tasks.md` | Task format and coverage check |
+| `progress.md` | Log entry format |
+| `review.md` | Review findings |
+| `pr.md` | PR title and description per repo |
+| `bug.md` | Bug root cause and fix tasks |
+| `findings.md` | Spike answer and recommendation |
+| `repo-agents.md` | Shape of every repo `AGENTS.md` |
+
+When you override a template, keep the `Status: DRAFT` line in `spec.md`, `plan.md`, and `bug.md` (the gates depend on it) and keep the `## [ ] Task N:` headings in `tasks.md` (`/do-task` finds tasks by them).
+
+## Never
+
+- Company names, URLs, code, or work item content in `core/` or `personal/`
+- A pull request to eng-agents that includes your `personal/` folder
+- The PAT in any file
+- An agent that can push, merge, or deploy

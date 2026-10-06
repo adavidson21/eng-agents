@@ -4,6 +4,7 @@ A short overview of how eng-agents works. To set it up, follow the onboarding gu
 
 - [Personal onboarding](onboarding-personal.md): create your fork and fill in `personal/`
 - [Company onboarding](onboarding-company.md): set up your work PC
+- [Customization guide](customization.md): what every Personal and Company file is for
 
 You run slash commands, approve specs and plans by editing one line, and always push yourself.
 

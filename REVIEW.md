@@ -1,94 +1,76 @@
-# Core review tracker
+# Maintainer review
 
-Every shared file in this base repo, what it does, and its review status. This tracks the **shared** files only. Your own setup is covered by `docs/onboarding-personal.md` and `docs/onboarding-company.md`.
+For the owner and maintainers of eng-agents: what has been reviewed, what is left before rollout, and how to change Core safely. Forks should not edit this file. Engineers customizing their own setup want the [customization guide](docs/customization.md) instead.
 
-Maintainers: check a box when a file has been reviewed, and commit this file in the base repo. Forks should not edit it.
+## Status
 
-**Effort labels**
+| | |
+|---|---|
+| Core version | v1 (tag `core-v1`) |
+| Dry run | Done on made-up repos. Two rounds of fixes applied. Practice files removed. |
+| Real work | Not yet run at work |
 
-- **Fill in:** contains SAMPLE or `TODO(you)` content. You must edit it before it is useful.
-- **Decide:** works as-is, but contains a default you should consciously accept or change.
-- **Read:** generic prompt or template. Read it once to make sure it matches how you want the pipeline to behave.
+## Part 1: Decisions made
 
-**Layers:** Core = generic, team-shareable. Personal = each person's preferences (`personal/TODO.md` here, real files in each fork). Company = work PC only (`company/TODO.md` here, real files on the work PC).
+- [x] **`core/opencode.json`**: tiered permissions. Read and inspect, build, test, and lint are allowed; anything that changes state asks; destructive commands are denied. *Reviewed 2026-10-05. Revisit after a week of real use.*
+- [x] **`core/AGENTS.md`**: session rules, conventions (branch names, commit style, 3-file task cap), PowerShell and testing rules. *Reviewed 2026-10-05.*
+- [x] **`core/agents/implementer.md`**: only agent that edits code. `npm install`, `dotnet format`, `git add` allowed; `git commit` asks. *Reviewed 2026-10-05.*
+- [x] **Layer folders**: `personal/` and `company/` hold only a `TODO.md` pointer; `company/` is gitignored. *Decided 2026-10-06.*
 
-All files below are **built**. Checked boxes are **reviewed**.
+## Part 2: Before rollout
 
----
+- [ ] Read the setup docs as a new teammate would: [field guide](docs/field-guide.md), [personal onboarding](docs/onboarding-personal.md), [company onboarding](docs/onboarding-company.md), [customization guide](docs/customization.md)
+- [ ] Set up your own work PC and confirm every item in [Assumptions to verify at work](docs/reference.md#assumptions-to-verify-at-work)
+- [ ] Run real work items through every lane: feature, bug, spike, docs
+- [ ] Fold generic fixes into Core and tag `core-v2`
+- [ ] Decide where the base repo lives for the team (GitHub or a company ADO mirror)
+- [ ] Update the status above
 
-## Part 1: Needs your input (do these first)
+## Part 3: Read once
 
-- [ ] **`docs/onboarding-personal.md`** (Personal guide, Read)
-  How to fill in `personal/`: which files, starter rules, command ideas, install check. `personal/TODO.md` points here.
-  Check: clear enough for a teammate starting from nothing.
+Each file was exercised in the dry run. Check it off once you have read it and agree with how it behaves.
 
-- [ ] **`docs/onboarding-company.md`** (Company guide, Read)
-  How to set up the work PC: ADO access, overlay rules, repo map skeleton, repo guide review. `company/TODO.md` points here; the folder itself stays empty and is gitignored.
-  Check: the repo map sections are the ones you want.
+**Agents**
 
-- [ ] **`core/scripts/ado/config.example.json`** (Core, Fill in at work)
-  Placeholder ADO connection settings. At work you copy it to `%USERPROFILE%\.config\eng-agents\config.json` and fill in the real server, collection, and project.
-  Check: nothing to change here. The real copy is a work-PC task (see `docs/onboarding-company.md`).
+- [ ] `core/agents/planner.md`: specs, plans, tasks. Writes only in `.work/`.
+- [ ] `core/agents/reviewer.md`: two-pass review. Runs tests, cannot edit code.
+- [ ] `core/agents/investigator.md`: bugs, spikes, onboarding. Cannot change code.
+- [ ] `core/agents/writer.md`: docs and PR text. Markdown only.
 
-- [x] **`core/opencode.json`** (Core, Decide) *Reviewed 2026-10-05: switched to tiered permissions.*
-  Global permission baseline merged into your work `opencode.json`. Read and inspect commands and build/test/lint are allowed. Anything that changes state asks. Destructive commands (push, hard reset, clean, recursive delete, database updates) are denied. Edits are allowed except `.git` internals and `.env` files. See "Permission tiers" in docs/reference.md.
-  Check: nothing further. Revisit after a week of real use.
+**Commands**
 
-- [x] **`core/AGENTS.md`** (Core, Decide) *Reviewed 2026-10-05: approved as-is.*
-  The rules every session follows: one step at a time, files are memory, ask when unsure, prove it, stay in scope, stop after 3 failures. Also conventions (branch names, commit style, 3-file task cap), PowerShell rules, and testing rules.
-  Check: the Conventions table and Testing rules table match how your team works.
+- [ ] `core/commands/start.md`: work item, `.work` folder, branches. Asks before switching a repo that is on another item's branch.
+- [ ] `core/commands/spec.md`: up to 6 questions, one at a time, then `spec.md` as DRAFT.
+- [ ] `core/commands/plan.md`: requires approved spec; files per repo, pattern to follow, test plan.
+- [ ] `core/commands/tasks.md`: requires approved plan; tasks of at most 3 files with verify commands.
+- [ ] `core/commands/do-task.md`: one task, TDD for .NET, record output, commit.
+- [ ] `core/commands/review.md`: spec pass, quality pass, accepted findings become tasks.
+- [ ] `core/commands/pr.md`: short title and description per repo.
+- [ ] `core/commands/bug.md`: root cause with confidence, up to 3 tasks, task 1 is a failing test.
+- [ ] `core/commands/spike.md`: read-only investigation, options and a recommendation.
+- [ ] `core/commands/docs.md` and `check-docs.md`: write docs, then fact-check every claim.
+- [ ] `core/commands/onboard-repo.md`: draft a repo `AGENTS.md` and git-exclude it.
+- [ ] `core/commands/status.md`: where an item is and the next command.
 
-- [x] **`core/agents/implementer.md`** (Core, Decide) *Reviewed 2026-10-05: npm install allowed.*
-  The only agent that edits code. Read, build, test, lint, `npm install`, `dotnet format`, and `git add` run without asking. `git commit` asks you each time. Cannot edit `.git` or `.env` files.
-  Check: nothing further.
+**Templates**
 
----
+- [ ] `core/templates/` (11 files): `workitem`, `repos`, `spec`, `plan`, `tasks`, `progress`, `review`, `pr`, `bug`, `findings`, `repo-agents`
 
-## Part 2: Read once (Core prompts and templates)
+**Scripts and docs**
 
-### Agents
+- [ ] `install.ps1`: layers Core, Personal, Company. Tested with PowerShell 7 on Linux and Mac, not yet on Windows PowerShell 5.1.
+- [ ] `core/scripts/ado/Get-WorkItem.ps1` and `config.example.json`: tested against a mock server, not a real ADO Server.
+- [ ] `README.md`, `docs/reference.md`, `docs/pipeline.md`, `docs/setup-at-work.md`
 
-- [ ] **`core/agents/planner.md`**: writes spec, plan, tasks. Reads code, writes only in `.work/`, can create branches and run the ADO script.
-- [ ] **`core/agents/reviewer.md`**: two-pass review (spec, then quality). Runs tests and lint, cannot edit code or commit.
-- [ ] **`core/agents/investigator.md`**: bugs, spikes, repo onboarding. Reads and runs code, cannot change it. Can write a repo `AGENTS.md` with your approval.
-- [ ] **`core/agents/writer.md`**: docs and PR text. Edits markdown and `docs/` only.
+## Changing Core
 
-### Commands
+Before you merge a change to `core/`:
 
-- [ ] **`core/commands/start.md`**: `/start <id> <feature|bug>`. Fetches the work item (or offline mode), creates the `.work` folder, confirms repos with you, creates branches from `origin/main`.
-- [ ] **`core/commands/spec.md`**: `/spec <id>`. Up to 6 clarifying questions, one at a time, then `spec.md` as DRAFT.
-- [ ] **`core/commands/plan.md`**: `/plan <id>`. Requires approved spec. Writes `plan.md` with files per repo, a pattern-to-follow file, and a test plan.
-- [ ] **`core/commands/tasks.md`**: `/tasks <id>`. Requires approved plan. Tasks of at most 3 files with exact verify commands and a coverage table.
-- [ ] **`core/commands/do-task.md`**: `/do-task <id> <n>`. One task, fresh session, strict TDD for .NET, lint, record output, commit.
-- [ ] **`core/commands/review.md`**: `/review <id>`. Runs tests, reads the diff, pass 1 spec and pass 2 quality checklist, turns accepted findings into tasks.
-- [ ] **`core/commands/pr.md`**: `/pr <id>`. Short title and description per repo. You push.
-- [ ] **`core/commands/bug.md`**: `/bug <id>`. Traces the code path, root cause with confidence, `bug.md` plus up to 3 tasks (task 1 is a failing test).
-- [ ] **`core/commands/spike.md`**: `/spike <id or topic>`. Read-only investigation, `findings.md` with options and a recommendation.
-- [ ] **`core/commands/docs.md`**: `/docs <what>`. Clarifies audience, outlines, writes, saves a sources list.
-- [ ] **`core/commands/check-docs.md`**: `/check-docs <path>`. Reviewer fact-checks every claim in a doc against the code.
-- [ ] **`core/commands/onboard-repo.md`**: `/onboard-repo <folder>`. Drafts a repo `AGENTS.md` from the code and git-excludes it.
-- [ ] **`core/commands/status.md`**: `/status [id]`. Where an item is and the exact next command.
+- [ ] It would help **anyone**. No company names, no personal preferences.
+- [ ] Permission changes are made in `core/opencode.json` **and** every agent file that repeats the same tier lists.
+- [ ] `Status: DRAFT` lines in the `spec`, `plan`, and `bug` templates and `## [ ] Task N:` headings in `tasks` are unchanged (commands depend on them).
+- [ ] Docs that describe the behavior are updated (`docs/reference.md`, `docs/customization.md`, the guides).
+- [ ] `pwsh ./install.ps1 -DryRun` runs cleanly.
+- [ ] For a notable release, tag it (`core-v2`, ...) and tell teammates to run `git fetch upstream` and `git merge upstream/main` in their forks.
 
-### Templates
-
-- [ ] **`core/templates/workitem.md`**: work item text (fetched or pasted).
-- [ ] **`core/templates/repos.md`**: lane, repos in order, branches.
-- [ ] **`core/templates/spec.md`**: goal, current behavior, Given/When/Then criteria, non-goals, decisions, open questions. Has the Status gate.
-- [ ] **`core/templates/plan.md`**: approach, changes per repo with pattern-to-follow, test plan, risks. Has the Status gate.
-- [ ] **`core/templates/tasks.md`**: task format and coverage table.
-- [ ] **`core/templates/progress.md`**: log entry format.
-- [ ] **`core/templates/review.md`**: test results, pass 1 and 2 tables, proposed fix tasks.
-- [ ] **`core/templates/pr.md`**: per-repo title and short description.
-- [ ] **`core/templates/bug.md`**: symptom, code path, root cause and confidence, fix approach. Has the Status gate.
-- [ ] **`core/templates/findings.md`**: spike answer, evidence, options, recommendation.
-- [ ] **`core/templates/repo-agents.md`**: the shape of every repo `AGENTS.md`: commands, Clean Architecture reference rules, patterns to follow, testing, EF Core, cross-repo references.
-
-### Scripts and docs
-
-- [ ] **`install.ps1`**: layers Core, Personal, Company into your opencode config. Keeps your provider and model settings, backs up anything it changes, cleans up files it previously installed. Tested with PowerShell 7 on Linux; written to also run on Windows PowerShell 5.1.
-- [ ] **`core/scripts/ado/Get-WorkItem.ps1`**: fetches a work item over REST (PAT or Windows auth) and creates the `.work` folder, or creates it offline from a title. Tested against a mock server, not a real ADO Server.
-- [ ] **`docs/field-guide.md`**: short overview of layers, a day of use, and phases.
-- [ ] **`docs/setup-at-work.md`**: first-day steps and the verification checklist.
-- [ ] **`docs/pipeline.md`**: design rationale, gates, lanes, and recovery steps.
-- [ ] **`README.md`**: front page: how it works, install, use.
-- [ ] **`docs/reference.md`**: full detail: layers, agents, commands, permissions, layout, install script.
+When reviewing a teammate's pull request, reject anything that includes a `personal/` folder or company content.

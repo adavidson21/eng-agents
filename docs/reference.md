@@ -17,7 +17,7 @@ The full detail behind eng-agents: layers, agents, commands, permissions, file l
 - [Workspace layout at work](#workspace-layout-at-work)
 - [Repo layout](#repo-layout)
 - [Setup](#setup)
-- [Customization guide by layer](#customization-guide-by-layer)
+- [Editing Core and permissions](#editing-core-and-permissions)
 - [Rolling out to the team](#rolling-out-to-the-team)
 - [Assumptions to verify at work](#assumptions-to-verify-at-work)
 - [Example: one feature, start to finish](#example-one-feature-start-to-finish)
@@ -257,7 +257,7 @@ A shared monorepo (one that several other repos depend on) gets special handling
 ```
 eng-agents/
   README.md
-  REVIEW.md                         review tracker: what each file does, what you must check
+  REVIEW.md                         maintainer review: status, rollout checklist, rules for changing Core
   install.ps1                       layers core + personal + company into opencode config
   core/                             LAYER 1: generic, team-shareable
     AGENTS.md                       universal rules for every session
@@ -283,6 +283,7 @@ eng-agents/
     reference.md                    this file
     onboarding-personal.md          how to fill in personal/
     onboarding-company.md           how to set up the Company layer on the work PC
+    customization.md                what each Personal and Company file is for, Core overrides
     pipeline.md                     design rationale, gates, lanes, recovery
     setup-at-work.md                step-by-step first-day setup and verification
 ```
@@ -373,7 +374,7 @@ Full commands and the verification checklist are in [docs/setup-at-work.md](setu
 
 ---
 
-## Customization guide by layer
+## Editing Core and permissions
 
 ### Layer 1: Core (this repo, `core\`)
 
@@ -401,42 +402,9 @@ File reads through opencode's own read, search, and list tools are always allowe
 
 The tier lists are repeated in each agent file so they apply no matter how opencode merges agent and global rules. When you change one, change it everywhere.
 
-### Layer 2: Personal (your fork, `personal\`)
+### Layers 2 and 3: Personal and Company
 
-How **you** like to work. Still no company content. Each person writes their own, following [docs/onboarding-personal.md](onboarding-personal.md).
-
-| What | File | Why it is personal |
-|---|---|---|
-| House rules: naming, patterns you prefer or avoid, how terse output should be, writing style rules (for example, no em dashes) | `personal\AGENTS.md` | Your taste, applied to every session. |
-| Whether the implementer commits after each passing task (core default: yes, with an approval prompt) | A rule in `personal\AGENTS.md` | Some people prefer committing by hand. |
-| Task size cap (core default: 3 files) | A rule in `personal\AGENTS.md` | Depends on how much you trust the model after real use. |
-| Looser or tighter shell permissions | `personal\opencode.json` | Your risk tolerance. |
-| Per-agent model override | `model:` in a personal agent override | Only if your setup offers more than one model. |
-| Role-specific extras (for example a `/standup` command) | `personal\commands\` | Useful to you, not necessarily to everyone. |
-
-### Layer 3: Company (work PC only)
-
-Anything that names or describes your employer. It never goes in this repo.
-
-**Must do before first use**
-
-| # | What | Where | Why it is Layer 3 |
-|---|---|---|---|
-| 1 | Create an ADO PAT with **Work Items (Read)** and **Code (Read)** | ADO Server, your profile | Credentials. Only add Code (Read & Write) if you later want PRs created automatically. |
-| 2 | Store the PAT as a user-level environment variable `ADO_PAT` | Your machine | Keeps the token out of every file. |
-| 3 | Fill in `config.json`: server URL, collection, project, api-version | `%USERPROFILE%\.config\eng-agents\config.json` | Company URLs and names. api-version is a setting because your ADO Server version is unconfirmed. |
-| 4 | Write the workspace repo map: each repo's folder name, purpose, which repos reference the shared repo (with an example relative path), which repos usually change together, and domain glossary terms | `C:\src\work\AGENTS.md` | Only you know how the repos relate. The planner uses this to decide which repos a feature touches and in what order. A wrong map produces wrong plans. |
-| 5 | Review every `/onboard-repo` output | `C:\src\work\<repo>\AGENTS.md` | Every future session trusts it blindly. A wrong build command or misread architecture layer gets repeated in every task. |
-| 6 | Confirm `AGENTS.md` is in `.git\info\exclude` in each repo (`/onboard-repo` adds it) | Each repo | Keeps local agent files out of company commits. |
-
-**Should do early**
-
-| # | What | Where | Why it matters |
-|---|---|---|---|
-| 7 | Point the UI repo guide at existing Playwright mock helpers (fixtures, mock data, `page.route` utilities) | `C:\src\work\<ui-repo>\AGENTS.md` | Without this, the model invents a new mocking style per test. |
-| 8 | Point each repo guide at its architecture doc, if one exists, and list Clean Architecture layer rules (what may reference what) | Each repo `AGENTS.md` | Layer violations are the most likely mistake, and the reviewer only catches what is written down. |
-| 9 | Team-specific PR sections, if your team expects any | `overlay\templates\pr.md` | Team conventions are company detail. Keep it short. |
-| 10 | Company-wide rules that apply across all repos (for example, a required logging pattern) | `overlay\AGENTS.md` | Applies to every session at work without touching core. |
+What each Personal and Company file is for, how they combine with Core, and common customizations are in the [customization guide](customization.md).
 
 ### Never do
 
@@ -522,5 +490,5 @@ opencode
 
 ## Review tracker
 
-- [REVIEW.md](../REVIEW.md) tracks review status of the **shared** files in the base repo. Maintainers update it; forks leave it alone.
+- [REVIEW.md](../REVIEW.md) is the maintainer review: what has been reviewed, what is left before rollout, and how to change Core. Forks leave it alone.
 - The onboarding guides ([personal](onboarding-personal.md), [company](onboarding-company.md)) walk through **your own** setup.

@@ -44,7 +44,8 @@ Start a new session (`/new`) before every `/do-task`.
 | [Field guide](docs/field-guide.md) | A short overview: layers, a day of use, getting set up |
 | [Personal onboarding](docs/onboarding-personal.md) | Creating your fork and filling in `personal/` |
 | [Company onboarding](docs/onboarding-company.md) | Setting up the work PC |
+| [Customization guide](docs/customization.md) | What each Personal and Company file is for, and which Core files you can override |
 | [Setup at work](docs/setup-at-work.md) | Exact first-day commands and verification checks |
 | [Reference](docs/reference.md) | Everything else: agents, permissions, layers, file layout, what `install.ps1` does |
 | [Pipeline](docs/pipeline.md) | Design rationale, gates, and recovering from problems |
-| [Review tracker](REVIEW.md) | Review status of the shared files (maintainers) |
+| [Maintainer review](REVIEW.md) | Review status and rules for changing Core (maintainers) |

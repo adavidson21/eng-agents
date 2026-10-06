@@ -16,6 +16,7 @@ Review these when you set up, and again whenever the agents get something wrong.
 | 4 | `C:\src\work\AGENTS.md` (repo map) | Company | Yes | No `TODO(you)` or `(example)` rows left. Products, glossary, dependencies, and change order are correct. |
 | 5 | `C:\src\work\<repo>\AGENTS.md` (one per repo) | Company | Yes | Build and test commands work. Architecture rules match reality. Pattern files are good examples. No `(inferred, verify)` or `TODO(you)` left. Listed in `.git\info\exclude`. |
 | 6 | `overlay\templates\pr.md` | Company | Only if your team has a PR format | Keeps nothing required; any format works. |
+| 7 | Product docs (`product-docs\` or `_docs\`) | Company | Recommended | One folder per product, in markdown, linked from each product block in the repo map ([layout](onboarding-company.md#product-docs)). |
 
 ### Core defaults to know
 

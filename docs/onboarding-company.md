@@ -125,6 +125,30 @@ Replace every `TODO(you)` and `(example)` row. Questions to answer:
 
 A wrong map produces wrong plans. Keep it short and accurate.
 
+### Product docs
+
+Agents read anything inside `C:\src\work` without a prompt, so keep product docs there, in markdown, and point to them from the repo map. Split docs by what they describe:
+
+- **Product docs** (user guides, overviews, release notes) span several repos, so keep them in one docs repo with a folder per product. If your team has an ADO Wiki, clone it and use that.
+- **Repo docs** (architecture, build, internals) go in that repo's `docs/` folder.
+- **Shared repos** document only themselves: what they provide and which products use them. Never a product's user guide.
+
+```
+C:\src\work\
+  AGENTS.md              repo map: each product block links to its docs folder
+  product-docs\          docs repo or ADO Wiki clone
+    AGENTS.md            short guide for agents (run /onboard-repo product-docs)
+    <product-a>\
+      overview.md        what it does, which repos it spans
+      user-guide.md
+      release-notes.md
+    <product-b>\
+  <shared-repo>\docs\    what it provides, which products use it
+  <product-repo>\docs\   architecture and internals for that repo
+```
+
+If docs cannot be checked in anywhere yet, use a local `C:\src\work\_docs\` folder with the same per-product layout (no `AGENTS.md` needed, since it is not a repo). Moving it to a docs repo later is a straight copy.
+
 ## 8. Onboard each repo
 
 ```

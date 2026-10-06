@@ -17,6 +17,7 @@ One row per repo folder in this workspace.
 | Folder | What it is (one line) | Stack | Shared? |
 |---|---|---|---|
 | shared-lib | (example) Domain models and validation used by several products | .NET, TypeScript | Yes |
+| product-docs | (example) Product docs: user guides, overviews, release notes. One folder per product. | Markdown | No |
 | TODO(you) | | | |
 
 ## Products
@@ -36,6 +37,7 @@ Also called: TODO(you) (other names people use in work items, for example an old
 - Usually change together: TODO(you) (example: shared-lib + orders-api)
 - Change order: TODO(you) (example: shared-lib, then orders-api, then orders-ui)
 - Entry points: TODO(you) (example: `orders-api\src\Api\Controllers\EnrollmentController.cs`)
+- Product docs: TODO(you) (example: `product-docs\enrollment\`. Read these for user-facing behavior.)
 
 <!-- Copy the block above for each product. -->
 

@@ -1,52 +1,41 @@
 # eng-agents
 
-opencode agents that take an Azure DevOps work item to a ready-to-open pull request, in small steps you approve along the way. Built for slower, less forgiving models.
+opencode agents that take an Azure DevOps work item to a ready-to-open pull request in small steps you approve. Built for slower models that need explicit, step-by-step procedures.
 
-## How it works
+## Daily use
 
-```
-/start → /spec → /plan → /tasks → /do-task (repeat) → /review → /pr
-```
+Open opencode from your workspace root (for example `C:\src\work`).
 
-- **Five narrow agents** (planner, implementer, reviewer, investigator, writer), each with only the permissions it needs.
-- **You approve** the spec and the plan by changing one line to `Status: APPROVED`.
-- **Tiny tasks**, each with a command that proves it is done. Strict TDD for .NET.
-- **Files are the memory.** Everything is saved in `.work/`, so any new session picks up where the last one stopped.
-- **You push.** No agent can push, merge, or deploy.
-
-## Install
-
-| Step | Guide |
+| Work | Run |
 |---|---|
-| 1. Fork this repo and add your preferences | [Personal onboarding](docs/onboarding-personal.md) |
-| 2. Set up your work PC: ADO, company rules, repo map | [Company onboarding](docs/onboarding-company.md) |
-| 3. Install | `.\install.ps1 -DryRun`, then `.\install.ps1` |
-| 4. Smoke test one small bug | [Company onboarding, step 6](docs/onboarding-company.md#6-verify-and-smoke-test) |
-
-## Use
-
-Open opencode in your workspace folder and run:
-
-| Work | Commands |
-|---|---|
-| Feature | `/start <id> feature` → `/spec` → `/plan` → `/tasks` → `/do-task <id> <n>` → `/review` → `/pr` |
-| Bug | `/start <id> bug` → `/bug` → `/do-task` → `/review` → `/pr` |
-| Question | `/spike <id or topic>` (no code changes) |
-| Docs | `/docs <target>`, then `/check-docs <path>` |
+| Feature | `/start <id> feature` → `/spec <id>` → approve → `/plan <id>` → approve → `/tasks <id>` → `/do-task <id> <n>` (repeat) → `/review <id>` → `/pr <id>` |
+| Bug | `/start <id> bug` → `/bug <id>` → approve → `/do-task <id> <n>` (repeat) → `/review <id>` → `/pr <id>` |
+| Question, no code changes | `/spike <id or topic>` |
+| Docs | `/docs <target>`, new session, `/check-docs <doc path>` |
 | Where was I? | `/status [id]` |
-| Switch to something else | `/pause <id> [reason]`, later `/resume <id>` |
+| Switch to something urgent | `/pause <id> [reason]`, later `/resume <id>` |
+| New repo in the workspace | `/onboard-repo <folder>` |
 
-Start a new session (`/new`) before every `/do-task`.
+- **Approve** `spec.md`, `plan.md`, or `bug.md` by changing `Status: DRAFT` to `Status: APPROVED`. Edit the file first if anything is wrong.
+- **New session** (`/new`) before every `/do-task`.
+- **Review findings** you accept become new tasks. Run `/do-task` for each, then `/review` again.
+- **You push** and open the PR. No agent can push, merge, or deploy.
+- Every command ends with the next command to run. If lost, run `/status <id>`.
+
+Something went wrong? See [Recovering from problems](docs/pipeline.md#recovering-from-problems).
+
+## Setup
+
+1. [Personal onboarding](docs/onboarding-personal.md): create your fork and fill in `personal/`.
+2. [Company onboarding](docs/onboarding-company.md): set up the work PC, install, and smoke test.
 
 ## Docs
 
-| Doc | For |
+| Doc | Read it for |
 |---|---|
-| [Field guide](docs/field-guide.md) | A short overview: layers, a day of use, getting set up |
-| [Personal onboarding](docs/onboarding-personal.md) | Creating your fork and filling in `personal/` |
-| [Company onboarding](docs/onboarding-company.md) | Setting up the work PC |
-| [Customization guide](docs/customization.md) | What each Personal and Company file is for, and which Core files you can override |
-| [Setup at work](docs/setup-at-work.md) | Exact first-day commands and verification checks |
-| [Reference](docs/reference.md) | Everything else: agents, permissions, layers, file layout, what `install.ps1` does |
-| [Pipeline](docs/pipeline.md) | Design rationale, gates, and recovering from problems |
-| [Maintainer review](REVIEW.md) | Review status and rules for changing Core (maintainers) |
+| [Personal onboarding](docs/onboarding-personal.md) | Your fork and your `personal/` rules |
+| [Company onboarding](docs/onboarding-company.md) | Work PC setup, day-one checks, updating |
+| [Customization](docs/customization.md) | How layers combine, which files you can add or override, templates |
+| [Pipeline](docs/pipeline.md) | How each phase works, gates, lanes, pausing, recovery, tuning |
+| [Reference](docs/reference.md) | Agents and permissions, commands, files, conventions, what `install.ps1` does |
+| [Contributing](CONTRIBUTING.md) | Changing Core (maintainers) |

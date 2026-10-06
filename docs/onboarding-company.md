@@ -1,22 +1,40 @@
 # Company onboarding
 
-Set up the Company layer on the work PC. Everything here is created on the work PC and **never committed** to eng-agents or your fork. Do the steps in order. Full commands and the day-one checks are in [setup-at-work.md](setup-at-work.md).
+Set up the Company layer on the work PC, install, and verify. Everything you create here stays on the work PC and is **never committed** to eng-agents or your fork. Run commands in a normal PowerShell window (not "Run as administrator"). Paths are examples; change them if you like, but keep them consistent.
 
-What each file is for and when it is loaded: [customization guide](customization.md#company-layer).
-
-First, finish [Personal onboarding](onboarding-personal.md), then clone your fork (with `personal/`) to `C:\tools\eng-agents` on the work PC.
-
-## Files
+Finish [Personal onboarding](onboarding-personal.md) first.
 
 | File | What it does |
 |---|---|
-| `ADO_PAT` (environment variable) | Lets `/start` pull work items |
+| `ADO_PAT` (user environment variable) | Lets `/start` fetch work items |
 | `%USERPROFILE%\.config\eng-agents\config.json` | Which ADO server to call |
 | `%USERPROFILE%\.config\eng-agents\overlay\AGENTS.md` | Rules for every repo at work |
 | `C:\src\work\AGENTS.md` | Repo map: what each repo is and how they connect. **Most important file.** |
 | `C:\src\work\<repo>\AGENTS.md` | Build, test, and architecture guide per repo |
 
-## 1. Connect to ADO
+When each file is loaded and what else you can add: [customization guide](customization.md#company-layer).
+
+## 1. Clone your fork
+
+Clone **your fork** (with `personal/`), not the base repo, outside the workspace:
+
+```powershell
+mkdir C:\tools -Force
+git clone <your fork url> C:\tools\eng-agents
+```
+
+If GitHub is blocked at work, download your fork as a zip at home and copy it over. Never send company content the other way.
+
+## 2. Find your opencode config folder
+
+```powershell
+Test-Path "$env:USERPROFILE\.config\opencode"
+Test-Path "$env:APPDATA\opencode"
+```
+
+Use whichever exists or holds your current `opencode.json`. If it is not `%USERPROFILE%\.config\opencode`, pass `-Target <path>` to `install.ps1` every time. Install keeps your provider and model settings, merges only the `permission` block, and backs the file up first.
+
+## 3. Connect to ADO
 
 Create a PAT in ADO (profile, Security, Personal access tokens) with **Work Items: Read** and **Code: Read**. Then:
 
@@ -27,18 +45,21 @@ Copy-Item C:\tools\eng-agents\core\scripts\ado\config.example.json "$env:USERPRO
 notepad "$env:USERPROFILE\.config\eng-agents\config.json"
 ```
 
+Close and reopen PowerShell so the variable is visible.
+
 | Key | Value |
 |---|---|
 | `serverUrl` | Up to, not including, the collection (often ends in `/tfs`) |
 | `collection` | Often `DefaultCollection`. Check the URL you use in the browser. |
-| `apiVersion` | Start with `6.0`. Fall back to `5.1` if it errors. |
-| `auth` | `pat`, or `windows` to use your Windows login and skip the PAT |
+| `project` | Project name. Used only when fetching comments. |
+| `apiVersion` | Start with `6.0`. Use `5.1` if requests fail with a version error. |
+| `auth` | `pat` (uses `ADO_PAT`), or `windows` to use your Windows login instead |
 
-Reopen PowerShell after setting the variable.
+Without ADO access, `/start` still works in offline mode: you paste the title and details.
 
-## 2. Write company-wide rules
+## 4. Write company-wide rules
 
-`%USERPROFILE%\.config\eng-agents\overlay\AGENTS.md`. Only rules that are true in **every** repo. Repo-specific rules go in step 5.
+`%USERPROFILE%\.config\eng-agents\overlay\AGENTS.md`. Only rules true in **every** repo. Repo-specific rules go in step 8.
 
 ```markdown
 ## Company-wide engineering rules
@@ -56,12 +77,10 @@ Questions to answer:
 
 - What data must never be logged or put in test fixtures?
 - Is there a standards doc the agent should read first? Point to it.
-- Does your base branch, PR target, or commit format differ from Core (`main`, short summary)?
-- Does the team expect PR sections? Put them in `overlay\templates\pr.md`.
+- Do your base branch, PR target, or commit format differ from Core (`main`, short summary)?
+- Does the team expect PR sections? Put them in `overlay\templates\pr.md` (see [Customizing templates](customization.md#customizing-templates)).
 
-## 3. Install
-
-Use a normal PowerShell window, not "Run as administrator".
+## 5. Install
 
 ```powershell
 cd C:\tools\eng-agents
@@ -69,16 +88,28 @@ cd C:\tools\eng-agents
 .\install.ps1
 ```
 
-- `Layers :` shows Core, Personal, Company
-- Both ADO checks say `[ok]`
-- If your opencode config is not in `%USERPROFILE%\.config\opencode`, add `-Target <path>`
-- After the first opencode launch, ask it to run `whoami`. It must print your normal username.
+- `Layers :` shows Core, Personal, Company.
+- Both ADO checks at the end say `[ok]`.
+- If PowerShell blocks the script: `powershell -ExecutionPolicy Bypass -File .\install.ps1`.
+- Never start opencode from an elevated window. After the first launch, ask it to run `whoami`: it must print your normal username.
 
-## 4. Build the workspace and repo map
-
-Clone every repo directly into `C:\src\work`, side by side. Clone shared repos once. Then copy the repo map template and fill it in:
+## 6. Test the ADO script
 
 ```powershell
+mkdir C:\src\work -Force
+cd C:\src\work
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\.config\opencode\eng-agents\scripts\ado\Get-WorkItem.ps1" -Id <id> -WorkRoot .work
+```
+
+Adjust the path if you used `-Target`. It should print a folder path and create `workitem.md`. Check the description is readable, then delete the test folder.
+
+## 7. Build the workspace and repo map
+
+Clone every repo **directly** into `C:\src\work`, side by side. Clone shared repos once. Folder names must match the relative paths other repos use. Then write the repo map:
+
+```powershell
+cd C:\src\work
+git clone <each repo url>
 Copy-Item C:\tools\eng-agents\company\repo-map.template.md C:\src\work\AGENTS.md
 notepad C:\src\work\AGENTS.md
 ```
@@ -88,13 +119,13 @@ Replace every `TODO(you)` and `(example)` row. Questions to answer:
 - What does each repo do, in one line?
 - Which repos reference the shared repo, and what is one exact relative path for each?
 - Which products exist, and which repos does each one span?
-- Which repos usually change together for a typical work item, and in what order?
-- Which domain words show up in work items, and what are they called in code?
+- Which repos usually change together, and in what order?
+- Which work item words map to different names in code?
 - Is there anything an agent must never touch (generated code, shared environments)?
 
 A wrong map produces wrong plans. Keep it short and accurate.
 
-## 5. Onboard each repo
+## 8. Onboard each repo
 
 ```
 cd C:\src\work
@@ -107,19 +138,63 @@ opencode
 Shared repos first, a new session between repos. Review each generated `<repo>\AGENTS.md`:
 
 - [ ] Build and test commands work when you run them yourself
-- [ ] Clean Architecture reference rules match reality
+- [ ] Architecture reference rules match reality
 - [ ] "Pattern to follow" files are good examples, not legacy code
 - [ ] UI repos point at existing Playwright mock helpers
 - [ ] Every `(inferred, verify)` fixed, every `TODO(you)` filled or deleted
-- [ ] `AGENTS.md` appears in the repo's `.git\info\exclude`
+- [ ] `AGENTS.md` is listed in the repo's `.git\info\exclude`
 
-## 6. Verify and smoke test
+## 9. Day-one checks
 
-- Run the 7 day-one checks in [setup-at-work.md](setup-at-work.md#9-day-one-verification).
-- Take one small, low-risk bug through `/start`, `/bug`, `/do-task`, `/review`, `/pr`.
+Run these in a scratch opencode session. Each confirms an assumption the setup depends on.
+
+| # | Check | How | If it fails |
+|---|---|---|---|
+| 1 | Agents and commands loaded | Type `/`: you see `start`, `spec`, `do-task`, and the rest. Press Tab: you see `planner`, `implementer`, and the others. | Wrong config folder. Reinstall with `-Target`. |
+| 2 | Shell is PowerShell | Ask: "Run `$PSVersionTable.PSVersion` and show the output." | Tell the agents which shell in your overlay `AGENTS.md`. |
+| 3 | Planner can write to `.work` | As `planner`, ask: "Create `.work/_test/hello.md` with the word hi." No prompt. | The edit path pattern did not match on Windows. Change `edit` to `ask` in the planner, reviewer, investigator, and writer agents, reinstall, and report it. |
+| 4 | Planner cannot edit code | Ask `planner` to add a comment to any `.cs` file. Denied. | Same as check 3. |
+| 5 | Templates are readable | Ask `planner`: "Read the spec template in the eng-agents templates folder and show its first line." No external directory prompt. | Approve once with "always", or add the path to `external_directory` in your overlay `opencode.json`. |
+| 6 | Push is blocked | As `implementer`, ask it to run `git -C <repo> push`. Denied. | Check the `permission` block in the installed `opencode.json`. |
+| 7 | Repo `AGENTS.md` is read when needed | Ask `planner` for a repo's test command without naming the file. | It may not know until it reads the file. Commands always read it, so this is fine. |
+
+Then delete the test folder yourself (agents cannot delete recursively): `Remove-Item C:\src\work\.work\_test -Recurse`. Keep `.work`.
+
+## 10. Smoke test
+
+Take one small, low-risk bug through the bug lane:
+
+```
+/start <id> bug
+/bug <id>
+(approve bug.md)
+/new
+/do-task <id> 1
+/new
+/do-task <id> 2
+/review <id>
+/pr <id>
+```
+
+Write down every place the model stumbled. Generic problems are Core fixes; company-specific ones go in your overlay or a repo guide.
 
 ## Keeping it current
 
-- The model makes a company-specific mistake: add a rule to that repo's guide (one repo) or the overlay (every repo).
-- Overlay changes need `.\install.ps1` again. The repo map and repo guides only need a new opencode session.
-- Never put the PAT in a file, and never commit any of this.
+| Change | Then |
+|---|---|
+| Model makes a company-specific mistake | Add a rule to that repo's `AGENTS.md` (one repo) or `overlay\AGENTS.md` (every repo) |
+| Edited the overlay | Run `.\install.ps1` again |
+| Edited the repo map or a repo `AGENTS.md` | Start a new opencode session |
+| Base repo changed | At home: `git fetch upstream`, `git merge upstream/main`, `git push`. At work: `git pull`, then `.\install.ps1` |
+
+Updates never touch your overlay, config, workspace, or repo `AGENTS.md` files. Never put the PAT in a file, and never commit any of this.
+
+## Mac or Linux
+
+Never run `install.ps1` or `opencode` with `sudo`. If opencode reports permission errors, make sure its background service is not running as root:
+
+```bash
+ps -o user,command -A | grep -i '[o]pencode'   # serve --service must not show root
+sudo opencode service stop && opencode service start
+sudo chown -R $(whoami) ~/.config ~/.local ~/.cache
+```

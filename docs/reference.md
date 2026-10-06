@@ -1,498 +1,196 @@
 # Reference
 
-The full detail behind eng-agents: layers, agents, commands, permissions, file layout, and what `install.ps1` does. For a quick start, see the [README](../README.md) and the [field guide](field-guide.md).
-
-> **Status:** Core v1, tested in a dry run on made-up repos, not yet used on real work.
-
-## Table of contents
-
-- [The three layers](#the-three-layers)
-- [The pipeline](#the-pipeline)
-- [Lanes](#lanes)
-- [Agents](#agents)
-- [Commands](#commands)
-- [Work artifacts](#work-artifacts)
-- [Default conventions](#default-conventions)
-- [Testing rules](#testing-rules)
-- [Workspace layout at work](#workspace-layout-at-work)
-- [Repo layout](#repo-layout)
-- [Setup](#setup)
-- [Editing Core and permissions](#editing-core-and-permissions)
-- [Rolling out to the team](#rolling-out-to-the-team)
-- [Assumptions to verify at work](#assumptions-to-verify-at-work)
-- [Example: one feature, start to finish](#example-one-feature-start-to-finish)
-- [Tuning when the model struggles](#tuning-when-the-model-struggles)
-- [Review tracker](#review-tracker)
-
----
-
-## The three layers
-
-Every file in this setup belongs to exactly one layer. The layer decides where the file lives and who can ever see it.
-
-| | Layer 1: Core | Layer 2: Personal | Layer 3: Company |
-|---|---|---|---|
-| **What it is** | The generic pipeline. Works at any company, for any engineer. | How *you* like to work. Your taste, not your employer's details. | Anything that names or describes your employer, its code, or its systems. |
-| **Examples** | Agents, commands, templates, install script, ADO scripts with placeholders | House rules, auto-commit preference, task size limit, model overrides, extra EM commands | Repo map, per-repo `AGENTS.md`, ADO server URL, PAT, test helper locations, team PR sections, all `.work\` state |
-| **Lives in** | `core/` in the base repo | `personal/` in your fork (empty in the base, see [onboarding](onboarding-personal.md)) | Work PC only (see [onboarding](onboarding-company.md)) |
-| **Shareable with team?** | Yes, that is the goal | No. Each person writes their own. | Only through company-hosted locations, never this repo |
-
-### Which layer does this belong in?
-
-Ask in order and stop at the first yes:
-
-1. Does it name or describe a company repo, server, product, team, customer, or work item? **Company.**
-2. Is it true at any company, but it reflects your personal preference? **Personal.**
-3. Otherwise: **Core.**
-
-### How the layers combine
-
-`install.ps1` builds your opencode config by layering, in order:
-
-```
-core/                                    generic defaults
-  + personal/                            your preferences
-  + %USERPROFILE%\.config\eng-agents\overlay\   company specifics (work PC only)
-  = opencode global config folder
-```
-
-- **Agents, commands, templates:** a file in a later layer with the same name replaces the earlier one. New names are added.
-- **`AGENTS.md`:** not replaced. Each layer's `AGENTS.md` is appended as its own section (Core, then Personal, then Company). Core rules tell the model that when sections conflict, the later section wins.
-- **`opencode.json`:** permission entries are merged. A later layer's entry for the same key wins.
-
-So you never edit core to express a preference. You override it in a higher layer.
-
----
-
-## The pipeline
-
-```
-ADO work item #12345
-   |
-   v
-/start 12345 feature   pull work item, create .work folder, create branch(es)
-   |
-   v
-/spec 12345            planner asks clarifying questions ONE at a time, writes spec.md
-   |                   >>> GATE: you edit spec.md, then set "Status: APPROVED"
-   v
-/plan 12345            planner writes plan.md: approach, files per repo, repo order, risks
-   |                   >>> GATE: you edit plan.md, then set "Status: APPROVED"
-   v
-/tasks 12345           planner writes tasks.md: tiny tasks, each with a verify command
-   |                   >>> GATE: you skim task sizes
-   v
-/do-task 12345 1       implementer does ONE task in a FRESH session, TDD, checks the box
-/do-task 12345 2       repeat until tasks.md is all checked
-   ...
-   |
-   v
-/review 12345          reviewer: pass 1 = matches spec? pass 2 = code quality?
-   |                   >>> GATE: you fix or accept findings
-   v
-/pr 12345              writes pr.md: short title + short description
-   |
-   v
-You push and open the PR in ADO. Normal review and CI/CD take it to production.
-```
-
-The agents stop at the PR on purpose. Your existing pipeline, approvals and release process own production.
-
-**Gates are a line in a file.** `spec.md`, `plan.md`, and `bug.md` start as `Status: DRAFT`. You approve by editing that line to `Status: APPROVED`. The next command refuses to run until you do. Agents are told never to change it.
-
----
-
-## Lanes
-
-| Lane | When to use | Flow |
-|---|---|---|
-| **Feature** | New behavior with acceptance criteria | `/start` → `/spec` → `/plan` → `/tasks` → `/do-task` (repeat) → `/review` → `/pr` |
-| **Bug (fast lane)** | A defect with a reproducible symptom | `/start` → `/bug` → `/do-task` (repeat) → `/review` → `/pr` |
-| **Spike** | A question you need answered before committing to an approach | `/spike` → `findings.md` (read only, no code changes). Can feed into `/spec`. |
-| **Docs** | Writing or updating documentation | `/docs` (writer drafts) → new session → `/check-docs` (reviewer fact-checks every claim against the code) |
-
-**Bug lane rules**
-
-- `/bug` produces `bug.md`: repro steps, expected vs actual, suspected root cause, and the failing test that proves the bug.
-- The bug lane skips `/plan` and `/tasks`. `bug.md` contains at most 3 tasks.
-- If the root cause is unclear after `/bug`, stop and run `/spike` instead of guessing.
-- If the fix needs more than 3 tasks, it is not a fast-lane bug. Move it to the feature lane.
-
----
+Agents, permissions, commands, files, conventions, and what `install.ps1` does. How the phases fit together is in [Pipeline](pipeline.md); layers and overrides are in [Customization](customization.md).
 
 ## Agents
 
-Each agent has the fewest permissions it needs. Weaker models do better when they cannot wander.
+Each agent has only the permissions it needs. Every agent may run read-only commands (file reads, search, read-only `git`, version checks). Nothing else is listed unless it differs.
 
-| Agent | Purpose | Read code | Edit code | Write `.work\` | Run shell |
-|---|---|---|---|---|---|
-| `planner` | Specs, plans, task breakdowns | Yes | **No** | Yes | Read-only commands |
-| `implementer` | Executes exactly one task | Yes | Yes | `tasks.md`, `progress.md` only | Yes (build, test, lint, git commit) |
-| `reviewer` | Two-pass review against spec, then quality | Yes | **No** | `review.md` only | Tests and lint only |
-| `investigator` | Spikes and bug root-causing | Yes | **No** | Yes | Read-only commands, tests |
-| `writer` | Documentation and PR text | Yes | Docs files only | Yes | No |
+| Agent | Commands | Can edit | Extra shell commands |
+|---|---|---|---|
+| `planner` | `/start`, `/spec`, `/plan`, `/tasks`, `/status`, `/pause`, `/resume` | `.work/` only | `git fetch origin`, branch creation, the ADO script. Switching branches and WIP commits ask. |
+| `implementer` | `/do-task` | Code and tests. `AGENTS.md` asks. | Build, test, lint, `dotnet format`, `npm install` / `ci`, `git add`. `git commit` asks. |
+| `reviewer` | `/review`, `/check-docs` | `.work/` only | Build, test, lint. `git add` and `git commit` denied. |
+| `investigator` | `/bug`, `/spike`, `/onboard-repo` | `.work/`. A repo `AGENTS.md` and `.git/info/exclude` ask. | Build, test, lint. `git add` and `git commit` denied. |
+| `writer` | `/pr`, `/docs` | Any `*.md` file, `docs/`, `.work/` | None. `git add` and `git commit` denied. |
 
-No agent can run `git push`. Pushing is always you.
+No agent can push. Each agent file lists its permissions in its front matter.
 
----
+### Permission tiers
+
+The global `core/opencode.json` and every agent use the same tiers. Rules are evaluated top to bottom and the **last match wins**, so the guards at the bottom catch risky commands even when chained after an allowed one.
+
+| Tier | Result | Examples |
+|---|---|---|
+| Read and inspect | Allowed | `Get-Content`, `Get-ChildItem`, `Select-String`, `rg`, `git status/diff/log/show/blame`, version checks |
+| Build, test, lint | Allowed (not planner or writer) | `dotnet build/test/restore`, `npm test`, `npm run lint`, `npx ng test`, `npx playwright test` |
+| Agent extras | Per agent | See the table above |
+| Anything else | Asks | Unlisted commands, file moves and copies, redirects to files, network calls, starting processes |
+| Destructive | Denied | `git push`, `git reset --hard`, `git clean`, `git restore`, `git checkout --`, recursive deletes, `dotnet ef database`, shutdown |
+
+File reads through opencode's own tools are allowed inside the workspace; outside it they ask (except the installed eng-agents folder). Edits are allowed except `.git/` internals and `.env` files; the agents narrow this further.
 
 ## Commands
 
 | Command | Agent | What it does |
 |---|---|---|
-| `/start <id> <feature\|bug>` | planner | Fetches the work item (or asks you to paste it), creates `.work\<id>-<slug>\`, asks which repos are involved, creates the branch in each. |
-| `/spec <id>` | planner | Clarifying questions one at a time, then writes `spec.md` from the template. |
-| `/plan <id>` | planner | Reads `spec.md` plus the relevant repo `AGENTS.md` files, writes `plan.md`. |
-| `/tasks <id>` | planner | Breaks `plan.md` into numbered tasks in `tasks.md`. Each task lists repo, files, change, and verify command. |
-| `/do-task <id> <n>` | implementer | Does task `n` only. Writes the test first (for .NET), runs verify, checks the box, appends to `progress.md`, commits. |
-| `/review <id>` | reviewer | Runs all tests, then reviews the full diff: pass 1 spec compliance, pass 2 code quality. Writes `review.md`. |
-| `/pr <id>` | writer | Writes `pr.md`: a short title and a short description with test evidence. One per repo touched. |
-| `/bug <id>` | investigator | Reproduces, root-causes, writes `bug.md` with up to 3 tasks. |
-| `/spike <id-or-topic>` | investigator | Timeboxed investigation, writes `findings.md`. No code changes. |
-| `/docs <target>` | writer | Clarifies audience, outlines, drafts or updates docs, saves a sources list. |
-| `/check-docs <path>` | reviewer | Fact-checks every claim in a doc against the code. |
-| `/onboard-repo <folder>` | investigator | Scans a repo and drafts its local `AGENTS.md`. **You must review it.** |
-| `/status [id]` | planner | Reads `.work\` and tells you where you left off and what to run next. |
-| `/pause <id> [reason]` | planner | Records where the item stands in `paused.md`, offers a WIP commit for uncommitted changes, frees the repos for other work. |
-| `/resume <id>` | planner | Switches repos back to the item's branches, warns if main has moved, summarizes where it stands and the next command. |
+| `/start <id> <feature\|bug>` | planner | Fetches the work item (or offline mode), creates `.work/<id>-<short-name>/`, proposes repos for you to confirm, creates the branch in each |
+| `/spec <id>` | planner | Up to 6 clarifying questions, one at a time, then `spec.md` as DRAFT |
+| `/plan <id>` | planner | Requires an approved spec. Writes `plan.md`: files per repo, pattern to follow, test plan |
+| `/tasks <id>` | planner | Requires an approved plan. Writes `tasks.md`: small tasks with verify commands and a coverage check |
+| `/do-task <id> <n>` | implementer | Does task `n` only: TDD for .NET, verify, check the box, log to `progress.md`, commit |
+| `/review <id>` | reviewer | Runs tests, reviews the diff in two passes, writes `review.md`, turns accepted findings into tasks |
+| `/pr <id>` | writer | Writes `pr.md`: short title and description per repo |
+| `/bug <id>` | investigator | Root cause with confidence, `bug.md` as DRAFT, and up to 3 tasks |
+| `/spike <id or topic>` | investigator | Read-only investigation (about 25 files max), writes `findings.md` |
+| `/docs <target>` | writer | Clarifies audience, outlines, writes the doc, saves a sources list |
+| `/check-docs <doc path>` | reviewer | Fact-checks every claim in a doc against the code, writes `check.md` |
+| `/onboard-repo <folder>` | investigator | Drafts the repo's `AGENTS.md` and adds it to `.git/info/exclude`. **Review it.** |
+| `/status [id]` | planner | Where an item stands and the next command, or a table of all items |
+| `/pause <id> [reason]` | planner | Writes `paused.md`, offers a WIP commit for uncommitted changes |
+| `/resume <id>` | planner | Restores branches, warns if `main` moved, gives the next command |
 
-**Golden rule:** start a fresh opencode session (`/new`) for every `/do-task`. Long sessions are where slower models drift.
+## Work files
 
----
-
-## Work artifacts
-
-All pipeline state lives in the workspace, outside every git repo. This is Layer 3 content: it never leaves the work PC.
+All pipeline state lives in the workspace, outside every git repo. It never leaves the work PC.
 
 ```
-.work\12345-short-name\
-  workitem.md     raw work item text (fetched or pasted)
-  repos.md        which repos this item touches, and the order to change them in
-  spec.md         goal, acceptance criteria, non-goals, open questions
-  plan.md         approach, files per repo, risks
+.work/<id>-<short-name>/
+  workitem.md     work item text (fetched or pasted)
+  repos.md        lane, repos in order, branch per repo
+  spec.md         goal, acceptance criteria, non-goals, decisions, open questions
+  plan.md         approach, changes per repo, test plan, risks
   tasks.md        numbered checkbox tasks with verify commands
-  progress.md     append-only log: what each session did and the verify output
-  review.md       reviewer findings
-  pr.md           PR title and description (one section per repo)
+  progress.md     append-only log, including verify output
+  review.md       findings and verdict
+  pr.md           PR title and description, one section per repo
   bug.md          bug lane only
-  findings.md     spike lane only
-  paused.md       written by /pause: where it stands and how to resume
+  findings.md     spike on a work item
+  paused.md       written by /pause
 
-.work\spike-short-name\findings.md     spikes without a work item
-.work\docs-short-name\sources.md       docs lane: claims and their source files
-.work\docs-short-name\check.md         docs lane: fact-check results
-.work\_onboard\<repo>-AGENTS.md        onboard draft when a repo AGENTS.md already exists
+.work/spike-<short-name>/findings.md     spike without a work item
+.work/docs-<short-name>/sources.md       docs lane: claims and source files
+.work/docs-<short-name>/check.md         docs lane: fact-check results
+.work/_onboard/<repo>-AGENTS.md          onboard draft when the repo already has an AGENTS.md
 ```
 
----
+## Conventions
 
-## Default conventions
-
-These are Core defaults. Override any of them in your Personal or Company `AGENTS.md` section.
+Core defaults. Override them in your Personal or Company `AGENTS.md`.
 
 | Item | Default |
 |---|---|
-| Base branch | `main` |
-| PR target | `main` |
-| Feature branch | `dev/feature/<id>-short-name` |
-| Bug branch | `dev/bug/<id>-short-name` |
-| Commit message | Short summary only (for example: `Add retry to export job`) |
-| PR output | Draft title and short description only. You open the PR yourself. |
-| Shell | PowerShell |
-
-`short-name` is 3 to 5 lowercase words from the work item title, hyphenated.
-
----
+| Base branch and PR target | `main` |
+| Feature branch | `dev/feature/<id>-<short-name>` |
+| Bug branch | `dev/bug/<id>-<short-name>` |
+| `<short-name>` | First 5 words of the work item title, lowercase, filler words dropped, hyphenated, max 40 characters |
+| Commit message | Short plain summary, no prefix or work item number (`Add retry to export job`) |
+| Task size | At most 3 files, one repo |
+| Shell | PowerShell, one command per call |
 
 ## Testing rules
 
-The agent must be able to run every test locally **without a database, real backend, or shared environment**.
+Every test must run locally **without a database, real backend, or shared environment**.
 
-| Layer | Framework | Rule |
+| Code | Framework | Rule |
 |---|---|---|
-| .NET | xUnit | **Strict TDD.** Write the failing test, run it, confirm it fails for the right reason, implement, confirm it passes. Unit tests with mocked dependencies against the Application and Domain layers. No DB. |
-| Angular | Project's existing unit test runner | Tests required. Order is flexible. Run headless. |
-| Playwright | Playwright | Tests required. Order is flexible. Run against `ng serve` with the API **mocked via `page.route`**. Never hit a real environment. |
+| .NET | xUnit | **Strict TDD**: write the test, confirm it fails for the right reason, implement, confirm it passes. Mock dependencies. |
+| Angular | The repo's unit test runner | Tests required, any order. Headless, single run. |
+| Playwright | Playwright | Tests required, any order. Mock every API call with `page.route`. Use the repo's mock helpers. |
 
-A task is not done until its verify command passes and the output is pasted into `progress.md`.
+A task is not done until its verify command passes and the output is in `progress.md`.
 
----
-
-## Workspace layout at work
+## Workspace layout
 
 ```
-C:\src\work\                       NOT a git repo. Launch opencode from here.
-  AGENTS.md                        repo map (Layer 3, see docs/onboarding-company.md)
-  .work\                           pipeline state (Layer 3)
-  <shared-repo>\                   cloned ONCE, used by every project below
-  <api-repo-a>\
-  <ui-repo-a>\
-  <api-repo-b>\
-  ...
+C:\src\work\                 not a git repo; launch opencode here
+  AGENTS.md                  repo map
+  .work\                     pipeline state
+  <shared-repo>\             cloned once, used by the repos below
+  <api-repo>\
+  <ui-repo>\
 ```
 
-- All repos sit **flat, side by side**, in one folder. Do not group them into per-project subfolders.
-- opencode finds `AGENTS.md` by walking **up** from the folder you launch in. Launching from `C:\src\work\` loads the workspace `AGENTS.md`, but **not** the per-repo ones. Every command therefore tells the agent to read `<repo>\AGENTS.md` before touching that repo.
-- Each repo's `AGENTS.md` is hidden from git via `.git\info\exclude`, a local-only ignore file. The company's `.gitignore` is never modified.
+- Repos sit flat, side by side. No per-project subfolders.
+- opencode loads `AGENTS.md` from the launch folder upward, so the repo map loads but per-repo guides do not. Every command reads `<repo>\AGENTS.md` before touching that repo.
+- Each repo's `AGENTS.md` is hidden via `.git\info\exclude`. The company `.gitignore` is never changed.
 
-### Shared repos used by multiple projects
+### Shared repos
 
-A shared monorepo (one that several other repos depend on) gets special handling:
+- Consumers reference shared code by relative path (for example `..\..\<shared-repo>\src\Lib.csproj`), so one flat clone satisfies them all. Duplicate clones drift apart.
+- Record each dependency with one example path in the repo map. `/onboard-repo` also records it in the consumer's `AGENTS.md`.
+- Shared repos change first, then the tests of every affected consumer run. If a shared repo is ever consumed as a published package instead, the plan needs a version bump task; note that in the repo map.
+- One clone has one branch checked out. For parallel work on a shared repo, add a worktree:
 
-1. **Clone it once, as a sibling** of everything else. This setup assumes consumers reference shared code by **relative path** (for example `..\..\<shared-repo>\src\Lib.csproj`). A flat layout with the expected folder names satisfies every consumer at once. Duplicate clones drift apart and cause "works here, fails there" bugs.
-2. **Record the references** in the workspace `AGENTS.md` repo map: which repos depend on the shared repo, with one example path each. `/onboard-repo` also records them in each consumer's `AGENTS.md`.
-3. **Plan shared changes first.** When a work item touches the shared repo, `repos.md`, `plan.md`, and `tasks.md` put it first. Because references are relative, consumers see the change immediately, so run the tests of every affected consumer. (If a shared repo is ever consumed as a published package instead, the plan needs a version bump task. Note that in the repo map.)
-4. **Use worktrees for parallel work.** One clone can only have one branch checked out. If two work items both need shared-repo changes at the same time, add a worktree instead of a second clone:
+  ```powershell
+  cd C:\src\work\<shared-repo>
+  git worktree add ..\<shared-repo>-12345 dev/feature/12345-short-name
+  ```
 
-   ```powershell
-   cd C:\src\work\<shared-repo>
-   git worktree add ..\<shared-repo>-12345 dev/feature/12345-short-name
-   ```
-
-   Remove it with `git worktree remove ..\<shared-repo>-12345` after the PR merges. Note that relative-path consumers still point at the main clone, so only build consumers against a worktree if you redirect their references.
-
----
+  Remove it with `git worktree remove ..\<shared-repo>-12345` after the PR merges. Relative-path consumers still point at the main clone.
 
 ## Repo layout
 
-### Base repo (Layer 1, plus placeholders for Layers 2 and 3)
-
 ```
 eng-agents/
-  README.md
-  REVIEW.md                         maintainer review: status, rollout checklist, rules for changing Core
-  install.ps1                       layers core + personal + company into opencode config
-  core/                             LAYER 1: generic, team-shareable
-    AGENTS.md                       universal rules for every session
-    opencode.json                   permissions only. No provider, no model.
-    agents/
-      planner.md  implementer.md  reviewer.md  investigator.md  writer.md
-    commands/
-      start.md  spec.md  plan.md  tasks.md  do-task.md  review.md  pr.md
-      bug.md  spike.md  docs.md  check-docs.md  onboard-repo.md  status.md
-      pause.md  resume.md
-    templates/
-      spec.md  plan.md  tasks.md  progress.md  review.md  pr.md
-      bug.md  findings.md  repos.md  workitem.md  repo-agents.md  paused.md
-    scripts/
-      ado/
-        Get-WorkItem.ps1            reads a work item via REST, creates the .work folder
-        config.example.json         placeholder connection settings
-  personal/                         LAYER 2. Empty in the base. Each fork fills it in.
-    TODO.md                         pointer to docs/onboarding-personal.md
-  company/                          LAYER 3 placeholder. Always empty in every repo (gitignored).
-    TODO.md                         pointer to docs/onboarding-company.md
+  README.md                 daily usage
+  CONTRIBUTING.md           changing Core
+  install.ps1               layers Core + Personal + Company into the opencode config
+  core/
+    AGENTS.md               rules for every session
+    opencode.json           permissions only (no provider or model)
+    agents/                 planner, implementer, reviewer, investigator, writer
+    commands/               the 15 commands above
+    templates/              one template per work file, plus repo-agents.md
+    scripts/ado/            Get-WorkItem.ps1, config.example.json
+  personal/TODO.md          placeholder; your fork adds your files here
+  company/                  gitignored except TODO.md and repo-map.template.md
   docs/
-    field-guide.md                  short overview: layers, a day of use, getting set up
-    reference.md                    this file
-    onboarding-personal.md          how to fill in personal/
-    onboarding-company.md           how to set up the Company layer on the work PC
-    customization.md                what each Personal and Company file is for, Core overrides
-    pipeline.md                     design rationale, gates, lanes, recovery
-    setup-at-work.md                step-by-step first-day setup and verification
 ```
 
-### What install.ps1 writes
-
-| Destination (in your opencode config folder) | Content |
-|---|---|
-| `agents\*.md`, `commands\*.md` | Layered files. A later layer replaces a same-named file. |
-| `AGENTS.md` | One section per layer, inside `eng-agents:begin` / `eng-agents:end` markers. Your own text outside the markers is kept. HTML comments (your notes) are stripped. |
-| `opencode.json` | Layer permissions merged into your existing file. Provider and model settings are kept. |
-| `eng-agents\templates\`, `eng-agents\scripts\` | Templates and scripts. Commands find them via the `{{ENG_HOME}}` token, which install replaces with the real path. |
-| `eng-agents\manifest.json` | What was installed, so files you delete from a layer are cleaned up next time. |
-| `eng-agents\backup\<time>\` | A copy of anything that was overwritten. |
-
-Use `-DryRun` to preview, `-CoreOnly` to skip Personal and Company, `-Target`, `-Personal`, `-Company` to change locations.
-
-It also runs on Mac and Linux with PowerShell 7 (`pwsh ./install.ps1`), installing to `~/.config/opencode`. The `{{PS}}` token in commands becomes `pwsh` there and `powershell` when installed from Windows PowerShell 5.1.
-
-### Work PC only (Layer 3)
+Work PC only:
 
 ```
 %USERPROFILE%\.config\eng-agents\
-  config.json                       ADO server, collection, project, api-version
-  overlay\                          company overlay, same shape as core\
-    AGENTS.md                       company rules section
-    opencode.json                   optional
-    agents\  commands\  templates\  optional overrides
-
-C:\src\work\
-  AGENTS.md                         repo map
-  .work\                            pipeline state
-  <each repo>\AGENTS.md             per-repo guide (git-excluded)
-
-Environment variable: ADO_PAT       (user-level, never in a file)
+  config.json               ADO server, collection, project, api-version, auth
+  overlay\                  same shape as core\ (AGENTS.md, opencode.json, agents\, commands\, templates\)
+ADO_PAT                     user environment variable, never in a file
+C:\src\work\AGENTS.md, .work\, <repo>\AGENTS.md
 ```
 
----
+## What install.ps1 does
 
-## Setup
-
-### Make your own fork (everyone, once)
-
-The base repo holds Core only. Each person works from their own private fork that adds a Personal layer.
-
-1. **Create your fork.**
-   - Teammates: fork the base repo.
-   - The base repo's owner cannot fork into the same account, so create an empty private repo instead (for example `eng-agents-personal`) and push the base into it.
-2. **Link it to the base** so you can pull updates:
-   ```powershell
-   git remote add upstream <base repo url>
-   ```
-3. **Add your Personal layer:** follow [docs/onboarding-personal.md](onboarding-personal.md) and commit `personal\` to your fork.
-
-### Day to day
-
-| Change | Where it goes |
+| Writes to the opencode config folder | Content |
 |---|---|
-| Something that would help anyone (a better command step, a template fix) | The **base repo** (pull request, or push if you maintain it). Then pull it into your fork. |
-| Your own preference | `personal\` in **your fork** only. |
-| Anything about the company | Your **Company overlay** on the work PC. Never in either repo. |
+| `agents\*.md`, `commands\*.md` | Layered files. A later layer replaces a same-named file. |
+| `AGENTS.md` | One section per layer between `eng-agents:begin` / `eng-agents:end` markers. Your text outside the markers is kept. HTML comments are stripped. |
+| `opencode.json` | Layer permissions merged into your file. Provider and model settings are kept. An `opencode.jsonc` or unparseable file is left alone and the permissions are written to `opencode.eng-agents.json` for you to merge. |
+| `eng-agents\templates\`, `eng-agents\scripts\` | Templates and scripts |
+| `eng-agents\manifest.json` | What was installed, so files removed from a layer are cleaned up next time |
+| `eng-agents\backup\<time>\` | Copies of anything overwritten |
 
-Get base updates into your fork:
+Tokens replaced in installed files: `{{ENG_HOME}}` becomes the `eng-agents` folder path; `{{PS}}` becomes `powershell` (Windows PowerShell 5.1) or `pwsh` (PowerShell 7).
 
-```powershell
-git fetch upstream
-git merge upstream/main
-```
+| Flag | Effect |
+|---|---|
+| `-DryRun` | Preview, write nothing |
+| `-CoreOnly` | Skip Personal and Company |
+| `-Target <path>` | opencode config folder (default `~/.config/opencode`) |
+| `-Personal <path>` | Personal layer (default `personal/` next to the script) |
+| `-Company <path>` | Company overlay (default `~/.config/eng-agents/overlay`) |
 
-The base repo's `personal\` folder holds only `TODO.md`, so this merge never conflicts with your own files there.
-
-### At work (first time)
-
-Full commands and the verification checklist are in [docs/setup-at-work.md](setup-at-work.md). In short:
-
-1. **Clone** this repo somewhere outside the workspace, for example `C:\tools\eng-agents`.
-2. **Create the company overlay:** create `%USERPROFILE%\.config\eng-agents\overlay\` and write its `AGENTS.md` (see [docs/onboarding-company.md](onboarding-company.md)).
-3. **ADO:** create a PAT, set the `ADO_PAT` environment variable, copy `config.example.json` to `%USERPROFILE%\.config\eng-agents\config.json` and fill it in.
-4. **Install:** run `.\install.ps1 -DryRun`, then `.\install.ps1`. Use `-Target <path>` if your opencode config folder is not the default (see [Assumptions](#assumptions-to-verify-at-work)).
-5. **Workspace:** create `C:\src\work\`, clone all repos flat into it (shared repos once), and write `C:\src\work\AGENTS.md` (the repo map) from `company\repo-map.template.md` (see [docs/onboarding-company.md](onboarding-company.md#4-build-the-workspace-and-repo-map)).
-6. **Onboard repos:** from `C:\src\work\`, run `/onboard-repo <repo-folder>` for each repo, shared repos first. It also adds `AGENTS.md` to the repo's `.git\info\exclude`. Review and correct each generated `AGENTS.md`.
-7. **Verify:** run the day-one checks in the setup doc.
-8. **Smoke test:** run `/start` on a small, low-risk bug and walk the bug lane end to end.
-
-### At work (updating)
-
-`git pull` in your clone, then re-run `.\install.ps1`. Layer 3 files are untouched because they live outside this repo. Re-running install also picks up edits to your company overlay.
-
----
-
-## Editing Core and permissions
-
-### Layer 1: Core (this repo, `core\`)
-
-Edit core only when the change would help **anyone** using this pipeline. Keep it free of company and personal detail.
-
-| What | File | Why you might change it |
-|---|---|---|
-| Global permission baseline, in three tiers (see below) | `core\opencode.json` | Safe baseline for everyone. Loosen per person in Personal, not here. |
-| Agent behavior and per-agent permissions (for example, the implementer may run `dotnet`, `npm`, `npx` test/build/lint commands and `git add`; `git commit` asks) | `core\agents\*.md` | Fixing a flaw in how an agent works for everyone. |
-| Command steps | `core\commands\*.md` | Fixing or improving a phase of the pipeline. |
-| Default templates | `core\templates\*.md` | Better structure for specs, plans, tasks, PRs. |
-| Default conventions | `core\AGENTS.md` | Changing a default that should apply to everyone. |
-
-**Permission tiers.** Every agent and the global config use the same tiers. Rules are evaluated top to bottom and the **last match wins**, so the guards at the bottom catch risky commands even when piped after an allowed one.
-
-| Tier | Result | Examples |
-|---|---|---|
-| Read and inspect | Allowed | `Get-Content`, `Get-ChildItem`, `Select-String`, `rg`, read-only `git` (status, diff, log, show, blame), version checks |
-| Build, test, lint | Allowed (not for planner or writer) | `dotnet build/test/restore`, `npm test`, `npm run lint`, `npx ng test`, `npx playwright test` |
-| Anything else | Asks you | Unlisted commands, file moves and copies, redirects to files, network calls, starting processes |
-| Agent extras | Per agent | Implementer: `npm install`, `dotnet format`, `git add` allowed, `git commit` asks. Planner: branch creation, ADO script. |
-| Destructive | Denied | `git push`, `git reset --hard`, `git clean`, `git restore`, recursive deletes, database updates, shutdown |
-
-File reads through opencode's own read, search, and list tools are always allowed inside the workspace. Files outside the workspace ask first. Edits are allowed except `.git` internals and `.env` files (pipeline agents narrow this further).
-
-The tier lists are repeated in each agent file so they apply no matter how opencode merges agent and global rules. When you change one, change it everywhere.
-
-### Layers 2 and 3: Personal and Company
-
-What each Personal and Company file is for, how they combine with Core, and common customizations are in the [customization guide](customization.md).
-
-### Never do
-
-- Put company names, URLs, code, or work item content in the base repo or your fork, in either `core\` or `personal\`.
-- Open a pull request to the base repo that includes your `personal\` folder.
-- Put the PAT in any file.
-- Let an agent push, merge, or deploy.
-- Skip reviewing `spec.md`, `plan.md`, or a generated repo `AGENTS.md`. Those drive everything downstream.
-
----
-
-## Rolling out to the team
-
-1. **Prove it works first.** Run several real work items through every lane and fold the fixes into Core in the base repo.
-2. **Decide where the base repo lives for the team.** If company policy prefers internal hosting, mirror the base repo to company ADO and have teammates fork from there.
-3. **Teammates make their own fork** (see [Setup](#setup)), add a Personal layer, and set up their own Company overlay.
-4. **Share company content through company-hosted places only.** A team Company overlay, or each repo's `AGENTS.md`, could be committed to company repos once the team adopts this, so everyone benefits from one reviewed copy.
-
----
+A layer is skipped if it has none of `AGENTS.md`, `opencode.json`, `agents/`, `commands/`, `templates/`, `scripts/`. Install warns if a Personal or Company `AGENTS.md` still contains `TODO(you)`, refuses to run as root, and ends with two ADO checks (config file, `ADO_PAT`).
 
 ## Assumptions to verify at work
 
 | Assumption | How to check | If wrong |
 |---|---|---|
-| opencode's global config folder on Windows is `%USERPROFILE%\.config\opencode` | Look for an existing `opencode.json` there or in `%APPDATA%\opencode` | Re-run `install.ps1 -Target <correct path>` |
-| opencode runs shell commands in PowerShell | Ask opencode to run `$PSVersionTable.PSVersion` | Adjust script calls in commands to match the shell it uses |
-| Per-repo `AGENTS.md` is not auto-loaded when launching from the workspace root | Launch from `C:\src\work\` and ask what a repo's `AGENTS.md` says without telling it to read the file | If it already knows, the explicit read step is harmless; leave it |
-| ADO Server supports REST api-version `6.0` | Run `Get-WorkItem.ps1` against a known work item | Lower `apiVersion` in `config.json` (for example `5.1`) |
-| Angular unit tests run with a single headless command | Check `angular.json` and `package.json` test scripts | Record the right command in the UI repo `AGENTS.md` |
-| Consumers of the shared repo build correctly from a flat sibling layout | Build one consumer from `C:\src\work\` | Rename folders to match the relative paths the consumers expect |
-| Edit permission path patterns (`.work/**`) match on Windows | Day-one check 3 in the setup doc | Change `edit` to `ask` in the read-only agents and reinstall |
-| `external_directory` allows reading the installed templates without prompting | Day-one check 5 in the setup doc | Approve once with "always", or add the exact path in your overlay `opencode.json` |
-| The ADO script's HTML-to-text conversion is readable for your work items | Fetch a work item with rich formatting and open `workitem.md` | Paste the details by hand for that item; report the pattern so the script can be improved |
-
----
-
-## Example: one feature, start to finish
-
-```
-cd C:\src\work
-opencode
-
-/start 12345 feature
-  -> pulls #12345, creates .work\12345-export-retry\
-  -> asks: which repos? you answer: shared-repo, api-repo
-  -> writes repos.md (shared-repo first), creates dev/feature/12345-export-retry in both
-
-/spec 12345
-  -> asks 3 to 6 questions, one at a time
-  -> writes spec.md. You edit it and set "Status: APPROVED".
-
-/plan 12345
-  -> writes plan.md. You edit it and set "Status: APPROVED".
-
-/tasks 12345
-  -> writes tasks.md with 6 tasks (2 in shared-repo, 4 in api-repo)
-
-/new  then  /do-task 12345 1
-/new  then  /do-task 12345 2
-  ... through 6
-
-/review 12345
-  -> review.md: 1 spec gap, 2 nits. You fix the gap with one more /do-task.
-
-/pr 12345
-  -> pr.md with one section per repo. You push both branches and open the PRs in ADO.
-```
-
----
-
-## Tuning when the model struggles
-
-| Symptom | Fix |
-|---|---|
-| Task fails or wanders | Split it. Tasks should touch fewer files. |
-| Ignores conventions | Move the rule into the repo `AGENTS.md` or the command file. Rules in the conversation do not carry over. |
-| Claims done without proof | The verify output must be in `progress.md`. Re-run `/do-task` and point at the missing evidence. |
-| Asks too many questions | Answer them in `spec.md` directly, then re-run the next command. |
-| Gets confused mid-task | Start a fresh session. State is on disk; nothing is lost. |
-| Plans touch the wrong repo, or the wrong order | Fix the workspace `AGENTS.md` repo map. |
-
----
-
-## Review tracker
-
-- [REVIEW.md](../REVIEW.md) is the maintainer review: what has been reviewed, what is left before rollout, and how to change Core. Forks leave it alone.
-- The onboarding guides ([personal](onboarding-personal.md), [company](onboarding-company.md)) walk through **your own** setup.
+| opencode's Windows config folder is `%USERPROFILE%\.config\opencode` | Look for `opencode.json` there or in `%APPDATA%\opencode` | Reinstall with `-Target <path>` |
+| opencode runs shell commands in PowerShell | Day-one check 2 | Tell the agents the shell in your overlay `AGENTS.md` |
+| Edit path patterns (`.work/**`) match on Windows | Day-one checks 3 and 4 | Change `edit` to `ask` in the read-only agents and reinstall |
+| Installed templates are readable without an external directory prompt | Day-one check 5 | Approve with "always", or add the path to your overlay `opencode.json` |
+| ADO Server supports api-version `6.0` | Run `Get-WorkItem.ps1` on a known item | Set `apiVersion` to `5.1` |
+| The ADO script's HTML-to-text output is readable | Fetch a richly formatted item and open `workitem.md` | Paste details by hand for that item; report the pattern |
+| Angular unit tests run with one headless command | Check `angular.json` and `package.json` | Record the right command in the UI repo `AGENTS.md` |
+| Shared-repo consumers build from the flat layout | Build one consumer from `C:\src\work` | Rename folders to match the relative paths |
+| `install.ps1` works in Windows PowerShell 5.1 | Run it at work | Use PowerShell 7 (`pwsh`) |

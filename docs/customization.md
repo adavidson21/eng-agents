@@ -78,6 +78,8 @@ Common customizations:
 | A rule applies to every repo | Add it to `overlay\AGENTS.md` |
 | Different base branch or PR target than `main` | Rule under "Team conventions" in `overlay\AGENTS.md` |
 | Team-specific PR format | `overlay\templates\pr.md` |
+| Team feature spec format | `overlay\templates\spec.md` (see [Customizing templates](#customizing-templates)) |
+| Release notes in the team's format | `overlay\commands\release-notes.md` and `overlay\templates\release-notes.md` (see [Customizing templates](#add-a-new-kind-of-document-release-notes-feature-announcements)) |
 
 ## Core files you can override
 
@@ -129,7 +131,89 @@ Each agent file lists its own permissions. When you override one, keep the destr
 | `findings.md` | Spike answer and recommendation |
 | `repo-agents.md` | Shape of every repo `AGENTS.md` |
 
-When you override a template, keep the `Status: DRAFT` line in `spec.md`, `plan.md`, and `bug.md` (the gates depend on it) and keep the `## [ ] Task N:` headings in `tasks.md` (`/do-task` finds tasks by them).
+To change any of these, see [Customizing templates](#customizing-templates).
+
+## Customizing templates
+
+Templates set the **format** of what the agents write. Commands say "start from `templates/<name>.md`", so whichever layer provides that file decides the format.
+
+### Which layer?
+
+| The format is decided by | Put the template in |
+|---|---|
+| Your team or company (PR sections reviewers expect, feature spec format, release note format) | `overlay\templates\` on the work PC |
+| Only you | `personal/templates/` in your fork |
+
+Templates **replace**, they do not merge. If both Personal and Company provide `pr.md`, the Company one wins and yours is ignored. To add your own taste on top of a team format, write a rule in `personal/AGENTS.md` instead, for example "In PR descriptions, list the test evidence first."
+
+### Change an existing template
+
+1. Copy the Core file into your layer, for example `core/templates/pr.md` to `overlay\templates\pr.md`.
+2. Edit the copy. Keep the parts other commands depend on (below).
+3. Re-run `install.ps1`.
+4. Run the command on a real item and check the output.
+
+| Template | Keep | Free to change |
+|---|---|---|
+| `spec.md` | `Status: DRAFT` line; an "Acceptance criteria" section numbered `AC-1`, `AC-2` | Everything else. Add sections like "Rollout" or "Telemetry". |
+| `plan.md` | `Status: DRAFT` line; one section per repo; a test plan | Everything else |
+| `bug.md` | `Status: DRAFT` line; root cause; tasks | Everything else |
+| `tasks.md` | `## [ ] Task N:` headings, and each task's repo, files, and verify command | Layout of the coverage check |
+| `review.md` | A verdict line that can say `READY`; each criterion marked `Met` or not | Layout |
+| `pr.md` | Nothing | Everything |
+| Others | Section headings | Wording and extra sections |
+
+### Add a new kind of document (release notes, feature announcements)
+
+A template on its own does nothing: a **command** decides what gets written. Add both, with matching names, in the layer that owns the format:
+
+```
+<layer>/commands/release-notes.md
+<layer>/templates/release-notes.md
+```
+
+The command (copy and adjust):
+
+```markdown
+---
+description: "Draft release notes. Usage: /release-notes <id> [<id> ...]"
+agent: writer
+---
+
+Draft release notes for work items: **$ARGUMENTS**. Do not change any code.
+
+1. For each id, read `.work/<id>-*/spec.md` (or `bug.md`), `pr.md`, and `review.md`.
+2. Start from `{{ENG_HOME}}/templates/release-notes.md`.
+3. Write the result to `.work/release-notes.md`.
+4. Tell the engineer the file path.
+```
+
+The template (replace with your team's format):
+
+```markdown
+# Release notes: <version or date>
+
+<!-- Audience: customers and support. Plain language. No file names, class names, or internal jargon. Leave out any empty section. -->
+
+## New
+- **<feature name>:** <what users can do now, in one sentence> (#<id>)
+
+## Fixed
+- <what was wrong, from the user's point of view> (#<id>)
+
+## Changed
+- <behavior users will notice> (#<id>)
+```
+
+A good split for a team: the command goes in Core (it would help anyone), each company's format goes in its overlay `templates\`, and each person's taste goes in `personal/AGENTS.md`.
+
+### What makes a template work well
+
+- **Show the exact shape** with `<placeholders>`. A weaker model copies structure literally.
+- **Put instructions in `<!-- -->` comments** inside the template: audience, tone, what to leave out. Core templates do this.
+- **Set limits**: "under 70 characters", "one sentence", "at most 5 bullets".
+- **Say what to omit**, including empty sections.
+- **Keep it short.** Every line is something the model has to fill.
 
 ## Never
 

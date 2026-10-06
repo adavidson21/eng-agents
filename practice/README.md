@@ -87,7 +87,17 @@ Delete `.work/_test` afterwards. Start a new session (`/new`) before Step 5.
 
 ## Step 5: Tier 1 runs
 
-Do these in order. Start a new session (`/new`) between numbered items. After each one, compare with the answer key and note results in `FINDINGS.md`.
+Do these in order. Start a new session (`/new`) between numbered items.
+
+**You do not need to pick an agent.** Each command switches to its own agent automatically. Check the agent name opencode shows while it runs. If it does not match the table, note it in `FINDINGS.md`.
+
+| Command | Runs as |
+|---|---|
+| `/onboard-repo`, `/bug`, `/spike` | investigator |
+| `/start`, `/spec`, `/plan`, `/tasks`, `/status`, `/standup` | planner |
+| `/do-task` | implementer |
+| `/review`, `/check-docs` | reviewer |
+| `/pr`, `/docs` | writer | After each one, compare with the answer key and note results in `FINDINGS.md`.
 
 1. **Onboard the repos**, shared repo first. When asked to run build or test commands, say **no** for Tier 1.
    ```

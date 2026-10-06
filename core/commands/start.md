@@ -56,9 +56,9 @@ Run exactly this command:
 For each repo in `repos.md`, in order:
 
 1. Run `git -C <repo> status --porcelain`. If there is any output, the repo has uncommitted changes. Skip this repo and tell the engineer.
-2. Run `git -C <repo> fetch origin main`.
-3. Run `git -C <repo> checkout -b <branch> origin/main`.
-4. If the repo is shared and is already on another `dev/` branch with work in progress, do not switch it. Tell the engineer and suggest a git worktree instead.
+2. Run `git -C <repo> branch --show-current`. If the repo is on any `dev/` branch, it belongs to another work item, even if there are no uncommitted changes. **Do not switch it.** Ask the engineer first: "`<repo>` is on `<branch>` for another work item. Switch it to `<new branch>` anyway, skip this repo, or use a git worktree?" Wait for the answer and do what they choose.
+3. Run `git -C <repo> fetch origin main`.
+4. Run `git -C <repo> checkout -b <branch> origin/main`.
 
 ## Step 8: Start the log
 

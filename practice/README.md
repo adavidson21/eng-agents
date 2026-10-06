@@ -197,6 +197,21 @@ Paste `FINDINGS.md` back to Claude. Generic problems get fixed in the base repo;
 
 **Never run `install.ps1`, the practice script, or `opencode` with `sudo`.** Anything it creates becomes owned by root, and later runs fail with `EACCES` or `PermissionDenied`. Both scripts now refuse to run as root.
 
+**opencode's background service can be the cause even if you never typed `sudo opencode`.** opencode runs a background service (`opencode serve --service`) that does the actual work, including writing files. If that service was started as root (for example during a `sudo` install), every file it writes is owned by root. Check it:
+
+```bash
+ps -o user,pid,command -A | grep -i '[o]pencode'
+```
+
+If the line with `serve --service` shows `root`, restart the service as yourself, then fix ownership:
+
+```bash
+sudo opencode service stop
+opencode service start
+```
+
+A quick check inside opencode: ask it to run `whoami`. It must print your username, not `root`.
+
 If something was already run with `sudo`, fix ownership once:
 
 ```bash

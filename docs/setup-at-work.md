@@ -70,7 +70,7 @@ notepad "$env:USERPROFILE\.config\eng-agents\config.json"
 
 ## 5. Install
 
-Run PowerShell as your normal user, not "Run as administrator". Files created by an elevated session can end up unusable by opencode running as you.
+Run PowerShell as your normal user, not "Run as administrator", and never start opencode from an elevated window. After the first launch, ask opencode to run `whoami`: it must print your normal Windows username. Files created by an elevated session can end up unusable by opencode running as you.
 
 
 ```powershell

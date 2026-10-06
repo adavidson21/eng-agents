@@ -153,6 +153,8 @@ No agent can run `git push`. Pushing is always you.
 | `/check-docs <path>` | reviewer | Fact-checks every claim in a doc against the code. |
 | `/onboard-repo <folder>` | investigator | Scans a repo and drafts its local `AGENTS.md`. **You must review it.** |
 | `/status [id]` | planner | Reads `.work\` and tells you where you left off and what to run next. |
+| `/pause <id> [reason]` | planner | Records where the item stands in `paused.md`, offers a WIP commit for uncommitted changes, frees the repos for other work. |
+| `/resume <id>` | planner | Switches repos back to the item's branches, warns if main has moved, summarizes where it stands and the next command. |
 
 **Golden rule:** start a fresh opencode session (`/new`) for every `/do-task`. Long sessions are where slower models drift.
 
@@ -174,6 +176,7 @@ All pipeline state lives in the workspace, outside every git repo. This is Layer
   pr.md           PR title and description (one section per repo)
   bug.md          bug lane only
   findings.md     spike lane only
+  paused.md       written by /pause: where it stands and how to resume
 
 .work\spike-short-name\findings.md     spikes without a work item
 .work\docs-short-name\sources.md       docs lane: claims and their source files
@@ -267,9 +270,10 @@ eng-agents/
     commands/
       start.md  spec.md  plan.md  tasks.md  do-task.md  review.md  pr.md
       bug.md  spike.md  docs.md  check-docs.md  onboard-repo.md  status.md
+      pause.md  resume.md
     templates/
       spec.md  plan.md  tasks.md  progress.md  review.md  pr.md
-      bug.md  findings.md  repos.md  workitem.md  repo-agents.md
+      bug.md  findings.md  repos.md  workitem.md  repo-agents.md  paused.md
     scripts/
       ado/
         Get-WorkItem.ps1            reads a work item via REST, creates the .work folder

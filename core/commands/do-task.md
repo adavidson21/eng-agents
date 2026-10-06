@@ -12,6 +12,7 @@ Do task **$2** of work item **$1**. Do only this task.
   - Lane `feature`: `plan.md` must contain `Status: APPROVED`.
   - Lane `bug`: `bug.md` must contain `Status: APPROVED`.
   - If the gate file is not approved, stop and tell the engineer.
+- If `paused.md` contains `Status: PAUSED`, stop. Tell the engineer to run `/resume $1` first.
 
 ## Step 2: Read the task
 
@@ -21,6 +22,7 @@ Do task **$2** of work item **$1**. Do only this task.
 - Read `<repo>/AGENTS.md` for the task's repo.
 - Read the acceptance criteria the task covers in `spec.md` (or `bug.md`), and the matching repo section of `plan.md` (feature lane only).
 - Read the last 2 entries of `progress.md`.
+- If `paused.md` exists and names this task as in progress, read its "Work in progress" section. Continue from there instead of starting over.
 
 ## Step 3: Check the repo
 

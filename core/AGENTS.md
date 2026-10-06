@@ -41,8 +41,11 @@ Each work item has a folder `.work/<id>-<name>/`. Find it by listing `.work/` an
 | `pr.md` | PR title and description. |
 | `bug.md` | Bug lane analysis. Has a `Status:` line. |
 | `findings.md` | Spike results. |
+| `paused.md` | Where a paused item stands and how to pick it up. Has a `Status:` line (`PAUSED` or `RESUMED`). |
 
 **Gates.** A file with `Status: APPROVED` was approved by the engineer. Only the engineer changes a Status line to `APPROVED`. You never do.
+
+**Paused items.** If `paused.md` contains `Status: PAUSED`, the item is on hold. Do not run any other pipeline command on it except `/status` and `/resume`. Tell the engineer to run `/resume <id>` first.
 
 Templates for these files are in `{{ENG_HOME}}/templates/`. Always start a new file from its template.
 

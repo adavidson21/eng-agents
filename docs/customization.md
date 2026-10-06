@@ -47,6 +47,7 @@ Common customizations:
 | Goal | Do this |
 |---|---|
 | Shorter or more detailed answers | Rule in `personal/AGENTS.md` |
+| Change how one agent works (for example the implementer) | Rules under `## When you are the implementer` in `personal/AGENTS.md`. Ideas in [personal/TODO.md](../personal/TODO.md#rules-for-one-agent). |
 | Commit by hand instead of after each task | Rule: "Never commit. Stage the files and tell me the commit message." |
 | Bigger or smaller tasks (Core: 3 files) | Rule: "A task changes at most N files." |
 | Words or punctuation to avoid | Rule in `personal/AGENTS.md` |
@@ -114,6 +115,8 @@ Each agent file lists its own permissions. When you override one, keep the destr
 | `check-docs.md` | `/check-docs <path>` | Fact-check a doc against the code |
 | `onboard-repo.md` | `/onboard-repo <folder>` | Draft a repo `AGENTS.md` |
 | `status.md` | `/status [id]` | Where an item is and what to run next |
+| `pause.md` | `/pause <id> [reason]` | Put an item on hold with a summary to pick it up later |
+| `resume.md` | `/resume <id>` | Restore branches and pick a paused item back up |
 
 ### Templates (`templates/`)
 
@@ -129,6 +132,7 @@ Each agent file lists its own permissions. When you override one, keep the destr
 | `pr.md` | PR title and description per repo |
 | `bug.md` | Bug root cause and fix tasks |
 | `findings.md` | Spike answer and recommendation |
+| `paused.md` | Where a paused item stands and how to resume |
 | `repo-agents.md` | Shape of every repo `AGENTS.md` |
 
 To change any of these, see [Customizing templates](#customizing-templates).
@@ -161,6 +165,7 @@ Templates **replace**, they do not merge. If both Personal and Company provide `
 | `tasks.md` | `## [ ] Task N:` headings, and each task's repo, files, and verify command | Layout of the coverage check |
 | `review.md` | A verdict line that can say `READY`; each criterion marked `Met` or not | Layout |
 | `pr.md` | Nothing | Everything |
+| `paused.md` | `Status: PAUSED` line, the Repos table, and "To resume" | Wording and extra sections |
 | Others | Section headings | Wording and extra sections |
 
 ### Add a new kind of document (release notes, feature announcements)

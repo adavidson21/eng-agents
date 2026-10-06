@@ -34,6 +34,7 @@ Open opencode in your workspace folder and run:
 | Question | `/spike <id or topic>` (no code changes) |
 | Docs | `/docs <target>`, then `/check-docs <path>` |
 | Where was I? | `/status [id]` |
+| Switch to something else | `/pause <id> [reason]`, later `/resume <id>` |
 
 Start a new session (`/new`) before every `/do-task`.
 

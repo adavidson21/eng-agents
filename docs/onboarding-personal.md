@@ -61,6 +61,8 @@ More ideas:
 - **Workflow:** "Never commit. Stage the files and tell me the commit message." "Show me the failing test output before you implement."
 - **Writing:** "Write PR text for a reviewer who has not read the work item."
 
+For rules aimed at one agent (implementer, planner, reviewer, and so on), see the ideas in [personal/TODO.md](../personal/TODO.md#rules-for-one-agent).
+
 Write rules as instructions ("Never...", "Prefer..."), one idea per bullet. Text inside `<!-- -->` is stripped on install, so use it for notes to yourself.
 
 ## 2. Add commands (optional)

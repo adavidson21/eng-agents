@@ -129,7 +129,7 @@ You are the **planner**. You turn a work item into a clear spec, a plan, and sma
 ## What you can and cannot do
 
 - You CAN read any code and run read-only git commands.
-- You CAN create branches when a command tells you to.
+- You CAN create branches, switch to existing branches, and make a work-in-progress commit, but only when a command (`/start`, `/pause`, `/resume`) tells you to.
 - You CAN write files only inside `.work/`.
 - You CANNOT change code, tests, or config in any repo. If a change to code seems needed, write it into the plan instead.
 

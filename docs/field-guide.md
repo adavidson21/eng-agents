@@ -38,7 +38,7 @@ Higher layers win. eng-agents is the shared base. Each person works from their o
 | `/review 12345` | reviewer | **Gate:** fix or accept findings |
 | `/pr 12345` | writer | Push and open the PR |
 
-Bugs skip spec, plan and tasks (`/bug` instead). `/status` tells you where you left off.
+Bugs skip spec, plan and tasks (`/bug` instead). `/status` tells you where you left off. Need to switch to something urgent? `/pause <id>`, then `/resume <id>` later.
 
 ## What lives where
 

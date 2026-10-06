@@ -51,10 +51,11 @@ Each file was exercised in the dry run. Check it off once you have read it and a
 - [ ] `core/commands/docs.md` and `check-docs.md`: write docs, then fact-check every claim.
 - [ ] `core/commands/onboard-repo.md`: draft a repo `AGENTS.md` and git-exclude it.
 - [ ] `core/commands/status.md`: where an item is and the next command.
+- [ ] `core/commands/pause.md` and `resume.md`: put an item on hold with a summary (optional WIP commit), then restore branches and pick it back up. *New, not yet tested.*
 
 **Templates**
 
-- [ ] `core/templates/` (11 files): `workitem`, `repos`, `spec`, `plan`, `tasks`, `progress`, `review`, `pr`, `bug`, `findings`, `repo-agents`
+- [ ] `core/templates/` (12 files): `workitem`, `repos`, `spec`, `plan`, `tasks`, `progress`, `review`, `pr`, `bug`, `findings`, `repo-agents`, `paused`
 
 **Scripts and docs**
 

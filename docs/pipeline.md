@@ -104,6 +104,18 @@ The pipeline is designed for the interactive opencode window. If you script it w
 
 Stick to the interactive window for real work, especially with a weaker model.
 
+## Pausing and resuming
+
+Use `/pause <id> [reason]` when you have to drop an item for a while (an urgent bug, waiting on a decision, time off).
+
+- It writes `paused.md`: phase, tasks done, the task in progress and what is left of it, what it is waiting on, and the exact next command.
+- Uncommitted changes get one question: commit them as `WIP <id>: ...` (so the repo is free for other work) or leave them. Nothing is ever stashed or discarded.
+- While paused, every pipeline command except `/status` and `/resume` refuses to run on the item.
+
+`/resume <id>` reverses it: it switches each repo back to the item's branch (asking first if a repo is on another item's branch), warns if main has moved, marks `paused.md` as RESUMED, and tells you the next command. If a task was half done, the next `/do-task` reads the "Work in progress" notes and continues instead of starting over.
+
+A WIP commit stays in the branch history. Squash it when you merge the PR if your team prefers clean history.
+
 ## Recovering from problems
 
 | Situation | What to do |

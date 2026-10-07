@@ -8,7 +8,7 @@ Write the task list for work item **$1**.
 ## Step 1: Find the work folder and check the gate
 
 - Find the folder in `.work/` that starts with `$1-`.
-- Read `plan.md`. If it does not contain `Status: APPROVED`, stop. Tell the engineer to approve `plan.md` first.
+- Read `plan.md`. If it does not contain `Status: APPROVED`, stop. Tell the engineer to review `plan.md` and run `/approve $1` first.
 - If `tasks.md` exists and any task is checked `[x]`, stop. Tell the engineer that work has started and ask whether to add tasks at the end instead.
 
 ## Step 2: Read

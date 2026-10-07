@@ -483,5 +483,9 @@ $mem = Join-Path $engConfig "memory.md"
 if (Test-Path $mem) { Write-Host "  [ok]   Global memory: $mem" }
 else { Write-Host "  [info] No global memory yet. /memory -global creates $mem" }
 
+$mmdc = Get-Command mmdc -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($mmdc) { Write-Host "  [ok]   mermaid-cli: $($mmdc.Source)" }
+else { Write-Host "  [info] mermaid-cli not installed. /tsd will check diagrams by checklist only. To render-check: npm install -g @mermaid-js/mermaid-cli" }
+
 if ($DryRun) { Write-Host "`nDry run complete. Nothing was written." }
 else { Write-Host "`nDone. Restart opencode to load the changes." }

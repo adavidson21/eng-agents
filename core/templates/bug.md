@@ -2,7 +2,7 @@
 
 Status: DRAFT
 
-<!-- The engineer changes the line above to "Status: APPROVED" to confirm the root cause and tasks. Agents never change it. -->
+<!-- The engineer confirms the root cause and tasks with /approve <id>, or by changing the line above to "Status: APPROVED". No other command changes it. -->
 
 ## Symptom
 

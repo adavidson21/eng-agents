@@ -59,7 +59,7 @@ Each work item has a folder `.work/<id>-<name>/`. Find it by listing `.work/` an
 | `findings.md` | Spike results. |
 | `paused.md` | Where a paused item stands and how to pick it up. Has a `Status:` line (`PAUSED` or `RESUMED`). |
 
-**Gates.** A file with `Status: APPROVED` was approved by the engineer. Only the engineer changes a Status line to `APPROVED`. You never do.
+**Gates.** A file with `Status: APPROVED` was approved by the engineer. The engineer approves by running `/approve <id>` (specs, plans, bug analyses) or `/publish <folder>` (finished documents such as a TSD), or by editing the line. Only those two commands may change a Status line to `APPROVED`, and only when the engineer runs them. In every other command, you never do.
 
 **Paused items.** If `paused.md` contains `Status: PAUSED`, the item is on hold. Do not run any other pipeline command on it except `/status` and `/resume`. Tell the engineer to run `/resume <id>` first.
 

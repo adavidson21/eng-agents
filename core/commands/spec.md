@@ -39,4 +39,4 @@ Write the spec for work item **$1**.
 ## Step 6: Log and hand off
 
 - Add a `progress.md` entry for `/spec`.
-- Tell the engineer: "Review `spec.md`. Edit anything that is wrong. When it is correct, change the line to `Status: APPROVED`, then run `/plan $1`."
+- Tell the engineer: "Review `spec.md`. Edit anything that is wrong. When it is correct, run `/approve $1` (or change the line to `Status: APPROVED` yourself), then `/plan $1`."

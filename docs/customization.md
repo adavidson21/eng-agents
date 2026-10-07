@@ -11,12 +11,13 @@ Review these when you set up, and again whenever the agents get something wrong.
 | # | File | Layer | Needed | Check that |
 |---|---|---|---|---|
 | 1 | `personal/AGENTS.md` | Personal | Yes | Rules are short instructions, one idea per bullet. No company names. |
-| 2 | `%USERPROFILE%\.config\eng-agents\config.json` | Company | To fetch from ADO | `serverUrl`, `collection`, `apiVersion`, and `auth` match your server. |
+| 2 | `%USERPROFILE%\.config\eng-agents\config.json` | Company | To fetch from ADO | One entry under `connections` per collection you work in. `default` and `paths` pick the right one ([ADO setup](onboarding-company.md#3-connect-to-ado)). |
 | 3 | `%USERPROFILE%\.config\eng-agents\overlay\AGENTS.md` | Company | Yes | Only rules true in every repo. Base branch and PR target stated if not `main`. |
 | 4 | `C:\src\work\AGENTS.md` (repo map) | Company | Yes | No `TODO(you)` or `(example)` rows left. Products, glossary, dependencies, and change order are correct. |
-| 5 | `C:\src\work\<repo>\AGENTS.md` (one per repo) | Company | Yes | Build and test commands work. Architecture rules match reality. Pattern files are good examples. No `(inferred, verify)` or `TODO(you)` left. Listed in `.git\info\exclude`. |
+| 5 | Repo guide, one per repo: `C:\src\work\<repo>\AGENTS.md`, or `AGENTS.local.md` when the team committed its own `AGENTS.md` | Company | Yes | Build and test commands work. Architecture rules match reality. Pattern files are good examples. Team guides (committed `CLAUDE.md` files) have the mode you want. No `(inferred, verify)` or `TODO(you)` left. Listed in `.git\info\exclude`. |
 | 6 | `overlay\templates\pr.md` | Company | Only if your team has a PR format | Keeps nothing required; any format works. |
 | 7 | Product docs (`product-docs\` or `_docs\`) | Company | Recommended | One folder per product, in markdown, linked from each product block in the repo map ([layout](onboarding-company.md#product-docs)). |
+| 8 | `%USERPROFILE%\.config\eng-agents\memory.md` and each repo guide's `## Remembered` section | Company | Written by `/memory` | Every line is still true. Merge or delete old lines when the list gets long. |
 
 ### Core defaults to know
 
@@ -26,7 +27,8 @@ Read these once so you know what you are overriding. Change them through your ow
 |---|---|
 | [`core/AGENTS.md`](../core/AGENTS.md) | Conventions (base branch, branch names, commit format, 3-file task cap), shell rules, testing rules |
 | [`core/templates/`](../core/templates/) | The format of every file the agents write, especially `spec.md`, `plan.md`, and `pr.md` |
-| [`core/opencode.json`](../core/opencode.json) | The permission tiers every agent shares |
+| [`core/permissions/`](../core/permissions/) | The shell permission tiers every agent shares: `read`, `build`, `guards` ([Permissions](#permissions)) |
+| [`core/opencode.json`](../core/opencode.json) | Global permissions, the global memory file in `instructions` |
 
 ## How layering works
 
@@ -42,7 +44,8 @@ Read these once so you know what you are overriding. Change them through your ow
 |---|---|
 | `AGENTS.md` | **Appended.** One section per layer (Core, Personal, Company). When rules conflict, the later section wins. |
 | `agents/`, `commands/`, `templates/`, `scripts/` | **Replaced.** A same-named file in a later layer replaces the earlier one. A new name adds a file. |
-| `opencode.json` | **Merged.** A later layer's entry for the same permission key wins. |
+| `permissions/<tier>.json` | **Merged per tier.** A later layer adds rules or changes a rule's value. Every agent and `opencode.json` that uses the tier gets the result. |
+| `opencode.json` | **Merged.** A later layer's entry for the same key wins. Lists such as `instructions` are combined. |
 
 Nothing else in a layer folder is installed (for example `TODO.md`). Re-run `install.ps1` after changing Personal or the overlay.
 
@@ -53,9 +56,9 @@ Nothing else in a layer folder is installed (for example `TODO.md`). Re-run `ins
 |---|---|
 | `agents\`, `commands\` | Layered files |
 | `AGENTS.md` | One section per layer between `eng-agents:begin` / `eng-agents:end` markers. Your text outside the markers is kept. HTML comments are stripped. |
-| `opencode.json` | Layer permissions merged in. Provider and model settings are kept. An `opencode.jsonc` or unparseable file is left alone and the permissions go to `opencode.eng-agents.json` for you to merge. |
+| `opencode.json` | Layer settings merged in. Provider and model settings are kept. Shell rules are rewritten as one block in layer order; shell rules you typed into the file yourself are kept, placed right after `"*"` so eng-agents asks and denies still win. An `opencode.jsonc` or unparseable file is left alone and the settings go to `opencode.eng-agents.json` for you to merge. |
 | `eng-agents\templates\`, `eng-agents\scripts\` | Templates and scripts. Commands find them through the `{{ENG_HOME}}` token. |
-| `eng-agents\manifest.json`, `eng-agents\backup\<time>\` | What was installed (so removed files are cleaned up) and copies of anything overwritten |
+| `eng-agents\manifest.json`, `eng-agents\backup\<time>\` | What was installed (files and shell rules, so removed ones are cleaned up) and copies of anything overwritten |
 
 | Flag | Effect |
 |---|---|
@@ -64,7 +67,9 @@ Nothing else in a layer folder is installed (for example `TODO.md`). Re-run `ins
 | `-Target <path>` | opencode config folder (default `~/.config/opencode`, which is `%USERPROFILE%\.config\opencode` on Windows) |
 | `-Personal <path>`, `-Company <path>` | Other locations for those layers |
 
-A layer with none of `AGENTS.md`, `opencode.json`, `agents/`, `commands/`, `templates/`, or `scripts/` is skipped. Install warns if a Personal or Company `AGENTS.md` still contains `TODO(you)`, refuses to run as root, and ends with two ADO checks.
+A layer with none of `AGENTS.md`, `opencode.json`, `agents/`, `commands/`, `templates/`, `scripts/`, or `permissions/` is skipped. Install warns if a Personal or Company `AGENTS.md` still contains `TODO(you)`, refuses to run as root, and ends with ADO and memory checks.
+
+Tokens replaced in installed `.md` and `.json` files: `{{ENG_HOME}}` (the installed `eng-agents` folder), `{{ENG_CONFIG}}` (`~/.config/eng-agents`), `{{PS}}` (`powershell` or `pwsh`), and `"{{BASH:<tier>}}": include` lines (the tier's rules).
 
 </details>
 
@@ -86,6 +91,7 @@ Use the lightest option that works. A rule in `AGENTS.md` keeps you on Core upda
 | Change how one agent works | Rules under `## When you are the <agent>` in `personal/AGENTS.md` ([ideas](../personal/TODO.md#rules-for-one-agent)) |
 | Commit by hand | Rule: "Never commit. Stage the files and tell me the commit message." |
 | Bigger or smaller tasks (Core cap: 3 files) | Rule: "A task changes at most N files." |
+| Stop being asked about a shell command | Add it to `personal/permissions/read.json` (read-only) or `build.json` ([Permissions](#permissions)) |
 | Different model for one agent | Copy `core/agents/<agent>.md` to `personal/agents/` and add `model:` |
 | A new command | New file in `personal/commands/` |
 
@@ -99,28 +105,51 @@ Use the lightest option that works. A rule in `AGENTS.md` keeps you on Core upda
 | A rule applies to every repo | Add it to `overlay\AGENTS.md` |
 | Base branch or PR target is not `main` | Rule under "Team conventions" in `overlay\AGENTS.md` |
 | Team PR or spec format | `overlay\templates\pr.md` or `spec.md` |
-| Company-specific command, agent, or permission | `overlay\commands\`, `overlay\agents\`, `overlay\opencode.json` |
+| Company-specific command or agent | `overlay\commands\`, `overlay\agents\` |
+| Company-specific shell command (for example an internal CLI) | `overlay\permissions\read.json` or `build.json` |
+| Work items live in more than one ADO collection | One entry per collection under `connections` in `config.json`, plus `paths` ([ADO setup](onboarding-company.md#3-connect-to-ado)) |
+| A rule the agents keep forgetting | `/memory <rule>` (one repo) or `/memory -global <rule>` |
 
 | After editing | Do this |
 |---|---|
 | Anything in `overlay\` | Re-run `install.ps1` |
 | Repo map or a repo `AGENTS.md` | Start a new opencode session |
-| `config.json` | Nothing |
-| `ADO_PAT` | Reopen PowerShell |
+| `config.json` | Nothing. Check a mapping with `-ShowConnection` ([ADO setup](onboarding-company.md#3-connect-to-ado)). |
+| `ADO_PAT` (or a connection's `patEnv` variable) | Reopen PowerShell |
 
 ## Agents
 
-Override an agent by copying its file from `core/agents/` into your layer. Keep its destructive-command denials. Every agent may run read-only commands (file reads, search, read-only `git`, version checks); the table lists what else it can do.
+Override an agent by copying its file from `core/agents/` into your layer. Keep its `{{BASH:...}}` lines and its agent-specific denials. Every agent may run the `read` tier (file reads, search, read-only `git` including `fetch`, version checks); the table lists what else it can do.
 
 | Agent | Runs | Can edit | Extra shell commands |
 |---|---|---|---|
-| `planner` | `/start`, `/spec`, `/plan`, `/tasks`, `/status`, `/pause`, `/resume` | `.work/` only | `git fetch origin`, branch creation, the ADO script. Switching branches and WIP commits ask. |
-| `implementer` | `/do-task` | Code and tests. `AGENTS.md` asks. | Build, test, lint, `dotnet format`, `npm install` / `ci`, `git add`. `git commit` asks. |
-| `reviewer` | `/review`, `/check-docs` | `.work/` only | Build, test, lint |
-| `investigator` | `/bug`, `/spike`, `/onboard-repo` | `.work/`. A repo `AGENTS.md` and `.git/info/exclude` ask. | Build, test, lint |
-| `writer` | `/pr`, `/docs` | Any `*.md` file, `docs/`, `.work/` | None |
+| `planner` | `/start`, `/spec`, `/plan`, `/tasks`, `/status`, `/pause`, `/resume` | `.work/` only | Branch creation, the ADO script. Switching branches and WIP commits ask. |
+| `implementer` | `/do-task` | Code and tests. Repo guides and `CLAUDE.md` ask. | `build` tier, `dotnet format`, `npm install` / `ci`, `git add`. `git commit` asks. |
+| `reviewer` | `/review`, `/check-docs` | `.work/` only | `build` tier |
+| `investigator` | `/bug`, `/spike`, `/onboard-repo` | `.work/`. A repo guide and `.git/info/exclude` ask. | `build` tier |
+| `writer` | `/pr`, `/docs`, `/memory` | Any `*.md` file, `docs/`, `.work/`, the global memory file | None |
 
-Unlisted commands ask. Denied for every agent: `git push`, `git reset --hard`, `git clean`, `git restore`, `git checkout --`, recursive deletes, `dotnet ef database`, shutdown. Reviewer, investigator, and writer also cannot `git add` or `git commit`. Permission rules are evaluated top to bottom and the last match wins, so the denials at the bottom catch risky commands chained after allowed ones.
+Unlisted commands ask. Reviewer, investigator, and writer cannot `git add` or `git commit`.
+
+## Permissions
+
+The goal: an agent never stops to ask about something its command needs, and never runs something risky without asking. Shell rules live in three **tiers**, written once and copied into every agent at install:
+
+| Tier | Contains | Used by |
+|---|---|---|
+| [`read`](../core/permissions/read.json) | Read-only commands: `Get-Content`, `Select-String`, `rg`, `Select-Object`, `Measure-Object`, read-only `git` (`status`, `diff`, `log`, `show`, `fetch`, `grep`, `merge-base`, `worktree list`, ...), version and list commands for `dotnet`, `node`, `npm` | Every agent and `opencode.json` |
+| [`build`](../core/permissions/build.json) | `dotnet restore` / `build` / `test`, `dotnet format --verify-no-changes`, npm `test` / `lint` / `build` / `e2e` scripts, `ng`, Playwright, Jest, ESLint, Prettier check, `tsc --noEmit` | Implementer, reviewer, investigator, `opencode.json` |
+| [`guards`](../core/permissions/guards.json) | **Ask:** file writes and deletes, web requests, `Start-Process`, `Invoke-Expression`, `cmd /c`, chained commands (`&&`, `\|\|`), environment variables (`env:`), `.env` files, deleting or renaming branches. **Deny:** `git push`, `reset --hard`, `clean`, `restore`, `checkout --`, recursive deletes, `dotnet ef database`, shutdown, anything naming `ADO_PAT`. | Every agent and `opencode.json`, always last |
+
+Other settings in [`core/opencode.json`](../core/opencode.json): templates, scripts, and `~/.config/eng-agents` (global memory) are readable without an external-directory prompt; `webfetch` and repeated identical tool calls (`doom_loop`) ask.
+
+How it fits together:
+
+- Rules are checked top to bottom and the **last match wins**. Each agent lists `"*": ask`, then its tiers, then its own extras, then `guards`. So an allowed command with a risky one chained after it (`dotnet test && git push`) still hits the guard.
+- Agent rules are merged with the global `opencode.json` and **win over it**. Because every agent starts with `"*": ask`, a rule added only to `opencode.json` does not reach the eng-agents agents. Add it to a tier instead.
+- To stop being asked about a command: add it to `read.json` (read-only) or `build.json` in your Personal or Company layer, re-run `install.ps1`. Keep allows narrow (`npx playwright show-report*`, not `npx *`).
+- To change what one agent may do: override that agent and edit its extra lines.
+- Day-one check: after installing, run a normal feature through `/start`, `/spec`, `/do-task`, and `/review`. Every prompt you approve with "always" is a candidate for a tier. Add it there so it survives reinstalls.
 
 ## Customizing templates
 
@@ -193,7 +222,7 @@ The template (replace with your team's format):
 Open a pull request to eng-agents. Before merging:
 
 - [ ] It would help **anyone**. No company names, no personal preferences.
-- [ ] Permission changes are made in `core/opencode.json` **and** every agent file that repeats the same tier lists.
+- [ ] Shell permission changes for everyone go in `core/permissions/`. Changes for one agent go in that agent file, before its `{{BASH:guards}}` line.
 - [ ] `Status: DRAFT` lines in the `spec`, `plan`, and `bug` templates, `Status: PAUSED` in `paused`, and `## [ ] Task N:` headings in `tasks` are unchanged.
 - [ ] Docs that describe the behavior are updated.
 - [ ] `pwsh ./install.ps1 -DryRun` runs cleanly.

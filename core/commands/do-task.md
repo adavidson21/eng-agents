@@ -19,7 +19,7 @@ Do task **$2** of work item **$1**. Do only this task.
 - Read `tasks.md` and find `Task $2`.
 - If it is already checked `[x]`, stop and tell the engineer.
 - If an earlier task is not checked, tell the engineer which one and ask whether to continue anyway. Wait.
-- Read `<repo>/AGENTS.md` for the task's repo.
+- Read the repo guide (`<repo>/AGENTS.local.md` if it exists, otherwise `<repo>/AGENTS.md`) for the task's repo.
 - Read the acceptance criteria the task covers in `spec.md` (or `bug.md`), and the matching repo section of `plan.md` (feature lane only).
 - Read the last 2 entries of `progress.md`.
 - If `paused.md` exists and names this task as in progress, read its "Work in progress" section. Continue from there instead of starting over.

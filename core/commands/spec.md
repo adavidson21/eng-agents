@@ -12,7 +12,7 @@ Write the spec for work item **$1**.
 ## Step 2: Read
 
 - Read `workitem.md`, `repos.md`, and `progress.md` in the work folder.
-- Read `<repo>/AGENTS.md` for every repo in `repos.md`.
+- Read the repo guide (`<repo>/AGENTS.local.md` if it exists, otherwise `<repo>/AGENTS.md`) for every repo in `repos.md`.
 - If `spec.md` exists and says `Status: APPROVED`, stop. Tell the engineer the spec is already approved and suggest `/plan $1`.
 - If `spec.md` exists as a draft, read it. You are refining it, not starting over.
 

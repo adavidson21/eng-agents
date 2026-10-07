@@ -13,7 +13,7 @@ Review all changes for work item **$1**.
 
 ## Step 2: Read the rules
 
-- Read `<repo>/AGENTS.md` for every repo in `repos.md`.
+- Read the repo guide (`<repo>/AGENTS.local.md` if it exists, otherwise `<repo>/AGENTS.md`) for every repo in `repos.md`.
 
 ## Step 3: Run the tests
 

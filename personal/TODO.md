@@ -48,6 +48,18 @@ Every agent reads `personal/AGENTS.md`, so put agent-specific rules under a head
 
 File format: [Personal onboarding, step 3](../docs/onboarding-personal.md#3-optional-commands-overrides-permissions).
 
+## Permissions to add
+
+Commands you approve every time can go in `personal/permissions/read.json` (read-only, every agent) or `build.json` (build and test agents). Only the keys you add:
+
+```json
+{
+  "npx playwright show-report*": "allow"
+}
+```
+
+Details: [Permissions](../docs/customization.md#permissions).
+
 ## Templates to override
 
 | Template | Common change |

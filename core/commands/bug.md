@@ -9,7 +9,7 @@ Investigate bug **$1**.
 
 - Find the folder in `.work/` that starts with `$1-`. If there is none, stop and suggest `/start $1 bug`.
 - Read `workitem.md`, `repos.md`, and `progress.md`.
-- Read `<repo>/AGENTS.md` for every repo in `repos.md`.
+- Read the repo guide (`<repo>/AGENTS.local.md` if it exists, otherwise `<repo>/AGENTS.md`) for every repo in `repos.md`.
 - If `bug.md` exists and says `Status: APPROVED`, stop and suggest `/do-task $1 1`.
 
 ## Step 2: Restate the bug

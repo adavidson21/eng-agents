@@ -7,10 +7,11 @@ Finish [Personal onboarding](onboarding-personal.md) first.
 | File | What it does |
 |---|---|
 | `ADO_PAT` (user environment variable) | Lets `/start` fetch work items |
-| `%USERPROFILE%\.config\eng-agents\config.json` | Which ADO server to call |
+| `%USERPROFILE%\.config\eng-agents\config.json` | Which ADO servers and collections to call |
 | `%USERPROFILE%\.config\eng-agents\overlay\AGENTS.md` | Rules for every repo at work |
 | `C:\src\work\AGENTS.md` | Repo map: what each repo is and how they connect. **Most important file.** |
-| `C:\src\work\<repo>\AGENTS.md` | Build, test, and architecture guide per repo |
+| `C:\src\work\<repo>\AGENTS.md` (or `AGENTS.local.md`) | Repo guide: build, test, and architecture per repo |
+| `%USERPROFILE%\.config\eng-agents\memory.md` | Global memory, written by `/memory -global`. Loaded in every session. |
 
 What to check in each file, and what else you can add: [customization guide](customization.md#files-to-review).
 
@@ -47,13 +48,50 @@ notepad "$env:USERPROFILE\.config\eng-agents\config.json"
 
 Close and reopen PowerShell so the variable is visible.
 
+Add one entry under `connections` for each project collection (or server) you get work items from. The names (`main`, `second`) are yours to pick.
+
+```json
+{
+  "apiVersion": "6.0",
+  "auth": "pat",
+  "default": "main",
+  "connections": {
+    "main":   { "serverUrl": "https://ado.example.local/tfs", "collection": "DefaultCollection", "project": "ExampleProject" },
+    "second": { "serverUrl": "https://ado.example.local/tfs", "collection": "SecondCollection", "project": "OtherProject", "patEnv": "ADO_PAT_SECOND" }
+  },
+  "paths": {
+    "C:/src/work/legacy-*": "second"
+  }
+}
+```
+
 | Key | Value |
 |---|---|
 | `serverUrl` | Up to, not including, the collection (often ends in `/tfs`) |
-| `collection` | Often `DefaultCollection`. Check the URL you use in the browser. |
+| `collection` | The project collection. Check the URL you use in the browser. |
 | `project` | Project name. Used only when fetching comments. |
-| `apiVersion` | Start with `6.0`. Use `5.1` if requests fail with a version error. |
-| `auth` | `pat` (uses `ADO_PAT`), or `windows` to use your Windows login instead |
+| `apiVersion` | Start with `6.0`. Use `5.1` if requests fail with a version error. Can be set per connection. |
+| `auth` | `pat`, or `windows` to use your Windows login instead. Can be set per connection. |
+| `patEnv` | Environment variable holding the PAT. Default `ADO_PAT`. Set it per connection if one PAT does not work for every collection. |
+| `default` | Connection to use when nothing else decides. Optional. |
+| `paths` | Folder pattern to connection. `*` matches anything, including `\`. The longest matching pattern wins. Optional. |
+
+`/start` picks the connection in this order:
+
+1. The third argument, if it is a connection name: `/start 123 bug second`
+2. The third argument, if it is a repo folder: `/start 123 bug orders-api`. A `paths` pattern matching the repo's folder wins; otherwise the collection in the repo's `origin` URL decides, so most repos need no mapping at all.
+3. A `paths` pattern matching the folder opencode was started from (useful if you keep one workspace per collection)
+4. `default`
+5. The only connection, if there is one
+
+If none of these decide, the planner asks you which connection. Check a mapping without fetching anything:
+
+```powershell
+cd C:\src\work
+powershell -NoProfile -File "$env:USERPROFILE\.config\opencode\eng-agents\scripts\ado\Get-WorkItem.ps1" -Id 0 -From orders-api -ShowConnection
+```
+
+It prints the connection, why it was chosen, the URL, and whether its PAT variable is set. A config with `serverUrl` and `collection` at the top level (the old format) still works as a single connection.
 
 Without ADO access, `/start` still works in offline mode: you paste the title and details.
 
@@ -101,7 +139,9 @@ cd C:\src\work
 powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\.config\opencode\eng-agents\scripts\ado\Get-WorkItem.ps1" -Id <id> -WorkRoot .work
 ```
 
-Adjust the path if you used `-Target`. It should print a folder path and create `workitem.md`. Check the description is readable, then delete the test folder.
+Adjust the path if you used `-Target`. It should print a folder path and create `workitem.md`, with an `ADO:` line naming the connection. Check the description is readable, then delete the test folder.
+
+With more than one connection, repeat it once per collection with `-From <connection name>` added.
 
 ## 7. Build the workspace and repo map
 
@@ -159,14 +199,27 @@ opencode
 /onboard-repo <next-repo>
 ```
 
-Shared repos first, a new session between repos. Review each generated `<repo>\AGENTS.md`:
+Shared repos first, a new session between repos.
+
+**Committed agent guides.** `/onboard-repo` looks for guides the team already committed (`CLAUDE.md` at any depth, `.claude/*.md`, a committed `AGENTS.md`, `.github/copilot-instructions.md`, Cursor rules) and asks how to use each one:
+
+| Mode | What happens | Pick it when |
+|---|---|---|
+| **link** (recommended) | The repo guide lists the file. Agents read it every time they work in its folder, so it never goes stale. The repo guide adds only what it is missing. | The team keeps it current |
+| **copy** | Its rules are copied into the repo guide, with the commit it was copied at. Agents warn you when the file changes; re-run `/onboard-repo` to refresh. | You want to edit or trim the rules |
+| **ignore** | Not read | It is wrong or for another stack |
+
+opencode does not load a repo's `CLAUDE.md` on its own here, because you start it from the workspace root, so linking is what makes agents see it. If the team committed its own `AGENTS.md`, `/onboard-repo` leaves it alone, links it, and writes your guide to `AGENTS.local.md` instead. Agents read `AGENTS.local.md` first.
+
+Review each generated repo guide:
 
 - [ ] Build and test commands work when you run them yourself
 - [ ] Architecture reference rules match reality
 - [ ] "Pattern to follow" files are good examples, not legacy code
 - [ ] UI repos point at existing Playwright mock helpers
 - [ ] Every `(inferred, verify)` fixed, every `TODO(you)` filled or deleted
-- [ ] `AGENTS.md` is listed in the repo's `.git\info\exclude`
+- [ ] Every team guide disagreement under "Gotchas" is resolved
+- [ ] The guide file (`AGENTS.md` or `AGENTS.local.md`) is listed in the repo's `.git\info\exclude`
 
 ## 9. Day-one checks
 
@@ -181,6 +234,10 @@ Run these in a scratch opencode session. Each confirms an assumption the setup d
 | 5 | Templates are readable | Ask `planner`: "Read the spec template in the eng-agents templates folder and show its first line." No external directory prompt. | Approve once with "always", or add the path to `external_directory` in your overlay `opencode.json`. |
 | 6 | Push is blocked | As `implementer`, ask it to run `git -C <repo> push`. Denied. | Check the `permission` block in the installed `opencode.json`. |
 | 7 | Repo `AGENTS.md` is read when needed | Ask `planner` for a repo's test command without naming the file. | It may not know until it reads the file. Commands always read it, so this is fine. |
+| 8 | Global memory works | `/memory -global Test rule, delete me`, then `/new` and ask: "What rules are in your global memory?" Delete the line from `memory.md` afterwards. | Check `instructions` in the installed `opencode.json` lists `memory.md`. |
+| 9 | Repo memory works | `/memory <repo> Test rule, delete me`. The line appears under `## Remembered` in the repo guide with no prompt. Delete it. | The writer could not edit the file. Approve once and report it. |
+| 10 | Each ADO connection resolves | Run the `-ShowConnection` command from step 3 once per connection (`-From <name>`) and once for a repo in each collection. | Fix `paths` or the connection's `serverUrl` and `collection`. |
+| 11 | Normal work does not prompt | Run one real item through `/start` to `/review`. Note every approval you give. | Add each safe command to `overlay\permissions\read.json` or `build.json` ([Permissions](customization.md#permissions)) and reinstall. |
 
 Then delete the test folder yourself (agents cannot delete recursively): `Remove-Item C:\src\work\.work\_test -Recurse`. Keep `.work`.
 
@@ -206,12 +263,13 @@ Write down every place the model stumbled. Generic problems are Core fixes; comp
 
 | Change | Then |
 |---|---|
-| Model makes a company-specific mistake | Add a rule to that repo's `AGENTS.md` (one repo) or `overlay\AGENTS.md` (every repo) |
+| Model makes a company-specific mistake | `/memory <rule>` in the session where it happened, or edit that repo's guide (one repo) or `overlay\AGENTS.md` (every repo) by hand |
+| Agents keep asking about a safe command | Add it to `overlay\permissions\read.json` or `build.json`, then `.\install.ps1` |
 | Edited the overlay | Run `.\install.ps1` again |
 | Edited the repo map or a repo `AGENTS.md` | Start a new opencode session |
 | Base repo changed | At home: `git fetch upstream`, `git merge upstream/main`, `git push`. At work: `git pull`, then `.\install.ps1` |
 
-Updates never touch your overlay, config, workspace, or repo `AGENTS.md` files. Never put the PAT in a file, and never commit any of this.
+Updates never touch your overlay, config, memory, workspace, or repo guides. Never put the PAT in a file, and never commit any of this.
 
 ## Mac or Linux
 

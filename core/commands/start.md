@@ -1,16 +1,17 @@
 ---
-description: "Start a work item: fetch it, create its .work folder, pick repos, create branches. Usage: /start <id> <feature|bug>"
+description: "Start a work item: fetch it, create its .work folder, pick repos, create branches. Usage: /start <id> <feature|bug> [repo folder or ADO connection]"
 agent: planner
 ---
 
-Start work item **$1** in lane **$2**.
+Start work item **$1** in lane **$2**. Optional third argument (where to fetch it from): **$3**
 
 Follow these steps in order. Do not skip any step.
 
 ## Step 1: Check the arguments
 
 - `$1` must be a number. `$2` must be `feature` or `bug`.
-- If either is wrong, stop and reply: `Usage: /start <id> <feature|bug>`.
+- If either is wrong, stop and reply: `Usage: /start <id> <feature|bug> [repo folder or ADO connection]`.
+- `$3` is optional. It is a repo folder in the workspace or an ADO connection name. It tells the script which ADO server or collection holds the work item. If the third argument above is empty, there is none.
 
 ## Step 2: Check for existing work
 
@@ -19,14 +20,21 @@ Follow these steps in order. Do not skip any step.
 
 ## Step 3: Get the work item
 
-Run exactly this command:
+If there is no third argument, run exactly this command:
 
 ```
 {{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/ado/Get-WorkItem.ps1" -Id $1 -WorkRoot ".work"
 ```
 
+If there is a third argument, run exactly this command instead:
+
+```
+{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/ado/Get-WorkItem.ps1" -Id $1 -WorkRoot ".work" -From "$3"
+```
+
 - If it succeeds, the last line of output is the new folder path. Remember it.
-- If it fails, show the engineer the error in one line, then ask: "Paste the work item title." When they answer, run:
+- If the error contains `AMBIGUOUS:` or `UNKNOWN:`, the script could not tell which ADO connection to use. Show the engineer the connection names from the error and ask: "Which ADO connection (or which repo folder) is work item $1 in?" Run the second command above, with `$3` replaced by their answer.
+- If it fails for any other reason, show the engineer the error in one line, then ask: "Paste the work item title." When they answer, run:
 
 ```
 {{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/ado/Get-WorkItem.ps1" -Id $1 -WorkRoot ".work" -Title "<the title they pasted>"

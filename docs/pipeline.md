@@ -4,6 +4,7 @@ How each phase works, why it is shaped this way, and what to do when it goes wro
 
 ```
 /start <id> feature    fetch work item, create .work/<id>-<name>/, confirm repos, create branches
+                       (add a repo folder or ADO connection as a 3rd argument for another collection)
 /spec <id>             questions one at a time, then spec.md        GATE: approve spec.md
 /plan <id>             files per repo, pattern to follow, test plan GATE: approve plan.md
 /tasks <id>            small tasks, each with a verify command      skim task sizes
@@ -58,6 +59,7 @@ Bug lane rules:
 
 **/start**
 - A script creates the folder name and slug, so branch names are consistent: `dev/<lane>/<id>-<short-name>`.
+- With several ADO collections, the script picks the connection from the optional third argument (a connection name or a repo folder), a `paths` mapping, the repo's `origin` URL, or `default`. If it cannot tell, the planner asks you. `workitem.md` records which connection it came from. Setup: [Connect to ADO](onboarding-company.md#3-connect-to-ado).
 - If ADO is unreachable, offline mode creates the folder from a title you paste; then you paste the details into `workitem.md`.
 - Proposes repos from the repo map and asks you to confirm.
 - Never switches a repo with uncommitted changes (skips it). Asks before switching a repo that is on another item's `dev/` branch.
@@ -100,7 +102,8 @@ All state lives in the workspace, outside every git repo, and never leaves the w
 .work/spike-<short-name>/findings.md     spike without a work item
 .work/docs-<short-name>/sources.md       docs lane: claims and their source files
 .work/docs-<short-name>/check.md         docs lane: fact-check results
-.work/_onboard/<repo>-AGENTS.md          onboard draft when the repo already has an AGENTS.md
+.work/_onboard/<repo>-AGENTS.md          onboard draft when the repo already has a repo guide
+                                         (<repo>-AGENTS.local.md when the team committed its own AGENTS.md)
 ```
 
 `<short-name>` is the first 5 words of the work item title, lowercase, filler words dropped, at most 40 characters.
@@ -128,6 +131,23 @@ All state lives in the workspace, outside every git repo, and never leaves the w
 
 `/resume <id>` switches each repo back to the item's branch (asking first if a repo is on another item's branch), warns if `main` has moved, marks `paused.md` as `RESUMED`, and gives the next command. A half-done task continues from the "Work in progress" notes. Squash WIP commits when merging if your team prefers clean history.
 
+## Repo guides, team guides, and memory
+
+Agents learn a repo from three places, read in this order:
+
+| Source | Where | Written by |
+|---|---|---|
+| Repo guide | `<repo>\AGENTS.local.md` if it exists, otherwise `<repo>\AGENTS.md`. Never committed. | `/onboard-repo`, then you |
+| Team guides | Committed `CLAUDE.md` and similar files listed in the repo guide's "Team guides" table | Your team |
+| Repo memory | The repo guide's `## Remembered` section | `/memory <rule>` |
+
+Plus **global memory** in `%USERPROFILE%\.config\eng-agents\memory.md` (`/memory -global <rule>`), loaded in every session. The repo guide wins over a team guide, and repo memory wins over global memory.
+
+- `/memory <rule>` uses the repo you are working in, or asks. `/memory <repo> <rule>` names it. `/memory -list` shows everything saved.
+- It checks for a duplicate or contradicting line first, and offers to fix a wrong command or path in the repo guide instead of adding a memory line.
+- Run it in the session where the rule came up, so "remember that" can be resolved to the real thing.
+- Edit or delete memory lines by hand any time. Re-running `/onboard-repo` keeps the `## Remembered` section.
+
 ## Recovering from problems
 
 | Situation | What to do |
@@ -144,7 +164,7 @@ All state lives in the workspace, outside every git repo, and never leaves the w
 | Symptom | Fix |
 |---|---|
 | Task fails or wanders | Split it into smaller tasks. |
-| Ignores a convention | Put the rule in the repo `AGENTS.md` or the overlay. Rules said in chat do not carry over. |
+| Ignores a convention | `/memory <rule>` saves it to that repo's guide; `/memory -global <rule>` saves it for every repo. Rules said in chat do not carry over. |
 | Claims done without proof | Verify output must be in `progress.md`. Re-run `/do-task` and point at the missing evidence. |
 | Asks too many questions | Answer them in `spec.md` directly, then re-run the next command. |
 | Plans touch the wrong repo or order | Fix the repo map. |

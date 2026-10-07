@@ -14,7 +14,7 @@ Write the task list for work item **$1**.
 ## Step 2: Read
 
 - Read `spec.md`, `plan.md`, and `repos.md`.
-- Read `<repo>/AGENTS.md` for each repo, especially the Commands table. Verify commands must come from that table.
+- Read the repo guide (`<repo>/AGENTS.local.md` if it exists, otherwise `<repo>/AGENTS.md`) for each repo, especially the Commands table. Verify commands must come from that table.
 
 ## Step 3: Write the tasks
 

@@ -21,9 +21,25 @@ You are working with an engineer who uses a step-by-step pipeline. Each step is 
 - You are started from the **workspace root**. It is not a git repo.
 - Each repo is a folder directly inside the workspace root.
 - The `AGENTS.md` in the workspace root is the **repo map**. It says what each repo does and how the repos depend on each other. It is loaded automatically.
-- **Before you touch any repo, read `<repo>/AGENTS.md`.** It is not loaded automatically. If it does not exist, stop and tell the engineer to run `/onboard-repo <repo>` first.
-- If a repo map or repo `AGENTS.md` contains `TODO(you)`, warn the engineer that it is incomplete, then continue carefully.
+- **Before you touch any repo, read its repo guide:** `<repo>/AGENTS.local.md` if it exists, otherwise `<repo>/AGENTS.md`. It is not loaded automatically. If neither exists, stop and tell the engineer to run `/onboard-repo <repo>` first. Everywhere these instructions say "the repo's `AGENTS.md`", they mean this repo guide.
+- **Team guides.** If the repo guide has a "Team guides" table:
+  - For each `link` row whose "Applies to" folder contains files you will read or change, read that file too. Committed `CLAUDE.md` files are not loaded automatically, because you start from the workspace root.
+  - For each `copy` row, run `git -C <repo> log -1 --format=%h -- <file>`. If the hash is not the one in "Synced at", tell the engineer: "`<file>` changed since the repo guide copied it. Run `/onboard-repo <repo>` to refresh." Then continue.
+  - If a team guide disagrees with the repo guide, follow the repo guide.
+- If a repo map or repo guide contains `TODO(you)`, warn the engineer that it is incomplete, then continue carefully.
 - Shared repos are used by other repos through **relative paths** (for example `../shared-repo/...`). A change in a shared repo affects every repo that references it. Change shared repos first.
+
+## Memory
+
+The engineer saves rules with `/memory`. Follow them like any other rule.
+
+| Scope | Where it lives | Loaded |
+|---|---|---|
+| One repo | The `## Remembered` section of that repo's guide | When you read the repo guide |
+| Every repo | `{{ENG_CONFIG}}/memory.md` | Automatically, in every session |
+
+- A repo's `## Remembered` rule wins over a global memory rule.
+- If the engineer says "remember this", "from now on", or "always do X here", suggest `/memory <rule>` (one repo) or `/memory -global <rule>` (every repo). Do not write memory files yourself unless running `/memory`.
 
 ## Pipeline files
 

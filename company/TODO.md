@@ -6,4 +6,6 @@ Placeholder for the **Company layer**: anything that names your employer, its co
 |---|---|
 | `repo-map.template.md` | Blank repo map to fill in: products to repos, glossary (work item terms to code names), dependencies, change order. Copy it to `C:\src\work\AGENTS.md` and fill it in there. |
 
+The overlay at `%USERPROFILE%\.config\eng-agents\overlay\` can hold `AGENTS.md`, `commands\`, `agents\`, `templates\`, `permissions\` (shell commands for every agent), and `opencode.json`. `config.json` (ADO connections) and `memory.md` (written by `/memory -global`) sit next to it in `%USERPROFILE%\.config\eng-agents\`.
+
 **How to set it up:** [docs/onboarding-company.md](../docs/onboarding-company.md)

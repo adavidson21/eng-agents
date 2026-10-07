@@ -1,7 +1,21 @@
 {
-  "serverUrl": "https://ado.example.local/tfs",
-  "collection": "DefaultCollection",
-  "project": "ExampleProject",
   "apiVersion": "6.0",
-  "auth": "pat"
+  "auth": "pat",
+  "default": "main",
+  "connections": {
+    "main": {
+      "serverUrl": "https://ado.example.local/tfs",
+      "collection": "DefaultCollection",
+      "project": "ExampleProject"
+    },
+    "second": {
+      "serverUrl": "https://ado.example.local/tfs",
+      "collection": "SecondCollection",
+      "project": "OtherProject",
+      "patEnv": "ADO_PAT_SECOND"
+    }
+  },
+  "paths": {
+    "C:/src/work/legacy-*": "second"
+  }
 }

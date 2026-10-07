@@ -15,6 +15,8 @@ Open opencode from your workspace root (for example `C:\src\work`).
 | Where was I? | `/status [id]` |
 | Switch to something urgent | `/pause <id> [reason]`, later `/resume <id>` |
 | New repo in the workspace | `/onboard-repo <folder>` |
+| Remember a rule | `/memory <rule>` (one repo) or `/memory -global <rule>` (every repo). `/memory -list` shows them. |
+| Work item in another ADO collection | `/start <id> <lane> <repo folder or connection>` |
 
 - **Approve** `spec.md`, `plan.md`, or `bug.md` by changing `Status: DRAFT` to `Status: APPROVED`. Edit the file first if anything is wrong.
 - **New session** (`/new`) before every `/do-task`.

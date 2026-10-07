@@ -23,8 +23,18 @@
                                    cleaned up next time
       eng-agents\backup\<time>\    copies of anything overwritten
 
+    Shell permission tiers (bash rules shared by every agent):
+      <layer>\permissions\read.json     read-only commands
+      <layer>\permissions\build.json    build, test, lint
+      <layer>\permissions\guards.json   asks and denies, always placed last
+      Each tier is merged across layers (a later layer adds keys or changes a
+      value). A line "{{BASH:<tier>}}": include in an agent file or opencode.json
+      is replaced with that tier's rules, so one entry reaches every agent.
+
     Tokens replaced in every installed .md and .json:
       {{ENG_HOME}}  full path of <Target>\eng-agents
+      {{ENG_CONFIG}} full path of ~/.config/eng-agents (config.json, overlay,
+                    global memory.md)
       {{PS}}        "powershell" when installed from Windows PowerShell 5.1,
                     "pwsh" when installed from PowerShell 7 (Mac, Linux, or Windows)
 
@@ -67,7 +77,49 @@ function Read-Text {
 
 function Expand-Tokens {
     param([string]$Text)
-    return $Text.Replace("{{ENG_HOME}}", $script:EngHomeToken).Replace("{{PS}}", $script:PsToken)
+    return $Text.Replace("{{ENG_HOME}}", $script:EngHomeToken).Replace("{{ENG_CONFIG}}", $script:EngConfigToken).Replace("{{PS}}", $script:PsToken)
+}
+
+function Get-Tier {
+    param([string]$Name, [string]$Where)
+    if (-not $script:Tiers.Contains($Name)) { throw "Unknown permission tier '{{BASH:$Name}}' in $Where. Known tiers: $(@($script:Tiers.Keys) -join ', ')" }
+    return $script:Tiers[$Name]
+}
+
+function Expand-BashTiersText {
+    # YAML frontmatter: a line '    "{{BASH:read}}": include' becomes one line per rule, same indent.
+    param([string]$Text, [string]$Where)
+    $lines = $Text -split "`r?`n"
+    $out = New-Object System.Collections.Generic.List[string]
+    foreach ($line in $lines) {
+        $m = [regex]::Match($line, '^(\s*)"\{\{BASH:([A-Za-z0-9_-]+)\}\}"\s*:.*$')
+        if (-not $m.Success) { $out.Add($line); continue }
+        $indent = $m.Groups[1].Value
+        $tier = Get-Tier $m.Groups[2].Value $Where
+        foreach ($k in @($tier.Keys)) {
+            $key = $k.Replace("\", "\\").Replace('"', '\"')
+            $out.Add("$indent""$key"": $($tier[$k])")
+        }
+    }
+    return ($out -join "`n")
+}
+
+function Expand-BashTiersMap {
+    # opencode.json: a key "{{BASH:read}}" inside a bash map becomes that tier's rules, in place.
+    param($Map, [string]$Where)
+    $result = [ordered]@{}
+    foreach ($k in @($Map.Keys)) {
+        $m = [regex]::Match([string]$k, '^\{\{BASH:([A-Za-z0-9_-]+)\}\}$')
+        if ($m.Success) {
+            $tier = Get-Tier $m.Groups[1].Value $Where
+            foreach ($tk in @($tier.Keys)) { if ($result.Contains($tk)) { $result.Remove($tk) }; $result[$tk] = $tier[$tk] }
+        }
+        else {
+            if ($result.Contains($k)) { $result.Remove($k) }
+            $result[$k] = $Map[$k]
+        }
+    }
+    return $result
 }
 
 function ConvertTo-Ordered {
@@ -91,10 +143,18 @@ function Merge-Ordered {
     # "last matching rule wins" ordering in permission blocks stays predictable.
     param($Base, $Over)
     foreach ($k in @($Over.Keys)) {
-        $b = if ($Base.Contains($k)) { $Base[$k] } else { $null }
+        # Assign directly: an "if" expression would unroll a one-item list into a plain value.
+        $b = $null
+        if ($Base.Contains($k)) { $b = $Base[$k] }
         $o = $Over[$k]
         if (($b -is [System.Collections.Specialized.OrderedDictionary]) -and ($o -is [System.Collections.Specialized.OrderedDictionary])) {
             Merge-Ordered $b $o
+        }
+        elseif (($b -is [array]) -and ($o -is [array])) {
+            # Lists (for example "instructions") are combined, not replaced.
+            $list = @($b)
+            foreach ($item in $o) { if ($list -notcontains $item) { $list += , $item } }
+            $Base[$k] = $list
         }
         else {
             $Base[$k] = $o
@@ -125,7 +185,7 @@ if (-not (Test-Path $coreDir)) { throw "Core folder not found at $coreDir. Run t
 function Test-LayerContent {
     param([string]$Path)
     if (-not (Test-Path $Path)) { return $false }
-    foreach ($name in @("AGENTS.md", "opencode.json", "agents", "commands", "templates", "scripts")) {
+    foreach ($name in @("AGENTS.md", "opencode.json", "agents", "commands", "templates", "scripts", "permissions")) {
         if (Test-Path (Join-Path $Path $name)) { return $true }
     }
     return $false
@@ -142,6 +202,8 @@ if (-not $CoreOnly) {
 
 $engHome = Join-Path $Target "eng-agents"
 $script:EngHomeToken = $engHome.Replace("\", "/")
+$engConfig = Join-Path $(if ($env:USERPROFILE) { $env:USERPROFILE } else { $HOME }) ".config/eng-agents"
+$script:EngConfigToken = $engConfig.Replace("\", "/")
 $script:PsToken = if ($PSVersionTable.PSEdition -eq "Core") { "pwsh" } else { "powershell" }
 $stamp = (Get-Date).ToString("yyyyMMdd-HHmmss")
 $backupDir = Join-Path $engHome "backup\$stamp"
@@ -151,6 +213,21 @@ Write-Host "  Target : $Target"
 Write-Host "  Layers : $(($layers | ForEach-Object { "$($_.Name) ($($_.Path))" }) -join ' -> ')"
 if ($DryRun) { Write-Host "  DRY RUN: nothing will be written." }
 Write-Host ""
+
+# ---------------------------------------------- shell permission tiers
+
+$script:Tiers = [ordered]@{}
+foreach ($layer in $layers) {
+    $dir = Join-Path $layer.Path "permissions"
+    if (-not (Test-Path $dir)) { continue }
+    foreach ($f in (Get-ChildItem -Path $dir -Filter *.json -File | Sort-Object Name)) {
+        $name = [System.IO.Path]::GetFileNameWithoutExtension($f.Name)
+        $rules = Read-JsonOrdered $f.FullName -ExpandTokens
+        if (-not $script:Tiers.Contains($name)) { $script:Tiers[$name] = [ordered]@{} }
+        elseif ($layer.Name -ne "Core") { Write-Host "  permissions: $($layer.Name) adds to tier '$name'" }
+        Merge-Ordered $script:Tiers[$name] $rules
+    }
+}
 
 # ---------------------------------------------- resolve files across layers
 
@@ -181,9 +258,19 @@ function Get-Destination {
 
 $manifestPath = Join-Path $engHome "manifest.json"
 $oldManifest = @()
+$oldBashKeys = $null
 if (Test-Path $manifestPath) {
-    # foreach unrolls the array the same way in Windows PowerShell 5.1 and PowerShell 7.
-    foreach ($entry in ((Read-Text $manifestPath) | ConvertFrom-Json)) { $oldManifest += $entry }
+    $parsed = (Read-Text $manifestPath) | ConvertFrom-Json
+    if ($parsed -is [System.Management.Automation.PSCustomObject] -and $parsed.PSObject.Properties["files"]) {
+        foreach ($entry in $parsed.files) { $oldManifest += $entry }
+        $oldBashKeys = @()
+        foreach ($entry in $parsed.bashKeys) { $oldBashKeys += $entry }
+    }
+    else {
+        # Older installs wrote a plain list of files.
+        # foreach unrolls the array the same way in Windows PowerShell 5.1 and PowerShell 7.
+        foreach ($entry in $parsed) { $oldManifest += $entry }
+    }
 }
 
 $newManifest = @($files.Keys)
@@ -225,7 +312,9 @@ foreach ($rel in $files.Keys) {
 
     $ext = [System.IO.Path]::GetExtension($src).ToLowerInvariant()
     if ($ext -eq ".md" -or $ext -eq ".json") {
-        Write-Utf8 $dest (Expand-Tokens (Read-Text $src))
+        $text = Expand-Tokens (Read-Text $src)
+        if ($rel -like "agents/*") { $text = Expand-BashTiersText $text $src }
+        Write-Utf8 $dest $text
     }
     else {
         $dir = Split-Path -Parent $dest
@@ -282,6 +371,42 @@ foreach ($layer in $layers) {
     $p = Join-Path $layer.Path "opencode.json"
     if (Test-Path $p) { Merge-Ordered $layerConfig (Read-JsonOrdered $p -ExpandTokens) }
 }
+$layerBash = $null
+if ($layerConfig.Contains("permission") -and $layerConfig["permission"].Contains("bash")) {
+    $layerBash = Expand-BashTiersMap $layerConfig["permission"]["bash"] "opencode.json"
+    $layerConfig["permission"]["bash"] = $layerBash
+}
+$newBashKeys = if ($layerBash) { @($layerBash.Keys) } else { @() }
+
+function Merge-Bash {
+    # Bash rules are order-sensitive (last match wins), so eng-agents rules are written as one
+    # block in layer order. Rules you added to the installed file yourself are kept, placed right
+    # after "*" so the eng-agents asks and denies still win. Rules from an earlier install that
+    # no longer exist in any layer are dropped.
+    param($Config)
+    if (-not $layerBash) { return }
+    if (-not $Config.Contains("permission")) { $Config["permission"] = [ordered]@{} }
+    $existing = if ($Config["permission"].Contains("bash")) { $Config["permission"]["bash"] } else { $null }
+    $own = [ordered]@{}
+    if ($existing -is [System.Collections.Specialized.OrderedDictionary]) {
+        foreach ($k in @($existing.Keys)) {
+            if ($newBashKeys -contains $k) { continue }
+            if ($oldBashKeys -and ($oldBashKeys -contains $k)) { continue }
+            $own[$k] = $existing[$k]
+        }
+    }
+    $merged = [ordered]@{}
+    $first = $true
+    foreach ($k in @($layerBash.Keys)) {
+        $merged[$k] = $layerBash[$k]
+        if ($first) {
+            foreach ($ok in @($own.Keys)) { $merged[$ok] = $own[$ok] }
+            $first = $false
+        }
+    }
+    if ($own.Count -gt 0) { Write-Host "  opencode.json: kept $($own.Count) shell rule(s) you added by hand" }
+    $Config["permission"]["bash"] = $merged
+}
 
 $writeSidecar = $false
 if (Test-Path $jsoncPath) {
@@ -293,6 +418,7 @@ elseif (Test-Path $jsonPath) {
         $config = Read-JsonOrdered $jsonPath
         Backup-File $jsonPath "opencode.json"
         Merge-Ordered $config $layerConfig
+        Merge-Bash $config
         if ($DryRun) { Write-Host "  would merge permissions into: $jsonPath" }
         else { Write-Utf8 $jsonPath ($config | ConvertTo-Json -Depth 32); Write-Host "  opencode.json: permissions merged (other settings kept)" }
     }
@@ -315,19 +441,47 @@ if ($writeSidecar) {
 # ---------------------------------------------- manifest
 
 if (-not $DryRun) {
-    Write-Utf8 $manifestPath (ConvertTo-Json -InputObject $newManifest)
+    Write-Utf8 $manifestPath (ConvertTo-Json -Depth 4 -InputObject ([ordered]@{ files = @($newManifest); bashKeys = @($newBashKeys) }))
 }
 
 # ---------------------------------------------- readiness checks
 
 Write-Host ""
 Write-Host "Checks:"
-$cfg = Join-Path $(if ($env:USERPROFILE) { $env:USERPROFILE } else { $HOME }) ".config/eng-agents/config.json"
-if (Test-Path $cfg) { Write-Host "  [ok]   ADO config found: $cfg" }
-else { Write-Host "  [todo] ADO config missing: $cfg (copy core\scripts\ado\config.example.json). /start will use offline mode until then." }
+$cfg = Join-Path $engConfig "config.json"
+if (Test-Path $cfg) {
+    Write-Host "  [ok]   ADO config found: $cfg"
+    try {
+        $c = (Read-Text $cfg) | ConvertFrom-Json
+        $envVars = @()
+        $topPat = if ($c.PSObject.Properties["patEnv"]) { $c.patEnv } else { "ADO_PAT" }
+        $topAuth = if ($c.PSObject.Properties["auth"]) { $c.auth } else { "pat" }
+        if ($c.PSObject.Properties["connections"]) {
+            $names = @($c.connections.PSObject.Properties | ForEach-Object { $_.Name })
+            Write-Host "  [ok]   ADO connections: $($names -join ', ')$(if ($c.PSObject.Properties['default']) { " (default: $($c.default))" })"
+            foreach ($p in $c.connections.PSObject.Properties) {
+                $auth = if ($p.Value.PSObject.Properties["auth"]) { $p.Value.auth } else { $topAuth }
+                if ($auth -eq "windows") { continue }
+                $envVars += $(if ($p.Value.PSObject.Properties["patEnv"]) { $p.Value.patEnv } else { $topPat })
+            }
+        }
+        elseif ($topAuth -ne "windows") { $envVars += $topPat }
+        foreach ($v in @($envVars | Select-Object -Unique)) {
+            if ([Environment]::GetEnvironmentVariable($v)) { Write-Host "  [ok]   $v is set" }
+            else { Write-Host "  [todo] $v is not set. /start will use offline mode for connections that need it." }
+        }
+    }
+    catch { Write-Host "  [todo] Could not read $cfg ($($_.Exception.Message))" }
+}
+else {
+    Write-Host "  [todo] ADO config missing: $cfg (copy core\scripts\ado\config.example.json). /start will use offline mode until then."
+    if ($env:ADO_PAT) { Write-Host "  [ok]   ADO_PAT is set" }
+    else { Write-Host "  [todo] ADO_PAT is not set. /start will use offline mode until then." }
+}
 
-if ($env:ADO_PAT) { Write-Host "  [ok]   ADO_PAT is set" }
-else { Write-Host "  [todo] ADO_PAT is not set. /start will use offline mode until then." }
+$mem = Join-Path $engConfig "memory.md"
+if (Test-Path $mem) { Write-Host "  [ok]   Global memory: $mem" }
+else { Write-Host "  [info] No global memory yet. /memory -global creates $mem" }
 
 if ($DryRun) { Write-Host "`nDry run complete. Nothing was written." }
 else { Write-Host "`nDone. Restart opencode to load the changes." }

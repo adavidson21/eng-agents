@@ -100,7 +100,8 @@ All state lives in the workspace, outside every git repo, and never leaves the w
 .work/spike-<short-name>/findings.md     spike without a work item
 .work/docs-<short-name>/sources.md       docs lane: claims and their source files
 .work/docs-<short-name>/check.md         docs lane: fact-check results
-.work/_onboard/<repo>-AGENTS.md          onboard draft when the repo already has an AGENTS.md
+.work/_onboard/<repo>-AGENTS.md          onboard draft when the repo already has a repo guide
+                                         (<repo>-AGENTS.local.md when the team committed its own AGENTS.md)
 ```
 
 `<short-name>` is the first 5 words of the work item title, lowercase, filler words dropped, at most 40 characters.
@@ -144,7 +145,7 @@ All state lives in the workspace, outside every git repo, and never leaves the w
 | Symptom | Fix |
 |---|---|
 | Task fails or wanders | Split it into smaller tasks. |
-| Ignores a convention | Put the rule in the repo `AGENTS.md` or the overlay. Rules said in chat do not carry over. |
+| Ignores a convention | `/memory <rule>` saves it to that repo's guide; `/memory -global <rule>` saves it for every repo. Rules said in chat do not carry over. |
 | Claims done without proof | Verify output must be in `progress.md`. Re-run `/do-task` and point at the missing evidence. |
 | Asks too many questions | Answer them in `spec.md` directly, then re-run the next command. |
 | Plans touch the wrong repo or order | Fix the repo map. |

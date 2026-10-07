@@ -14,7 +14,7 @@ Write the implementation plan for work item **$1**.
 ## Step 2: Read
 
 - Read `spec.md`, `repos.md`, and the latest entries in `progress.md`.
-- Read `<repo>/AGENTS.md` for every repo in `repos.md`, including its architecture rules and "Patterns to follow" table.
+- Read the repo guide (`<repo>/AGENTS.local.md` if it exists, otherwise `<repo>/AGENTS.md`) for every repo in `repos.md`, including its architecture rules and "Patterns to follow" table.
 - If a repo `AGENTS.md` points to an architecture doc, read it.
 
 ## Step 3: Investigate the code

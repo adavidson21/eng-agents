@@ -10,7 +10,8 @@ You need git, [opencode](https://opencode.ai), and PowerShell (built in on Windo
 | `personal/commands/<name>.md` | Optional | Extra slash commands, or a replacement for a Core command |
 | `personal/agents/<name>.md` | Optional | Replace a Core agent (for example to pick a model) |
 | `personal/templates/<name>.md` | Optional | Replace a Core template |
-| `personal/opencode.json` | Optional | Permission entries merged over Core |
+| `personal/permissions/<tier>.json` | Optional | Shell commands added to a permission tier, for every agent |
+| `personal/opencode.json` | Optional | Other opencode settings merged over Core |
 
 `personal/TODO.md` is never installed. Leave it so merges from the base stay clean. What else you can change: [customization guide](customization.md#personal).
 
@@ -78,19 +79,21 @@ Summarize this week's work. Do not change any files.
 cp core/agents/implementer.md personal/agents/implementer.md
 ```
 
-**Permissions.** `personal/opencode.json`, only the keys you add:
+**Permissions.** To stop being asked about a shell command, add it to a tier in `personal/permissions/`. Only the keys you add:
 
 ```json
 {
-  "permission": {
-    "bash": {
-      "npx playwright show-report*": "allow"
-    }
-  }
+  "npx playwright show-report*": "allow"
 }
 ```
 
-> Not confirmed: each agent file repeats its own permission rules, so a global entry may not apply inside those agents. Test it. To change what one agent may do, override that agent.
+| File | Reaches |
+|---|---|
+| `read.json` | Every agent. Read-only commands only. |
+| `build.json` | Implementer, reviewer, investigator. Build, test, lint. |
+| `guards.json` | Every agent, placed last. Asks and denies. |
+
+Install puts each tier into every agent that uses it and into `opencode.json`, so one entry is enough. Guards always come last, so an allow cannot unlock a denied command chained after it. How tiers work: [customization guide](customization.md#permissions).
 
 ## 4. Install and check
 

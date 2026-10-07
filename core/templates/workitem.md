@@ -2,6 +2,7 @@
 
 - Type: <Bug | User Story | Feature | Task>
 - State: <state>
+- Link: <work item URL in ADO, if you have it>
 - Fetched: <yyyy-mm-dd> (or "Pasted by engineer")
 
 ## Description

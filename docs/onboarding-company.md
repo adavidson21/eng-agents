@@ -280,7 +280,7 @@ Take one small, low-risk bug through the bug lane:
 ```
 /start <id> bug
 /bug <id>
-(approve bug.md)
+/approve <id>
 /new
 /do-task <id> 1
 /new

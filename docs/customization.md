@@ -124,11 +124,11 @@ Override an agent by copying its file from `core/agents/` into your layer. Keep 
 
 | Agent | Runs | Can edit | Extra shell commands |
 |---|---|---|---|
-| `planner` | `/start`, `/spec`, `/plan`, `/tasks`, `/status`, `/pause`, `/resume` | `.work/` only | Branch creation, the ADO script. Switching branches and WIP commits ask. |
+| `planner` | `/start`, `/spec`, `/plan`, `/tasks`, `/approve`, `/status`, `/pause`, `/resume` | `.work/` only | Branch creation, the ADO script. Switching branches and WIP commits ask. |
 | `implementer` | `/do-task` | Code and tests. Repo guides and `CLAUDE.md` ask. | `build` tier, `dotnet format`, `npm install` / `ci`, `git add`. `git commit` asks. |
 | `reviewer` | `/review`, `/check-docs` | `.work/` only | `build` tier, the diagram check script |
 | `investigator` | `/bug`, `/spike`, `/onboard-repo` | `.work/`. A repo guide and `.git/info/exclude` ask. | `build` tier |
-| `writer` | `/pr`, `/docs`, `/tsd`, `/publish-tsd`, `/memory` | Any `*.md` file, `docs/`, `.work/`, the global memory file | The diagram check script (`Test-Mermaid.ps1`) |
+| `writer` | `/pr`, `/docs`, `/tsd`, `/publish`, `/memory` | Any `*.md` file, `docs/`, `.work/`, the global memory file | The diagram check script (`Test-Mermaid.ps1`) |
 
 Unlisted commands ask. Reviewer, investigator, and writer cannot `git add` or `git commit`.
 
@@ -213,6 +213,8 @@ The template (replace with your team's format):
 ## Fixed
 - <what was wrong, from the user's point of view> (#<id>)
 ```
+
+To have `/publish` move the new document out of `.work` when it is finished, add a row to the table in Step 1 of `commands/publish.md` (override the file in your layer): the file name, its kind, its default destination, and its file name there.
 
 ### What makes a template work well
 

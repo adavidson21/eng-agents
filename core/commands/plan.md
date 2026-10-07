@@ -8,7 +8,7 @@ Write the implementation plan for work item **$1**.
 ## Step 1: Find the work folder and check the gate
 
 - Find the folder in `.work/` that starts with `$1-`.
-- Read `spec.md`. If it does not contain `Status: APPROVED`, stop. Tell the engineer to review and approve `spec.md` first.
+- Read `spec.md`. If it does not contain `Status: APPROVED`, stop. Tell the engineer to review `spec.md` and run `/approve $1` first.
 - If `plan.md` exists and says `Status: APPROVED`, stop and suggest `/tasks $1`.
 
 ## Step 2: Read
@@ -38,4 +38,4 @@ Write the implementation plan for work item **$1**.
 ## Step 6: Log and hand off
 
 - Add a `progress.md` entry for `/plan`.
-- Tell the engineer: "Review `plan.md`. When it is correct, change the line to `Status: APPROVED`, then run `/tasks $1`."
+- Tell the engineer: "Review `plan.md`. When it is correct, run `/approve $1` (or change the line to `Status: APPROVED` yourself), then `/tasks $1`."

@@ -40,11 +40,11 @@ Check in this order. The first match wins.
 | `paused.md` contains `Status: PAUSED` | `/resume <id>` |
 | No `repos.md` | `/start <id> <feature or bug>` |
 | Lane feature, no `spec.md` | `/spec <id>` |
-| `spec.md` is DRAFT | Engineer approves `spec.md` |
+| `spec.md` is DRAFT | Engineer reviews `spec.md`, then `/approve <id>` |
 | Lane feature, no `plan.md` | `/plan <id>` |
-| `plan.md` is DRAFT | Engineer approves `plan.md` |
+| `plan.md` is DRAFT | Engineer reviews `plan.md`, then `/approve <id>` |
 | Lane bug, no `bug.md` | `/bug <id>` |
-| `bug.md` is DRAFT | Engineer approves `bug.md` |
+| `bug.md` is DRAFT | Engineer reviews `bug.md`, then `/approve <id>` |
 | No `tasks.md` | `/tasks <id>` |
 | Unchecked task exists | `/do-task <id> <first unchecked number>` (new session) |
 | No `review.md`, or tasks were added after it | `/review <id>` |

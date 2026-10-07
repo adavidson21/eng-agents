@@ -2,7 +2,7 @@
 
 Status: DRAFT
 
-<!-- The engineer changes the line above to "Status: APPROVED" when this TSD is correct. Agents never change it to APPROVED. /publish-tsd then copies it to the product docs folder. -->
+<!-- When this TSD is correct, the engineer runs /publish tsd-<name>. That approves it and copies it to the product docs folder. No other command changes the line above to APPROVED. -->
 
 <!--
 Written by /tsd. Diagrams carry the design. Text only explains what a diagram cannot show.

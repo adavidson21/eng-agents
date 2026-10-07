@@ -44,4 +44,4 @@ Investigate bug **$1**.
 ## Step 7: Log and hand off
 
 - Add a `progress.md` entry for `/bug`.
-- Tell the engineer the root cause in one sentence and the confidence level, then: "Review `bug.md` and `tasks.md`. If correct, change `bug.md` to `Status: APPROVED`, start a new session, and run `/do-task $1 1`."
+- Tell the engineer the root cause in one sentence and the confidence level, then: "Review `bug.md` and `tasks.md`. If correct, run `/approve $1` (or change `bug.md` to `Status: APPROVED` yourself), start a new session, and run `/do-task $1 1`."

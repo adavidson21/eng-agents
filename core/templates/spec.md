@@ -2,7 +2,7 @@
 
 Status: DRAFT
 
-<!-- The engineer changes the line above to "Status: APPROVED" when this spec is correct. Agents never change it. -->
+<!-- The engineer approves this spec with /approve <id>, or by changing the line above to "Status: APPROVED". No other command changes it. -->
 
 ## Goal
 

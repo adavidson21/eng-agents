@@ -5,8 +5,8 @@ How each phase works, why it is shaped this way, and what to do when it goes wro
 ```
 /start <id> feature    fetch work item, create .work/<id>-<name>/, confirm repos, create branches
                        (add a repo folder or ADO connection as a 3rd argument for another collection)
-/spec <id>             questions one at a time, then spec.md        GATE: approve spec.md
-/plan <id>             files per repo, pattern to follow, test plan GATE: approve plan.md
+/spec <id>             questions one at a time, then spec.md        GATE: /approve <id>
+/plan <id>             files per repo, pattern to follow, test plan GATE: /approve <id>
 /tasks <id>            small tasks, each with a verify command      skim task sizes
 /do-task <id> <n>      one task per fresh session, TDD, commit      repeat
 /review <id>           pass 1 spec, pass 2 quality                  accept findings as tasks
@@ -22,7 +22,7 @@ Built for a slower model that needs explicit procedures.
 |---|---|
 | Every command is a numbered list of steps | Weaker models follow procedures far better than goals. |
 | Every command re-reads files from disk | Nothing has to be remembered across sessions. |
-| Gates are a `Status:` line you edit | Approval is a fact on disk, not a judgment the model makes. |
+| Gates are a `Status:` line, set by `/approve` or by you | Approval is a fact on disk, not a judgment the model makes. |
 | One task per fresh session | Context stays small. Long sessions are where weaker models drift. |
 | Agents have narrow permissions | A planner that cannot edit code cannot start coding. |
 | Stop after 3 failures | Prevents long loops that make things worse. |
@@ -31,24 +31,50 @@ Built for a slower model that needs explicit procedures.
 
 ## Gates
 
-| File | Created by | Approve by | Checked by |
-|---|---|---|---|
-| `spec.md` | `/spec` | Changing `Status: DRAFT` to `Status: APPROVED` | `/plan` |
-| `plan.md` | `/plan` | Same | `/tasks`, `/do-task` (feature lane) |
-| `bug.md` | `/bug` | Same | `/do-task` (bug lane) |
-| `tsd.md` | `/tsd` | Same | `/publish-tsd` |
+A gate is the `Status:` line at the top of a file. Nothing moves past a gate until you approve it. Approve with a command, so you never have to edit the line by hand:
 
-Agents never change a `Status:` line to `APPROVED`. Edit the file freely before approving; the next command reads whatever is on disk. To send a draft back, leave it as DRAFT, add notes under "Open questions", and re-run the same command. It refines the draft instead of starting over.
+| File | Created by | Approve with | Checked by |
+|---|---|---|---|
+| `spec.md` | `/spec` | `/approve <id>` | `/plan` |
+| `plan.md` | `/plan` | `/approve <id>` | `/tasks`, `/do-task` (feature lane) |
+| `bug.md` | `/bug` | `/approve <id>` | `/do-task` (bug lane) |
+| `tsd.md` | `/tsd` | `/publish tsd-<name>` (approves and moves it) | `/tsd` (refuses to overwrite an approved TSD) |
+
+```mermaid
+flowchart LR
+  draft["Status: DRAFT"]:::draft
+  edit("You review and edit the file,<br/>or re-run the command"):::step
+  appr["Status: APPROVED"]:::ok
+  next("Next phase runs"):::step
+
+  draft --> edit
+  edit -->|"/approve id"| appr
+  edit -.->|"or edit the line yourself"| appr
+  appr --> next
+
+  classDef draft fill:#fef9c3,stroke:#a16207,color:#111111
+  classDef ok fill:#dcfce7,stroke:#15803d,color:#111111
+  classDef step fill:#ffffff,stroke:#334155,color:#111111
+```
+
+**`/approve <id> [spec|plan|bug]`** (planner)
+
+- With no file named, it approves the first DRAFT in this order: `spec.md`, `plan.md`, `bug.md`. Name one to be explicit: `/approve 12345 plan`.
+- It refuses a plan while the spec is still DRAFT, and refuses anything on a paused item.
+- If "Open questions" still has items, it shows them and asks. Yes marks each one `(accepted risk)`; no stops so you can answer them first.
+- It changes only the `Status:` line, logs to `progress.md`, and gives the next command (`/plan`, `/tasks`, or `/do-task <id> 1` in a new session).
+
+Editing the line yourself still works; the next command reads whatever is on disk. Agents never set `APPROVED` in any other command. To send a draft back, leave it as DRAFT, add notes under "Open questions", and re-run the same command. It refines the draft instead of starting over.
 
 ## Lanes
 
 | Lane | Use when | Flow |
 |---|---|---|
 | Feature | New behavior, or more than 3 files of change | Full pipeline |
-| Bug | A defect with a reproducible symptom | `/start` → `/bug` → approve → `/do-task` (repeat) → `/review` → `/pr` |
+| Bug | A defect with a reproducible symptom | `/start` → `/bug` → `/approve` → `/do-task` (repeat) → `/review` → `/pr` |
 | Spike | You do not know enough to write a spec | `/spike` writes `findings.md`. No code changes. Good input to a later `/spec`. |
 | Docs | Writing or updating documentation | `/docs` (writer) → new session → `/check-docs` (reviewer fact-checks every claim) |
-| TSD | A technical spec of a product or repos, told through diagrams | `/tsd` (writer) → new session → `/check-docs` (reviewer checks every box and arrow) → revise → approve → `/publish-tsd` (writer copies it to the product docs folder) |
+| TSD | A technical spec of a product or repos, told through diagrams | `/tsd` (writer) → new session → `/check-docs` (reviewer checks every box and arrow) → revise → `/publish tsd-<name>` (approves it and moves it to the product docs folder) |
 
 Bug lane rules:
 
@@ -69,10 +95,34 @@ Bug lane rules:
 | Write | `tsd.md` from the template. Each diagram copies a pattern from `templates/tsd-diagrams.md`. |
 | Check | `Test-Mermaid.ps1` renders every block with mermaid-cli and reports the failing ones with the file line. Without mermaid-cli it runs static checks and the agent works through a checklist. |
 | Fact-check | New session, `/check-docs .work/tsd-<name>/tsd.md`. Every box, arrow, entity, and column is checked against the code. |
-| Revise and approve | Edit `tsd.md` yourself or re-run `/tsd` (update). When it is right, change `Status: DRAFT` to `Status: APPROVED`. |
-| Publish | `/publish-tsd <name>` copies it to the product's "Product docs" folder from the repo map (or a folder you name) as `technical-spec.md`, drops the agent comments, and marks the `.work` copy `PUBLISHED`. You commit it. |
+| Revise | Edit `tsd.md` yourself or re-run `/tsd` (update). |
+| Publish | `/publish tsd-<name>` is your approval. It warns if there is no fact-check or the check found errors, copies the TSD to the product's "Product docs" folder from the repo map (or a folder you name) as `technical-spec.md`, drops the agent comments, stamps `Approved: <date>`, and marks the `.work` copy `PUBLISHED`. You commit it. |
+
+```mermaid
+flowchart LR
+  t1("/tsd product"):::step
+  c1("/check-docs<br/>new session"):::step
+  r1("Revise: edit tsd.md<br/>or /tsd update"):::step
+  p1("/publish tsd-name"):::step
+  live[("Product docs folder<br/>technical-spec.md")]:::ok
+  wk["Draft in .work<br/>Status: PUBLISHED"]:::draft
+
+  t1 --> c1
+  c1 --> r1
+  r1 -->|"more fixes"| c1
+  r1 --> p1
+  p1 --> live
+  p1 --> wk
+  live -.->|"later: /tsd update starts here"| t1
+
+  classDef draft fill:#fef9c3,stroke:#a16207,color:#111111
+  classDef ok fill:#dcfce7,stroke:#15803d,color:#111111
+  classDef step fill:#ffffff,stroke:#334155,color:#111111
+```
 
 The `.work` copy is the draft; the published copy is the live one. A later `/tsd` update starts from the published copy, so edits you make there are kept.
+
+**`/publish <folder>`** (writer) is generic: it handles any `.work` folder that holds a publishable document. Today that is `tsd.md`. To add another kind (for example spike findings), add a row to the table in `core/commands/publish.md` with its default destination and file name.
 
 | Diagram | Mermaid type | Drawn from |
 |---|---|---|
@@ -135,7 +185,7 @@ All state lives in the workspace, outside every git repo, and never leaves the w
 .work/docs-<short-name>/sources.md       docs lane: claims and their source files
 .work/docs-<short-name>/check.md         docs lane: fact-check results
 .work/tsd-<short-name>/                  TSD draft: inventory.md (facts), tsd.md, sources.md, check.md,
-                                         render/ (one SVG per diagram). /publish-tsd copies tsd.md out.
+                                         render/ (one SVG per diagram). /publish copies tsd.md out.
 .work/_onboard/<repo>-AGENTS.md          onboard draft when the repo already has a repo guide
                                          (<repo>-AGENTS.local.md when the team committed its own AGENTS.md)
 ```

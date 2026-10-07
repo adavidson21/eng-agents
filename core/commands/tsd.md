@@ -17,7 +17,7 @@ The diagrams carry the design: context, containers, database schema, key flows, 
 - Show the engineer the final list: each repo folder with its one-line role from the repo map. Ask: "Is this the right scope?" Wait and apply changes.
 - The work folder is `.work/tsd-<short-name>/`. `<short-name>` is the name in lowercase, spaces replaced by hyphens, at most 40 characters.
 - If `.work/tsd-<short-name>/tsd.md` already exists, read its `Status:` line:
-  - `Status: APPROVED`: stop. Tell the engineer it is approved and suggest `/publish-tsd <short-name>`. To revise it, they change the line back to `Status: DRAFT` and run `/tsd` again.
+  - `Status: APPROVED`: stop. Tell the engineer it is approved and suggest `/publish tsd-<short-name>`. To revise it, they change the line back to `Status: DRAFT` and run `/tsd` again.
   - `Status: PUBLISHED`: the line names where it was published. Read that published file. It is the base for this update, because the engineer may have edited it there.
   - `Status: DRAFT`: read it.
 - If a TSD exists, ask: "A TSD already exists here. Update it (keeps your edits, refreshes facts from the code) or start over? (Recommended: update.)" Wait. To update, read `inventory.md` too, and keep any text the engineer wrote unless the code now contradicts it.
@@ -100,4 +100,4 @@ Tell the engineer:
 - The next steps, exactly:
   1. "Start a new session and run `/check-docs .work/tsd-<short-name>/tsd.md` to fact-check every diagram against the code."
   2. "Fix what it finds: edit `tsd.md` yourself, or run `/tsd` again and choose update."
-  3. "When it is correct, change the line to `Status: APPROVED`, then run `/publish-tsd <short-name>` to move it into the product docs folder."
+  3. "When it is correct, run `/publish tsd-<short-name>`. That approves it and moves it into the product docs folder."

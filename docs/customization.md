@@ -115,7 +115,7 @@ Use the lightest option that works. A rule in `AGENTS.md` keeps you on Core upda
 | Anything in `overlay\` | Re-run `install.ps1` |
 | Repo map or a repo `AGENTS.md` | Start a new opencode session |
 | `config.json` | Nothing. Check a mapping with `-ShowConnection` ([ADO setup](onboarding-company.md#3-connect-to-ado)). |
-| `ADO_PAT` | Reopen PowerShell |
+| `ADO_PAT` (or a connection's `patEnv` variable) | Reopen PowerShell |
 
 ## Agents
 

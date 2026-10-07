@@ -37,5 +37,5 @@ Something went wrong? See [Recovering from problems](docs/pipeline.md#recovering
 |---|---|
 | [Personal onboarding](docs/onboarding-personal.md) | Your fork and your `personal/` rules |
 | [Company onboarding](docs/onboarding-company.md) | Work PC setup, day-one checks, updating |
-| [Customization](docs/customization.md) | Files to review, how layers combine, agents and permissions, templates, changing Core |
-| [Pipeline](docs/pipeline.md) | How each phase works, gates, lanes, work files, pausing, recovery, tuning |
+| [Customization](docs/customization.md) | Files to review, how layers combine, agents, permission tiers, templates, changing Core |
+| [Pipeline](docs/pipeline.md) | How each phase works, gates, lanes, work files, repo guides and memory, pausing, recovery, tuning |

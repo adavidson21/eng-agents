@@ -139,7 +139,9 @@ cd C:\src\work
 powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\.config\opencode\eng-agents\scripts\ado\Get-WorkItem.ps1" -Id <id> -WorkRoot .work
 ```
 
-Adjust the path if you used `-Target`. It should print a folder path and create `workitem.md`. Check the description is readable, then delete the test folder.
+Adjust the path if you used `-Target`. It should print a folder path and create `workitem.md`, with an `ADO:` line naming the connection. Check the description is readable, then delete the test folder.
+
+With more than one connection, repeat it once per collection with `-From <connection name>` added.
 
 ## 7. Build the workspace and repo map
 

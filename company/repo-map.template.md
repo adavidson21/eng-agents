@@ -8,7 +8,7 @@ HOW TO USE THIS TEMPLATE (delete this comment when done)
 4. After editing, start a new opencode session. No reinstall needed.
 -->
 
-Agents: use this file to choose repos for a work item. First match the work item to a product (Products and Glossary), then use that product's repo table, then apply the change order.
+Agents: use this file to choose repos for a work item. First match the work item to a product (Products and Glossary), then use that product's repo table, then apply the change order. `/tsd <product>` also uses each product block to know which repos belong together.
 
 ## Repos
 
@@ -37,6 +37,8 @@ Also called: TODO(you) (other names people use in work items, for example an old
 - Usually change together: TODO(you) (example: shared-lib + orders-api)
 - Change order: TODO(you) (example: shared-lib, then orders-api, then orders-ui)
 - Entry points: TODO(you) (example: `orders-api\src\Api\Controllers\EnrollmentController.cs`)
+- External systems: TODO(you) (example: carrier SFTP drop, payment gateway REST API, state exchange SOAP service. Systems outside these repos that this product talks to.)
+- Business processes: TODO(you) (example: new enrollment, renewal, termination. Used by `/tsd` for BPMN-style diagrams.)
 - Product docs: TODO(you) (example: `product-docs\enrollment\`. Read these for user-facing behavior.)
 
 <!-- Copy the block above for each product. -->

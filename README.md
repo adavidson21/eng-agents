@@ -12,13 +12,14 @@ Open opencode from your workspace root (for example `C:\src\work`).
 | Bug | `/start <id> bug` → `/bug <id>` → approve → `/do-task <id> <n>` (repeat) → `/review <id>` → `/pr <id>` |
 | Question, no code changes | `/spike <id or topic>` |
 | Docs | `/docs <target>`, new session, `/check-docs <doc path>` |
+| Technical spec with diagrams | `/tsd <product or repo> [repo ...]` → new session → `/check-docs .work/tsd-<name>/tsd.md` → revise → approve → `/publish-tsd <name>` |
 | Where was I? | `/status [id]` |
 | Switch to something urgent | `/pause <id> [reason]`, later `/resume <id>` |
 | New repo in the workspace | `/onboard-repo <folder>` |
 | Remember a rule | `/memory <rule>` (one repo) or `/memory -global <rule>` (every repo). `/memory -list` shows them. |
 | Work item in another ADO collection | `/start <id> <lane> <repo folder or connection>` |
 
-- **Approve** `spec.md`, `plan.md`, or `bug.md` by changing `Status: DRAFT` to `Status: APPROVED`. Edit the file first if anything is wrong.
+- **Approve** `spec.md`, `plan.md`, `bug.md`, or a TSD's `tsd.md` by changing `Status: DRAFT` to `Status: APPROVED`. Edit the file first if anything is wrong.
 - **New session** (`/new`) before every `/do-task`.
 - **Review findings** you accept become new tasks. Run `/do-task` for each, then `/review` again.
 - **You push** and open the PR. No agent can push, merge, or deploy.

@@ -11,6 +11,8 @@ permission:
     "*": ask
     "{{BASH:read}}": include
     "{{BASH:build}}": include
+    "powershell -NoProfile -ExecutionPolicy Bypass -File *Test-Mermaid.ps1*": allow
+    "pwsh -NoProfile -ExecutionPolicy Bypass -File *Test-Mermaid.ps1*": allow
     "{{BASH:guards}}": include
     "git add*": deny
     "git -C * add*": deny

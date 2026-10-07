@@ -36,6 +36,7 @@ Built for a slower model that needs explicit procedures.
 | `spec.md` | `/spec` | Changing `Status: DRAFT` to `Status: APPROVED` | `/plan` |
 | `plan.md` | `/plan` | Same | `/tasks`, `/do-task` (feature lane) |
 | `bug.md` | `/bug` | Same | `/do-task` (bug lane) |
+| `tsd.md` | `/tsd` | Same | `/publish-tsd` |
 
 Agents never change a `Status:` line to `APPROVED`. Edit the file freely before approving; the next command reads whatever is on disk. To send a draft back, leave it as DRAFT, add notes under "Open questions", and re-run the same command. It refines the draft instead of starting over.
 
@@ -47,6 +48,7 @@ Agents never change a `Status:` line to `APPROVED`. Edit the file freely before 
 | Bug | A defect with a reproducible symptom | `/start` → `/bug` → approve → `/do-task` (repeat) → `/review` → `/pr` |
 | Spike | You do not know enough to write a spec | `/spike` writes `findings.md`. No code changes. Good input to a later `/spec`. |
 | Docs | Writing or updating documentation | `/docs` (writer) → new session → `/check-docs` (reviewer fact-checks every claim) |
+| TSD | A technical spec of a product or repos, told through diagrams | `/tsd` (writer) → new session → `/check-docs` (reviewer checks every box and arrow) → revise → approve → `/publish-tsd` (writer copies it to the product docs folder) |
 
 Bug lane rules:
 
@@ -54,6 +56,36 @@ Bug lane rules:
 - Task 1 is always a test that fails because of the bug.
 - If root-cause confidence is Low, `/bug` stops and points you to `/spike`.
 - If the fix needs more than 3 tasks, it moves to the feature lane (`/spec`).
+
+## Technical specs (/tsd)
+
+`/tsd <product>` documents a whole product from the repo map's Products block. `/tsd <repo> [repo ...]` documents named repos and offers to add the other repos in the same product.
+
+| Step | What happens |
+|---|---|
+| Scope | Repos from the product block. You confirm the list. |
+| Inventory | `inventory.md`: deployables, DbContexts and entities, external systems, entry points, background jobs, auth, status fields, deployment files. Every row cites a file. Config files are never opened; key names come from code. |
+| Picks | It proposes flows and business processes. You pick 3 to 5 flows and 1 to 3 processes. It traces each through the code. |
+| Write | `tsd.md` from the template. Each diagram copies a pattern from `templates/tsd-diagrams.md`. |
+| Check | `Test-Mermaid.ps1` renders every block with mermaid-cli and reports the failing ones with the file line. Without mermaid-cli it runs static checks and the agent works through a checklist. |
+| Fact-check | New session, `/check-docs .work/tsd-<name>/tsd.md`. Every box, arrow, entity, and column is checked against the code. |
+| Revise and approve | Edit `tsd.md` yourself or re-run `/tsd` (update). When it is right, change `Status: DRAFT` to `Status: APPROVED`. |
+| Publish | `/publish-tsd <name>` copies it to the product's "Product docs" folder from the repo map (or a folder you name) as `technical-spec.md`, drops the agent comments, and marks the `.work` copy `PUBLISHED`. You commit it. |
+
+The `.work` copy is the draft; the published copy is the live one. A later `/tsd` update starts from the published copy, so edits you make there are kept.
+
+| Diagram | Mermaid type | Drawn from |
+|---|---|---|
+| System context | `flowchart` | Product block, external calls in code |
+| Containers | `flowchart` with a subgraph per repo | Deployable projects, DbContexts, queues, HTTP clients |
+| Database schema | `erDiagram`, one per DbContext | Migrations `*ModelSnapshot.cs`, else entity configs |
+| Key flows | `sequenceDiagram` | Code path traced from the entry point |
+| Business processes | BPMN-style `flowchart` (lanes, events, gateways) | Status fields, handlers, product block, product docs |
+| Deployment | `flowchart` | Pipeline YAML, Dockerfile, IaC files |
+
+Only `flowchart`, `sequenceDiagram`, and `erDiagram` are used, because doc editors often bundle an older Mermaid. Mermaid has no BPMN diagram, so processes use BPMN shapes and colors in a flowchart; the legend is in the TSD.
+
+Better input gives better diagrams: fill in "External systems" and "Business processes" in each product block of the repo map, and link the product docs.
 
 ## Phase notes
 
@@ -102,6 +134,8 @@ All state lives in the workspace, outside every git repo, and never leaves the w
 .work/spike-<short-name>/findings.md     spike without a work item
 .work/docs-<short-name>/sources.md       docs lane: claims and their source files
 .work/docs-<short-name>/check.md         docs lane: fact-check results
+.work/tsd-<short-name>/                  TSD draft: inventory.md (facts), tsd.md, sources.md, check.md,
+                                         render/ (one SVG per diagram). /publish-tsd copies tsd.md out.
 .work/_onboard/<repo>-AGENTS.md          onboard draft when the repo already has a repo guide
                                          (<repo>-AGENTS.local.md when the team committed its own AGENTS.md)
 ```
@@ -168,6 +202,8 @@ Plus **global memory** in `%USERPROFILE%\.config\eng-agents\memory.md` (`/memory
 | Claims done without proof | Verify output must be in `progress.md`. Re-run `/do-task` and point at the missing evidence. |
 | Asks too many questions | Answer them in `spec.md` directly, then re-run the next command. |
 | Plans touch the wrong repo or order | Fix the repo map. |
+| A TSD diagram keeps failing to render | Fix the block by hand using "Common errors" in `templates/tsd-diagrams.md`, then run `Test-Mermaid.ps1` yourself. |
+| A TSD draws things that do not exist | Check `inventory.md` for the bad row and its source. Fix or delete it, then re-run `/tsd` and choose update. |
 
 ## Scripting with `opencode run`
 

@@ -105,6 +105,7 @@ Use the lightest option that works. A rule in `AGENTS.md` keeps you on Core upda
 | A rule applies to every repo | Add it to `overlay\AGENTS.md` |
 | Base branch or PR target is not `main` | Rule under "Team conventions" in `overlay\AGENTS.md` |
 | Team PR or spec format | `overlay\templates\pr.md` or `spec.md` |
+| Team TSD format or diagram colors | `overlay\templates\tsd.md` or `tsd-diagrams.md` |
 | Company-specific command or agent | `overlay\commands\`, `overlay\agents\` |
 | Company-specific shell command (for example an internal CLI) | `overlay\permissions\read.json` or `build.json` |
 | Work items live in more than one ADO collection | One entry per collection under `connections` in `config.json`, plus `paths` ([ADO setup](onboarding-company.md#3-connect-to-ado)) |
@@ -125,9 +126,9 @@ Override an agent by copying its file from `core/agents/` into your layer. Keep 
 |---|---|---|---|
 | `planner` | `/start`, `/spec`, `/plan`, `/tasks`, `/status`, `/pause`, `/resume` | `.work/` only | Branch creation, the ADO script. Switching branches and WIP commits ask. |
 | `implementer` | `/do-task` | Code and tests. Repo guides and `CLAUDE.md` ask. | `build` tier, `dotnet format`, `npm install` / `ci`, `git add`. `git commit` asks. |
-| `reviewer` | `/review`, `/check-docs` | `.work/` only | `build` tier |
+| `reviewer` | `/review`, `/check-docs` | `.work/` only | `build` tier, the diagram check script |
 | `investigator` | `/bug`, `/spike`, `/onboard-repo` | `.work/`. A repo guide and `.git/info/exclude` ask. | `build` tier |
-| `writer` | `/pr`, `/docs`, `/memory` | Any `*.md` file, `docs/`, `.work/`, the global memory file | None |
+| `writer` | `/pr`, `/docs`, `/tsd`, `/publish-tsd`, `/memory` | Any `*.md` file, `docs/`, `.work/`, the global memory file | The diagram check script (`Test-Mermaid.ps1`) |
 
 Unlisted commands ask. Reviewer, investigator, and writer cannot `git add` or `git commit`.
 
@@ -169,6 +170,9 @@ To change one: copy the Core file into your layer, edit it, re-run `install.ps1`
 | `review.md` | Findings and verdict | A verdict line that can say `READY`; each criterion marked `Met` or not |
 | `paused.md` | Where a paused item stands | `Status: PAUSED` line, the Repos table, "To resume" |
 | `pr.md` | PR title and description per repo | Nothing |
+| `tsd.md` | Technical spec sections | `Status: DRAFT` line; `<Diagram: ...>` placeholders, the table under each diagram, "Open questions" |
+| `tsd-diagrams.md` | The diagram cookbook `/tsd` copies from | Only `flowchart`, `sequenceDiagram`, `erDiagram`; the "Common errors" and "Check before you finish" sections |
+| `tsd-inventory.md` | Facts every TSD diagram is drawn from | A Source column in every table |
 | `workitem.md`, `repos.md`, `progress.md`, `findings.md`, `repo-agents.md` | Work item text, lane and branches, log entries, spike answer, repo guide shape | Section headings |
 
 ### Add a new kind of document
@@ -223,7 +227,7 @@ Open a pull request to eng-agents. Before merging:
 
 - [ ] It would help **anyone**. No company names, no personal preferences.
 - [ ] Shell permission changes for everyone go in `core/permissions/`. Changes for one agent go in that agent file, before its `{{BASH:guards}}` line.
-- [ ] `Status: DRAFT` lines in the `spec`, `plan`, and `bug` templates, `Status: PAUSED` in `paused`, and `## [ ] Task N:` headings in `tasks` are unchanged.
+- [ ] `Status: DRAFT` lines in the `spec`, `plan`, `bug`, and `tsd` templates, `Status: PAUSED` in `paused`, and `## [ ] Task N:` headings in `tasks` are unchanged.
 - [ ] Docs that describe the behavior are updated.
 - [ ] `pwsh ./install.ps1 -DryRun` runs cleanly.
 - [ ] For a notable release, tag it (`core-v2`, ...) and tell teammates to `git fetch upstream` and `git merge upstream/main` in their forks.

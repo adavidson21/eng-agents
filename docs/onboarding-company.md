@@ -131,6 +131,37 @@ cd C:\tools\eng-agents
 - If PowerShell blocks the script: `powershell -ExecutionPolicy Bypass -File .\install.ps1`.
 - Never start opencode from an elevated window. After the first launch, ask it to run `whoami`: it must print your normal username.
 
+### Optional: render-check diagrams for /tsd
+
+`/tsd` renders every diagram with mermaid-cli to catch syntax errors and saves an SVG of each. Without it, diagrams are only checked against a checklist. mermaid-cli needs a headless browser. Pick one:
+
+**A. Use Edge (no browser download).** Edge is on every Windows PC, and the check script finds it automatically.
+
+```powershell
+$env:PUPPETEER_SKIP_DOWNLOAD = "true"
+npm install -g @mermaid-js/mermaid-cli
+Remove-Item Env:PUPPETEER_SKIP_DOWNLOAD
+```
+
+**B. Download Chromium ahead of time.** The install downloads a headless Chrome into `%USERPROFILE%\.cache\puppeteer`. If the network blocks that download, use option A.
+
+```powershell
+npm install -g @mermaid-js/mermaid-cli
+```
+
+If the browser is somewhere unusual, add this to `config.json` (from step 3):
+
+```json
+"mermaid": { "browserPath": "C:/path/to/msedge.exe" }
+```
+
+Check it. The last line must be `RESULT: PASS 6 of 6`:
+
+```powershell
+cd C:\src\work
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\.config\opencode\eng-agents\scripts\diagrams\Test-Mermaid.ps1" -Path "$env:USERPROFILE\.config\opencode\eng-agents\templates\tsd-diagrams.md" -OutDir .work\_test\render
+```
+
 ## 6. Test the ADO script
 
 ```powershell
@@ -161,6 +192,7 @@ Replace every `TODO(you)` and `(example)` row. Questions to answer:
 - Which products exist, and which repos does each one span?
 - Which repos usually change together, and in what order?
 - Which work item words map to different names in code?
+- Which outside systems does each product talk to, and which business processes does it run? (`/tsd` uses these for its context and BPMN-style diagrams.)
 - Is there anything an agent must never touch (generated code, shared environments)?
 
 A wrong map produces wrong plans. Keep it short and accurate.

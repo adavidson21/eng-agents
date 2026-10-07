@@ -269,7 +269,8 @@ Run these in a scratch opencode session. Each confirms an assumption the setup d
 | 8 | Global memory works | `/memory -global Test rule, delete me`, then `/new` and ask: "What rules are in your global memory?" Delete the line from `memory.md` afterwards. | Check `instructions` in the installed `opencode.json` lists `memory.md`. |
 | 9 | Repo memory works | `/memory <repo> Test rule, delete me`. The line appears under `## Remembered` in the repo guide with no prompt. Delete it. | The writer could not edit the file. Approve once and report it. |
 | 10 | Each ADO connection resolves | Run the `-ShowConnection` command from step 3 once per connection (`-From <name>`) and once for a repo in each collection. | Fix `paths` or the connection's `serverUrl` and `collection`. |
-| 11 | Normal work does not prompt | Run one real item through `/start` to `/review`. Note every approval you give. | Add each safe command to `overlay\permissions\read.json` or `build.json` ([Permissions](customization.md#permissions)) and reinstall. |
+| 11 | Dashboard builds | Run `/dashboard`. No approval prompt, and a page opens listing your repos. Click a repo's Branch link: it opens in ADO. | A prompt means the planner permission did not match; check the `New-Dashboard.ps1` lines in the installed planner agent. Wrong links mean an unusual remote URL format; report it. |
+| 12 | Normal work does not prompt | Run one real item through `/start` to `/review`. Note every approval you give. | Add each safe command to `overlay\permissions\read.json` or `build.json` ([Permissions](customization.md#permissions)) and reinstall. |
 
 Then delete the test folder yourself (agents cannot delete recursively): `Remove-Item C:\src\work\.work\_test -Recurse`. Keep `.work`.
 
@@ -287,9 +288,10 @@ Take one small, low-risk bug through the bug lane:
 /do-task <id> 2
 /review <id>
 /pr <id>
+/dashboard
 ```
 
-Write down every place the model stumbled. Generic problems are Core fixes; company-specific ones go in your overlay or a repo guide.
+Run `/dashboard` at any point along the way to check it shows the right stage and next command. Write down every place the model stumbled. Generic problems are Core fixes; company-specific ones go in your overlay or a repo guide.
 
 ## Keeping it current
 

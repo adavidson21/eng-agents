@@ -16,6 +16,8 @@ permission:
     "git -C * switch -c *": allow
     "powershell -NoProfile -ExecutionPolicy Bypass -File *Get-WorkItem.ps1*": allow
     "pwsh -NoProfile -ExecutionPolicy Bypass -File *Get-WorkItem.ps1*": allow
+    "powershell -NoProfile -ExecutionPolicy Bypass -File *New-Dashboard.ps1*": allow
+    "pwsh -NoProfile -ExecutionPolicy Bypass -File *New-Dashboard.ps1*": allow
     "{{BASH:guards}}": include
 ---
 

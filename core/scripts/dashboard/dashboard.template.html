@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Work dashboard</title>
+<!--
+  eng-agents dashboard template. New-Dashboard.ps1 replaces the data block below
+  with the current state of .work and the workspace repos. No network access:
+  system fonts only, no external scripts.
+-->
+<style>
+:root {
+  --bg: #eef2f4;
+  --surface: #ffffff;
+  --sunk: #e4eaee;
+  --ink: #15212b;
+  --muted: #586977;
+  --line: #d2dbe1;
+  --go: #0b7768;
+  --go-soft: #d7efeb;
+  --gate: #9a5f05;
+  --gate-soft: #f8ead2;
+  --stop: #ad3329;
+  --stop-soft: #f7dfdc;
+  --hold: #4f5596;
+  --hold-soft: #e3e4f4;
+  --focus: #2e6fd8;
+  --sans: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --mono: "Cascadia Mono", "Cascadia Code", Consolas, "SF Mono", Menlo, ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #10161b;
+    --surface: #172028;
+    --sunk: #0c1115;
+    --ink: #e2e9ee;
+    --muted: #93a4b1;
+    --line: #283540;
+    --go: #43c1ad;
+    --go-soft: #143832;
+    --gate: #e3a64a;
+    --gate-soft: #3a2c14;
+    --stop: #ef7d72;
+    --stop-soft: #3d1d1a;
+    --hold: #a3a9e6;
+    --hold-soft: #262a4a;
+    --focus: #7fb0ff;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--sans);
+}
+a { color: inherit; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); text-underline-offset: 2px; }
+a:hover { text-decoration-color: currentColor; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 3px; }
+code, .mono { font-family: var(--mono); font-size: 0.92em; }
+button { font: inherit; color: inherit; }
+
+.wrap { max-width: 1320px; margin: 0 auto; padding: 20px 24px 64px; }
+
+/* ---------- top bar */
+.top {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 20px;
+  padding-bottom: 14px; border-bottom: 1px solid var(--line); margin-bottom: 22px;
+}
+.top h1 { font-size: 17px; font-weight: 650; margin: 0; letter-spacing: -0.01em; }
+.top .ws { color: var(--muted); font-family: var(--mono); font-size: 13px; word-break: break-all; }
+.top .fresh { margin-left: auto; color: var(--muted); font-size: 13px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.stale { color: var(--gate); font-weight: 600; }
+
+/* ---------- layout */
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 28px; align-items: start; }
+@media (max-width: 1020px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+aside { display: grid; gap: 28px; }
+
+/* ---------- pick up here */
+.pickup {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--state, var(--go));
+  border-radius: 6px;
+  padding: 20px 22px 18px;
+  margin-bottom: 18px;
+}
+.pickup .eyebrow { color: var(--muted); font-size: 13px; margin: 0 0 4px; }
+.pickup h2 { margin: 0 0 14px; font-size: 22px; line-height: 1.25; font-weight: 650; letter-spacing: -0.015em; }
+.pickup h2 a { text-decoration: none; }
+.pickup h2 .num { color: var(--muted); font-weight: 500; margin-right: 6px; }
+.pickup .track { margin: 6px 0 18px; }
+.do {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  background: var(--sunk); border-radius: 6px; padding: 12px 14px;
+}
+.do .cmd { font-family: var(--mono); font-size: 21px; font-weight: 600; letter-spacing: -0.01em; word-break: break-all; }
+.do .act { font-size: 17px; font-weight: 600; }
+.do .then { color: var(--muted); font-size: 14px; }
+.pickup .why { margin: 12px 0 0; color: var(--muted); }
+.pickup .why strong { color: var(--ink); font-weight: 600; }
+
+/* ---------- counts */
+.counts { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 26px; padding: 0; list-style: none; }
+.counts a {
+  display: inline-flex; gap: 8px; align-items: baseline; text-decoration: none;
+  border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 4px 12px; font-size: 14px;
+}
+.counts a b { font-variant-numeric: tabular-nums; }
+.counts a[data-b="needs"] b { color: var(--gate); }
+.counts a[data-b="paused"] b { color: var(--hold); }
+.counts a[data-b="ship"] b { color: var(--go); }
+.counts a.zero { opacity: .55; }
+
+/* ---------- groups and items */
+section.group { margin-bottom: 30px; }
+section.group > h3, aside h3 {
+  font-size: 15px; font-weight: 650; margin: 0 0 10px; display: flex; gap: 8px; align-items: baseline;
+}
+section.group > h3 .n, aside h3 .n { color: var(--muted); font-weight: 500; }
+section.group > p.hint { margin: -6px 0 10px; color: var(--muted); font-size: 13px; }
+.items { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
+.item {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px 12px;
+}
+.item-head { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
+.item-head .t { font-size: 16px; font-weight: 600; margin: 0; flex: 1 1 320px; min-width: 0; }
+.item-head .t .num { color: var(--muted); font-weight: 500; margin-right: 6px; }
+.item-head .t a { text-decoration: none; }
+.item-head .t a:hover { text-decoration: underline; }
+.meta { color: var(--muted); font-size: 13px; display: flex; gap: 12px; flex-wrap: wrap; }
+.tag {
+  display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 4px;
+  background: var(--sunk); color: var(--muted);
+}
+.tag.bug { background: var(--stop-soft); color: var(--stop); }
+.tag.feature { background: var(--go-soft); color: var(--go); }
+
+.next-line { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 10px 0 0; }
+.next-line .lbl { color: var(--muted); font-size: 13px; min-width: 64px; }
+.next-line .cmd { font-family: var(--mono); font-weight: 600; }
+.next-line .act { font-weight: 600; }
+.next-line .then { color: var(--muted); font-size: 13px; }
+.left-off { margin: 8px 0 0; display: flex; gap: 12px; }
+.left-off .lbl { color: var(--muted); font-size: 13px; min-width: 64px; padding-top: 1px; }
+.left-off .body { min-width: 0; }
+.left-off .when { color: var(--muted); font-size: 13px; }
+.alert { color: var(--stop); font-weight: 600; }
+.held { color: var(--hold); font-weight: 600; }
+
+details { margin-top: 10px; }
+details > summary {
+  cursor: pointer; color: var(--muted); font-size: 13px; list-style: none; display: inline-flex; gap: 6px; align-items: center;
+}
+details > summary::-webkit-details-marker { display: none; }
+details > summary::before { content: ""; width: 0; height: 0; border-left: 5px solid currentColor; border-top: 4px solid transparent; border-bottom: 4px solid transparent; transition: transform .15s; }
+details[open] > summary::before { transform: rotate(90deg); }
+.detail-body { margin-top: 8px; display: grid; gap: 12px; }
+
+/* ---------- the track */
+.track { display: flex; align-items: flex-start; margin: 12px 0 2px; overflow-x: auto; padding-bottom: 2px; }
+.stop { display: flex; flex-direction: column; align-items: center; min-width: 46px; flex: 0 0 auto; }
+.stop .dot {
+  width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line); background: var(--surface);
+}
+.stop .name { font-size: 12px; color: var(--muted); margin-top: 4px; white-space: nowrap; }
+.stop .sub { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; min-height: 15px; }
+.stop.done .dot { background: var(--ink); border-color: var(--ink); }
+.stop.done .name { color: var(--ink); }
+.stop.here .dot { border-color: var(--state); background: var(--state); box-shadow: 0 0 0 4px color-mix(in srgb, var(--state) 22%, transparent); }
+.stop.here .name { color: var(--state); font-weight: 650; }
+.rail { flex: 1 1 22px; min-width: 18px; height: 2px; background: var(--line); margin-top: 6px; position: relative; }
+.rail.done { background: var(--ink); }
+.rail .gate {
+  position: absolute; left: 50%; top: -5px; width: 12px; height: 12px; margin-left: -6px;
+  transform: rotate(45deg); border: 2px solid var(--line); background: var(--surface); border-radius: 2px;
+}
+.rail .gate.ok { background: var(--go); border-color: var(--go); }
+.rail .gate.wait { background: var(--gate); border-color: var(--gate); }
+.rail .gate.no { background: var(--stop); border-color: var(--stop); }
+.pickup .stop { min-width: 58px; }
+.pickup .stop .dot { width: 18px; height: 18px; }
+.pickup .rail { margin-top: 8px; }
+.pickup .stop .name { font-size: 13px; }
+
+/* ---------- tables */
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th { text-align: left; font-weight: 600; color: var(--muted); font-size: 12.5px; padding: 4px 10px 4px 0; border-bottom: 1px solid var(--line); }
+td { padding: 6px 10px 6px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+.tbl-wrap { overflow-x: auto; }
+.links { display: flex; gap: 10px; flex-wrap: wrap; white-space: nowrap; }
+.flag { display: inline-block; font-size: 12px; padding: 0 7px; border-radius: 4px; margin: 1px 4px 1px 0; white-space: nowrap; }
+.flag.warn { background: var(--gate-soft); color: var(--gate); font-weight: 600; }
+.flag.bad { background: var(--stop-soft); color: var(--stop); font-weight: 600; }
+.flag.info { background: var(--sunk); color: var(--muted); }
+.flag.ok { color: var(--go); padding-left: 0; }
+.branch { font-family: var(--mono); font-size: 12.5px; word-break: break-all; }
+.dim { color: var(--muted); }
+
+.tasks { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; font-size: 13.5px; }
+.tasks li { display: flex; gap: 8px; align-items: baseline; }
+.tasks .box { width: 14px; height: 14px; border: 1.5px solid var(--muted); border-radius: 3px; flex: 0 0 14px; position: relative; top: 2px; }
+.tasks li.done .box { background: var(--ink); border-color: var(--ink); }
+.tasks li.done .box::after { content: ""; position: absolute; left: 3.5px; top: 0.5px; width: 4px; height: 8px; border: solid var(--surface); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.tasks li.done .tt { color: var(--muted); }
+.tasks li.first .tt { font-weight: 600; }
+.tasks .rp { color: var(--muted); font-size: 12px; }
+.bar { height: 4px; background: var(--sunk); border-radius: 2px; overflow: hidden; width: 120px; display: inline-block; vertical-align: middle; }
+.bar > i { display: block; height: 100%; background: var(--ink); }
+
+.kit { background: var(--sunk); border-radius: 6px; padding: 8px 10px; display: grid; gap: 2px; }
+.kit-line { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+.kit-line code { font-size: 13px; word-break: break-all; }
+.kit-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.kit-head span { color: var(--muted); font-size: 13px; }
+.pre { white-space: pre-wrap; font-size: 13.5px; margin: 0; }
+.files { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 13px; font-family: var(--mono); }
+.sub-h { font-size: 12.5px; color: var(--muted); font-weight: 600; margin: 0 0 4px; }
+
+.copy {
+  border: 1px solid var(--line); background: var(--surface); border-radius: 4px; padding: 2px 9px; font-size: 12.5px; cursor: pointer; color: var(--muted); flex: 0 0 auto;
+}
+.copy:hover { color: var(--ink); border-color: var(--muted); }
+.copy.ok { color: var(--go); border-color: var(--go); }
+.do .copy { font-size: 13px; padding: 4px 12px; margin-left: auto; }
+
+/* ---------- sidebar */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; }
+.repo-list { list-style: none; margin: 0; padding: 0; display: grid; }
+.repo-list li { padding: 8px 0; border-bottom: 1px solid var(--line); display: grid; gap: 2px; }
+.repo-list li:last-child { border-bottom: 0; }
+.repo-list .rn { font-weight: 600; display: flex; justify-content: space-between; gap: 8px; }
+.repo-list .rn a { font-weight: 500; font-size: 13px; color: var(--muted); }
+.repo-list .lc { font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.clean-list { font-size: 13px; color: var(--muted); margin: 6px 0 0; }
+
+.timeline { list-style: none; margin: 0; padding: 0; }
+.day { font-size: 12.5px; font-weight: 600; color: var(--muted); margin: 10px 0 4px; }
+.day:first-child { margin-top: 0; }
+.ev { display: grid; grid-template-columns: 8px 1fr; gap: 10px; padding: 4px 0; font-size: 13.5px; }
+.ev .pip { width: 8px; height: 8px; border-radius: 50%; background: var(--line); margin-top: 7px; }
+.ev.fail .pip { background: var(--stop); }
+.ev.pass .pip { background: var(--go); }
+.ev .c { font-family: var(--mono); font-weight: 600; font-size: 12.5px; }
+.ev .w { color: var(--muted); }
+
+.empty { background: var(--surface); border: 1px dashed var(--line); border-radius: 6px; padding: 26px 22px; }
+.empty h2 { margin: 0 0 6px; font-size: 18px; }
+.empty p { margin: 0 0 10px; color: var(--muted); }
+.note { color: var(--muted); font-size: 13px; margin: 8px 0 0; }
+
+@media (max-width: 600px) {
+  .wrap { padding: 14px 16px 48px; }
+  .do .cmd { font-size: 17px; }
+  .pickup h2 { font-size: 19px; }
+  .next-line .lbl, .left-off .lbl { min-width: 0; }
+  .left-off { flex-direction: column; gap: 0; }
+  .stop, .pickup .stop { min-width: 34px; }
+  .stop .name, .pickup .stop .name { font-size: 11px; }
+  .rail, .pickup .rail { min-width: 6px; }
+  .pickup .stop .dot { width: 14px; height: 14px; }
+  .pickup .rail { margin-top: 6px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+@media print { .copy { display: none; } body { background: #fff; } }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script type="application/json" id="eng-data">__ENG_DATA__</script>
+<script>
+(function () {
+  "use strict";
+  var app = document.getElementById("app");
+  var D;
+  try { D = JSON.parse(document.getElementById("eng-data").textContent); }
+  catch (e) {
+    app.innerHTML = '<div class="empty"><h2>No data in this page</h2><p>This is the dashboard template. Run <code>/dashboard</code> in opencode, or <code>New-Dashboard.ps1</code>, to build the real page.</p></div>';
+    return;
+  }
+
+  // ---------------------------------------------------------------- helpers
+  function h(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function md(s) {
+    // Inline `code` and **bold** only, plus "- " list lines as bullets. Everything else stays plain text.
+    return h(s).replace(/^\s*[-*]\s+/gm, "\u2022 ").replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  }
+  function link(href, text, cls) {
+    if (!href) return h(text);
+    return '<a href="' + h(href) + '" target="_blank" rel="noopener"' + (cls ? ' class="' + cls + '"' : "") + ">" + h(text) + "</a>";
+  }
+  function fileHref(folder, name) {
+    return encodeURIComponent(folder) + "/" + encodeURIComponent(name);
+  }
+  var copyStore = [];
+  function copyBtn(text, label) {
+    copyStore.push(text);
+    return '<button type="button" class="copy" data-copy="' + (copyStore.length - 1) + '" aria-label="Copy ' + h(text) + '">' + (label || "Copy") + "</button>";
+  }
+  function plural(n, one, many) { return n + " " + (n === 1 ? one : (many || one + "s")); }
+
+  var now = Date.now();
+  function ago(ms) {
+    var m = Math.round((now - ms) / 60000);
+    if (m < 1) return "just now";
+    if (m < 60) return m + " min ago";
+    var hr = Math.round(m / 60);
+    if (hr < 24) return plural(hr, "hour") + " ago";
+    var d = Math.round(hr / 24);
+    if (d < 14) return plural(d, "day") + " ago";
+    return Math.round(d / 7) + " weeks ago";
+  }
+  function dayKey(d) {
+    var y = d.getFullYear(), m = ("0" + (d.getMonth() + 1)).slice(-2), dd = ("0" + d.getDate()).slice(-2);
+    return y + "-" + m + "-" + dd;
+  }
+  var today = dayKey(new Date());
+  var yest = dayKey(new Date(now - 864e5));
+  function dayName(s) {
+    var k = (s || "").slice(0, 10);
+    if (k === today) return "Today";
+    if (k === yest) return "Yesterday";
+    var p = k.split("-");
+    if (p.length !== 3) return s;
+    var d = new Date(+p[0], +p[1] - 1, +p[2]);
+    return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+  }
+  function timeOf(ms) { return new Date(ms).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }); }
+
+  // ------------------------------------------------------------ state colors
+  function stateVar(it) {
+    if (it.bucket === "paused") return "var(--hold)";
+    if (it.blocked) return "var(--stop)";
+    if (it.bucket === "needs") return "var(--gate)";
+    return "var(--go)";
+  }
+
+  // --------------------------------------------------------------- the track
+  var STOPS = {
+    feature: [["start", "Start"], ["spec", "Spec", "spec"], ["plan", "Plan", "plan"], ["tasks", "Tasks"], ["build", "Build"], ["review", "Review", "review"], ["pr", "PR"]],
+    bug: [["start", "Start"], ["bug", "Bug", "bug"], ["build", "Build"], ["review", "Review", "review"], ["pr", "PR"]]
+  };
+  function gateClass(it, g) {
+    var v = it.gates ? it.gates[g] : null;
+    if (!v) return "";
+    if (v === "APPROVED" || v === "READY") return "ok";
+    if (v.indexOf("CHANGES") >= 0) return "no";
+    if (v === "DRAFT") return "wait";
+    return "";
+  }
+  function gateLabel(g, cls) {
+    var name = { spec: "spec.md", plan: "plan.md", bug: "bug.md", review: "review.md" }[g];
+    if (cls === "ok") return name + " approved";
+    if (cls === "wait") return name + " waiting for your approval";
+    if (cls === "no") return "Review found changes needed";
+    return name + " gate, not reached yet";
+  }
+  function track(it) {
+    var stops = STOPS[it.lane] || STOPS.feature;
+    var idx = -1;
+    for (var i = 0; i < stops.length; i++) if (stops[i][0] === it.stage) idx = i;
+    var shipped = it.stage === "ship";
+    if (shipped) idx = stops.length;
+    var out = '<div class="track" role="img" aria-label="' + h(trackLabel(it, stops, idx)) + '" style="--state:' + stateVar(it) + '">';
+    for (var j = 0; j < stops.length; j++) {
+      var s = stops[j];
+      var cls = j < idx ? "done" : (j === idx ? "here" : "");
+      var sub = "";
+      if (s[0] === "build" && it.tasks && it.tasks.total) sub = it.tasks.done + "/" + it.tasks.total;
+      out += '<div class="stop ' + cls + '"><span class="dot"></span><span class="name">' + s[1] + '</span><span class="sub">' + sub + "</span></div>";
+      if (j < stops.length - 1) {
+        var railDone = j < idx;
+        var gate = "";
+        if (s[2]) {
+          var gc = gateClass(it, s[2]);
+          gate = '<span class="gate ' + gc + '" title="' + h(gateLabel(s[2], gc)) + '"></span>';
+        }
+        out += '<div class="rail' + (railDone ? " done" : "") + '">' + gate + "</div>";
+      }
+    }
+    return out + "</div>";
+  }
+  function trackLabel(it, stops, idx) {
+    if (idx >= stops.length) return "All stages done. Ready to push and open PRs.";
+    if (idx < 0) return "Stage unknown";
+    return "At " + stops[idx][1] + ", stage " + (idx + 1) + " of " + stops.length;
+  }
+
+  // --------------------------------------------------------------- next step
+  function nextHtml(it, big) {
+    var n = it.next || {};
+    var cmd = it.paused ? "/resume " + it.id : n.command;
+    var act = it.paused ? null : n.action;
+    var parts = [];
+    if (big) {
+      if (act) {
+        parts.push('<span class="act">' + md(act) + "</span>");
+        if (cmd) parts.push('<span class="then">then <code>' + h(cmd) + "</code></span>");
+        if (cmd) parts.push(copyBtn(cmd, "Copy " + h(cmd.split(" ")[0])));
+      } else if (cmd) {
+        parts.push('<span class="cmd">' + h(cmd) + "</span>");
+        parts.push(copyBtn(cmd));
+      }
+      return '<div class="do">' + parts.join("") + "</div>";
+    }
+    var out = '<div class="next-line"><span class="lbl">Next</span>';
+    if (act) {
+      out += '<span class="act">' + md(act) + "</span>";
+      if (cmd) out += '<span class="then">then <code>' + h(cmd) + "</code></span>" + copyBtn(cmd);
+    } else if (cmd) {
+      out += '<span class="cmd">' + h(cmd) + "</span>" + copyBtn(cmd);
+    }
+    if (n.note && !it.paused) out += '<span class="then">' + md(n.note) + "</span>";
+    return out + "</div>";
+  }
+
+  function leftOffHtml(it) {
+    var body = "";
+    if (it.paused) {
+      var p = it.paused;
+      body += '<span class="held">Paused' + (p.since ? " since " + h(p.since) : "") + "</span>" + (p.reason ? ": " + md(p.reason) : ".");
+      if (p.inProgress && !/^none/i.test(p.inProgress)) body += "<br>In progress: " + md(p.inProgress);
+      if (p.wip) body += '<div class="pre">' + md(p.wip) + "</div>";
+      if (p.waiting) body += '<div><span class="dim">Waiting on:</span> <span class="pre">' + md(p.waiting) + "</span></div>";
+    } else if (it.last) {
+      var l = it.last;
+      body += '<span class="when">' + h(dayName(l.date)) + ", <code>" + h(l.command) + "</code>" + (l.agent ? " (" + h(l.agent) + ")" : "") + ":</span> " + md(l.did || "No summary.");
+      if (it.blocked) body += '<br><span class="alert">Blocked:</span> ' + md(it.blocked);
+      else if (l.notes) body += '<br><span class="dim">Notes:</span> ' + md(l.notes);
+      if (l.verify && !it.blocked) body += '<br><span class="dim">Verify:</span> ' + md(l.verify);
+    } else {
+      body = '<span class="dim">Nothing in progress.md yet.</span>';
+    }
+    return '<div class="left-off"><span class="lbl">Left off</span><div class="body">' + body + "</div></div>";
+  }
+
+  // ------------------------------------------------------------- repo flags
+  function repoFlags(g, expected, paused) {
+    var f = [];
+    if (!g) return f;
+    if (!g.exists) return [["bad", "Folder missing"]];
+    if (!g.isGit) return [["bad", "Not a git repo"]];
+    if (g.detached) f.push(["warn", "Detached HEAD"]);
+    if (expected && g.branch && g.branch !== expected) f.push([paused ? "info" : "bad", "On " + g.branch + (paused ? " (item is paused)" : "")]);
+    if (g.changed) f.push(["warn", plural(g.changed, "uncommitted file")]);
+    if (g.ahead) f.push(["info", plural(g.ahead, "unpushed commit")]);
+    if (g.behind) f.push(["info", g.behind + " behind remote"]);
+    if (g.gone) f.push(["info", "Remote branch deleted"]);
+    if (g.branch && !g.upstream && g.branch !== g.defaultBranch) {
+      f.push(["info", g.unpushed ? "Not pushed (" + plural(g.unpushed, "commit") + ")" : "Not pushed"]);
+    }
+    if (!f.length) f.push(["ok", g.upstream ? "Clean, pushed" : "Clean"]);
+    return f;
+  }
+  function flagsHtml(f) {
+    return f.map(function (x) { return '<span class="flag ' + x[0] + '">' + h(x[1]) + "</span>"; }).join("");
+  }
+
+  function reposTable(it) {
+    if (!it.repos || !it.repos.length) return '<p class="dim" style="margin:0">No repos.md yet.</p>';
+    var rows = it.repos.map(function (r) {
+      var g = r.git || {};
+      var l = r.links || {};
+      var links = [];
+      if (l.branch) links.push(link(l.branch, "Branch"));
+      if (l.pr) links.push(link(l.pr, "Create PR"));
+      var last = g.lastSha ? '<span class="dim mono">' + h(g.lastSha) + "</span> " + h(g.lastMsg) : '<span class="dim">none</span>';
+      return "<tr><td><strong>" + h(r.folder) + "</strong>" + (r.shared ? ' <span class="tag">shared</span>' : "") +
+        '<br><span class="branch">' + h(r.branch || "no branch") + "</span></td>" +
+        "<td>" + flagsHtml(repoFlags(g, r.branch, !!it.paused)) + "</td>" +
+        "<td>" + last + "</td>" +
+        '<td><div class="links">' + (links.join("") || '<span class="dim">no links</span>') + "</div></td></tr>";
+    }).join("");
+    return '<div class="tbl-wrap"><table><thead><tr><th>Repo</th><th>State</th><th>Last commit</th><th>Links</th></tr></thead><tbody>' + rows + "</tbody></table></div>";
+  }
+
+  function tasksHtml(it) {
+    var t = it.tasks;
+    if (!t || !t.total) return "";
+    var firstOpen = null;
+    t.list.forEach(function (x) { if (!x.done && (firstOpen === null || x.n < firstOpen)) firstOpen = x.n; });
+    var li = t.list.map(function (x) {
+      return '<li class="' + (x.done ? "done" : "") + (x.n === firstOpen ? " first" : "") + '"><span class="box" aria-hidden="true"></span><span class="tt">' +
+        h(x.n + ". " + x.title) + (x.repo ? ' <span class="rp">' + h(x.repo) + "</span>" : "") + "</span></li>";
+    }).join("");
+    return '<div><p class="sub-h">Tasks <span class="bar" aria-hidden="true"><i style="width:' + Math.round(100 * t.done / t.total) + '%"></i></span> ' + t.done + " of " + t.total + ' done</p><ul class="tasks">' + li + "</ul></div>";
+  }
+
+  function kitHtml(lines) {
+    if (!lines || !lines.length) return "";
+    return '<div class="kit"><div class="kit-head"><span>After a restart, paste these into a terminal</span>' + copyBtn(lines.join("\n"), "Copy all") + "</div>" +
+      lines.map(function (l) { return '<div class="kit-line"><code>' + h(l) + "</code>" + copyBtn(l) + "</div>"; }).join("") + "</div>";
+  }
+
+  function filesHtml(it) {
+    if (!it.files || !it.files.length) return "";
+    return '<div><p class="sub-h">Files</p><div class="files">' + it.files.map(function (f) {
+      return '<a href="' + fileHref(it.folder, f) + '" target="_blank">' + h(f) + "</a>";
+    }).join("") + "</div></div>";
+  }
+
+  function idLink(it) {
+    return it.url ? link(it.url, "#" + it.id, "num") : '<span class="num">#' + h(it.id) + "</span>";
+  }
+
+  // ------------------------------------------------------------- item card
+  function itemCard(it) {
+    if (it.kind !== "item") return noteCard(it);
+    var meta = [];
+    meta.push('<span class="tag ' + h(it.lane) + '">' + h(it.lane) + (it.laneGuessed ? "?" : "") + "</span>");
+    if (it.adoState) meta.push("<span title=\"ADO state when the item was fetched\">ADO: " + h(it.adoState) + "</span>");
+    meta.push("<span title=\"" + h(new Date(it.modifiedMs).toLocaleString()) + "\">Touched " + ago(it.modifiedMs) + "</span>");
+    var title = it.url ? link(it.url, it.title) : h(it.title);
+    return '<article class="item" id="item-' + h(it.id) + '">' +
+      '<div class="item-head"><h4 class="t">' + idLink(it) + title + '</h4><div class="meta">' + meta.join("") + "</div></div>" +
+      track(it) + nextHtml(it, false) + leftOffHtml(it) +
+      "<details><summary>Repos, tasks, files, resume commands</summary><div class=\"detail-body\">" +
+      reposTable(it) + tasksHtml(it) + kitHtml(it.resume) + filesHtml(it) +
+      "</div></details></article>";
+  }
+
+  function noteCard(it) {
+    var label = { spike: "Spike", docs: "Docs", tsd: "TSD" }[it.kind] || "Folder";
+    var body = "";
+    if (it.state) body += '<p style="margin:6px 0 0"><strong>' + h(it.state) + "</strong></p>";
+    if (it.summary) body += '<p class="pre" style="margin:6px 0 0">' + md(it.summary) + "</p>";
+    if (it.nextText) body += '<div class="next-line"><span class="lbl">Next</span><span>' + md(it.nextText) + "</span></div>";
+    return '<article class="item"><div class="item-head"><h4 class="t">' + h(it.title) + '</h4><div class="meta"><span class="tag">' + label +
+      "</span><span>Touched " + ago(it.modifiedMs) + "</span></div></div>" + body +
+      (it.files && it.files.length ? "<details><summary>Files</summary><div class=\"detail-body\">" + filesHtml(it) + "</div></details>" : "") + "</article>";
+  }
+
+  // --------------------------------------------------------- pick up here
+  function pickupHtml(it) {
+    var why;
+    if (it.bucket === "paused") why = "Nothing is moving. This is the most recent paused item.";
+    else if (it.blocked) why = "<strong>Blocked.</strong> " + md(it.blocked);
+    else if (it.next && it.next.note) why = md(it.next.note);
+    else why = "";
+    var lo = "";
+    if (it.paused) lo = leftOffHtml(it);
+    else if (it.last) lo = '<p class="why"><strong>Last:</strong> ' + h(dayName(it.last.date)) + ", <code>" + h(it.last.command) + "</code>: " + md(it.last.did || "") + "</p>";
+    var title = it.url ? link(it.url, it.title) : h(it.title);
+    return '<section class="pickup" style="--state:' + stateVar(it) + '" aria-labelledby="pickup-h">' +
+      '<p class="eyebrow">Pick up here, touched ' + ago(it.modifiedMs) + "</p>" +
+      '<h2 id="pickup-h">' + idLink(it) + title + "</h2>" +
+      track(it) + nextHtml(it, true) +
+      (why ? '<p class="why">' + why + "</p>" : "") + lo +
+      '<details><summary>Resume commands and repos</summary><div class="detail-body">' + kitHtml(it.resume) + reposTable(it) + "</div></details>" +
+      "</section>";
+  }
+
+  // -------------------------------------------------------------- sidebar
+  function reposPanel() {
+    var repos = D.repos || [];
+    if (!repos.length) return "";
+    var busy = [], clean = [];
+    repos.forEach(function (r) {
+      var g = r.git || {};
+      var onDefault = !g.branch || g.branch === g.defaultBranch;
+      if (g.changed || g.ahead || g.detached || !onDefault) busy.push(r); else clean.push(r);
+    });
+    busy.sort(function (a, b) { return (b.git.changed || 0) - (a.git.changed || 0); });
+    var li = busy.map(function (r) {
+      var g = r.git;
+      var owner = r.owner ? (r.ownerKnown ? '<a href="#item-' + h(r.owner) + '">#' + h(r.owner) + "</a>" : '<span title="No .work folder for this id">#' + h(r.owner) + "?</span>") : "";
+      var flags = repoFlags(g, null).filter(function (f) { return f[0] !== "ok"; });
+      if (!r.owner && g.branch && g.branch !== g.defaultBranch) flags.unshift(["info", "Not a pipeline branch"]);
+      var bl = g.links && g.links.branch ? link(g.links.branch, "Branch") : "";
+      return '<li><div class="rn"><span>' + h(r.folder) + " " + owner + "</span>" + bl + "</div>" +
+        '<div class="branch">' + h(g.detached ? "(detached)" : g.branch) + "</div>" +
+        "<div>" + flagsHtml(flags) + "</div>" +
+        (g.lastSha ? '<div class="lc" title="' + h(g.lastMsg) + '"><span class="mono">' + h(g.lastSha) + "</span> " + h(g.lastMsg) + "</div>" : "") + "</li>";
+    }).join("");
+    var cleanTxt = clean.length ? '<p class="clean-list">' + plural(clean.length, "repo") + " clean on their default branch: " + clean.map(function (r) { return h(r.folder); }).join(", ") + ".</p>" : "";
+    return '<section class="panel" aria-labelledby="repos-h"><h3 id="repos-h">Repos with work in progress <span class="n">' + busy.length + "</span></h3>" +
+      (busy.length ? '<ul class="repo-list">' + li + "</ul>" : '<p class="dim" style="margin:0">Every repo is clean on its default branch.</p>') + cleanTxt + "</section>";
+  }
+
+  function activityPanel() {
+    var a = D.activity || [];
+    if (!a.length) return "";
+    var out = "", lastDay = null;
+    a.forEach(function (e) {
+      var d = dayName(e.date);
+      if (d !== lastDay) { out += '<li class="day">' + h(d) + "</li>"; lastDay = d; }
+      var cls = /\bFAIL/i.test(e.verify || "") ? "fail" : /\bPASS/i.test(e.verify || "") ? "pass" : "";
+      out += '<li class="ev ' + cls + '"><span class="pip" aria-hidden="true"></span><div><span class="c">' + h(e.command) + "</span> " +
+        '<a href="#item-' + h(e.id) + '">#' + h(e.id) + "</a> " + '<span class="w">' + md(e.did || "") + "</span></div></li>";
+    });
+    return '<section class="panel" aria-labelledby="act-h"><h3 id="act-h">Recent activity</h3><ul class="timeline">' + out + "</ul></section>";
+  }
+
+  // ---------------------------------------------------------------- page
+  var items = D.items || [];
+  var groups = [
+    ["needs", "Needs you", "Drafts to review and /approve, review findings, and blocked tasks."],
+    ["active", "In progress", ""],
+    ["paused", "Paused", "Run /resume to pick one up."],
+    ["ship", "Ready to ship", "PR text is written. Push and open the PRs, then delete the .work folder when merged."],
+    ["notes", "Spikes, docs, and TSDs", ""]
+  ];
+  var by = {};
+  items.forEach(function (it) { (by[it.bucket] = by[it.bucket] || []).push(it); });
+
+  var stale = (now - D.generatedMs) > 3 * 3600e3;
+  var html = '<header class="top"><h1>Work dashboard</h1><span class="ws">' + h(D.workspace) + "</span>" +
+    '<span class="fresh"><span title="' + h(new Date(D.generatedMs).toLocaleString()) + '">Built ' + h(timeOf(D.generatedMs)) +
+    (stale ? ' <span class="stale">(' + ago(D.generatedMs) + ", may be out of date)</span>" : " (" + ago(D.generatedMs) + ")") +
+    "</span><span>Refresh: <code>" + h(D.refreshCommand) + "</code> " + copyBtn(D.refreshCommand) + " " + copyBtn(D.refreshShell, "Copy shell command") + "</span></span></header>";
+
+  if (!items.length) {
+    html += '<div class="empty"><h2>No work in .work yet</h2><p>Start a work item and it shows up here the next time you refresh.</p><div class="do"><span class="cmd">/start &lt;id&gt; feature</span></div></div>';
+    html += '<div style="margin-top:28px">' + reposPanel() + "</div>";
+    app.innerHTML = html;
+    wire();
+    return;
+  }
+
+  // Pick up here: the most recently touched item that is moving, else the most recent paused one.
+  function newest(list) { return list.length ? list.reduce(function (a, b) { return b.modifiedMs > a.modifiedMs ? b : a; }) : null; }
+  var pick = newest((by.needs || []).concat(by.active || [])) || newest(by.paused || []);
+
+  html += '<div class="grid"><main>';
+  if (pick) html += pickupHtml(pick);
+
+  html += '<ul class="counts" aria-label="Jump to a group">' + groups.map(function (g) {
+    var n = (by[g[0]] || []).length;
+    return '<li><a href="#g-' + g[0] + '" data-b="' + g[0] + '" class="' + (n ? "" : "zero") + '">' + h(g[1]) + " <b>" + n + "</b></a></li>";
+  }).join("") + "</ul>";
+
+  groups.forEach(function (g) {
+    var list = by[g[0]];
+    if (!list || !list.length) return;
+    html += '<section class="group" id="g-' + g[0] + '" aria-labelledby="gh-' + g[0] + '"><h3 id="gh-' + g[0] + '">' + h(g[1]) + ' <span class="n">' + list.length + "</span></h3>" +
+      (g[2] ? '<p class="hint">' + md(g[2]) + "</p>" : "") +
+      '<div class="items">' + list.map(itemCard).join("") + "</div></section>";
+  });
+  if (!D.gitAvailable) html += '<p class="note">git was not found on PATH, so repo state is missing.</p>';
+  html += "</main><aside>" + reposPanel() + activityPanel() + "</aside></div>";
+
+  app.innerHTML = html;
+  wire();
+
+  function wire() {
+    app.addEventListener("click", function (ev) {
+      var b = ev.target.closest ? ev.target.closest("button.copy") : null;
+      if (!b) return;
+      var text = copyStore[+b.getAttribute("data-copy")];
+      var done = function () {
+        var old = b.textContent; b.textContent = "Copied"; b.classList.add("ok");
+        setTimeout(function () { b.textContent = old; b.classList.remove("ok"); }, 1400);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, function () { fallback(text); done(); });
+      } else { fallback(text); done(); }
+    });
+  }
+  function fallback(text) {
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); } catch (e) { }
+    document.body.removeChild(ta);
+  }
+})();
+</script>
+</body>
+</html>

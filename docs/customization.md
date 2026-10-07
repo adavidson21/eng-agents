@@ -159,7 +159,7 @@ Templates set the **format** of what agents write. Commands say "start from `tem
 - Team or company format: `overlay\templates\`. Only you: `personal/templates/`.
 - Templates replace, they do not merge. If both Personal and Company provide `pr.md`, Company wins. To add your taste on top of a team format, use a rule in `personal/AGENTS.md` (for example "In PR descriptions, list the test evidence first").
 
-To change one: copy the Core file into your layer, edit it, re-run `install.ps1`, and run the command on a real item. Keep the parts commands depend on:
+To change one: copy the Core file into your layer, edit it, re-run `install.ps1`, and run the command on a real item. Keep the parts commands and the dashboard depend on:
 
 | Template | Used for | Must keep |
 |---|---|---|
@@ -173,7 +173,7 @@ To change one: copy the Core file into your layer, edit it, re-run `install.ps1`
 | `tsd.md` | Technical spec sections | `Status: DRAFT` line; `<Diagram: ...>` placeholders, the table under each diagram, "Open questions" |
 | `tsd-diagrams.md` | The diagram cookbook `/tsd` copies from | Only `flowchart`, `sequenceDiagram`, `erDiagram`; the "Common errors" and "Check before you finish" sections |
 | `tsd-inventory.md` | Facts every TSD diagram is drawn from | A Source column in every table |
-| `workitem.md`, `repos.md`, `progress.md`, `findings.md`, `repo-agents.md` | Work item text, lane and branches, log entries, spike answer, repo guide shape | Section headings |
+| `workitem.md`, `repos.md`, `progress.md`, `findings.md`, `repo-agents.md` | Work item text, lane and branches, log entries, spike answer, repo guide shape | Section headings. The dashboard also reads the `# Work item <id>: <title>` heading and `Type`, `State`, `ADO`, `Link` lines in `workitem.md`; the `Lane:` line and repo table in `repos.md`; and the `## <date> \| /<command> \| <agent>` headings with `Did`, `Verify`, `Notes`, `Next` lines in `progress.md`. |
 
 ### Add a new kind of document
 
@@ -230,6 +230,7 @@ Open a pull request to eng-agents. Before merging:
 - [ ] It would help **anyone**. No company names, no personal preferences.
 - [ ] Shell permission changes for everyone go in `core/permissions/`. Changes for one agent go in that agent file, before its `{{BASH:guards}}` line.
 - [ ] `Status: DRAFT` lines in the `spec`, `plan`, `bug`, and `tsd` templates, `Status: PAUSED` in `paused`, and `## [ ] Task N:` headings in `tasks` are unchanged.
+- [ ] If you changed the next-command rules in `core/commands/status.md`, `Get-NextStep` in `core/scripts/dashboard/New-Dashboard.ps1` matches them.
 - [ ] Docs that describe the behavior are updated.
 - [ ] `pwsh ./install.ps1 -DryRun` runs cleanly.
 - [ ] For a notable release, tag it (`core-v2`, ...) and tell teammates to `git fetch upstream` and `git merge upstream/main` in their forks.

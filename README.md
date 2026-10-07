@@ -13,7 +13,7 @@ Open opencode from your workspace root (for example `C:\src\work`).
 | Question, no code changes | `/spike <id or topic>` |
 | Docs | `/docs <target>`, new session, `/check-docs <doc path>` |
 | Technical spec with diagrams | `/tsd <product or repo> [repo ...]` → new session → `/check-docs .work/tsd-<name>/tsd.md` → revise → `/publish tsd-<name>` |
-| Where was I? | `/status [id]` |
+| Where was I? | `/dashboard` (every item and repo, in your browser) or `/status [id]` |
 | Switch to something urgent | `/pause <id> [reason]`, later `/resume <id>` |
 | New repo in the workspace | `/onboard-repo <folder>` |
 | Remember a rule | `/memory <rule>` (one repo) or `/memory -global <rule>` (every repo). `/memory -list` shows them. |
@@ -24,7 +24,8 @@ Open opencode from your workspace root (for example `C:\src\work`).
 - **New session** (`/new`) before every `/do-task`.
 - **Review findings** you accept become new tasks. Run `/do-task` for each, then `/review` again.
 - **You push** and open the PR. No agent can push, merge, or deploy.
-- Every command ends with the next command to run. If lost, run `/status <id>`.
+- Every command ends with the next command to run. If lost, run `/dashboard` or `/status <id>`.
+- **After a restart**, you don't need opencode to see where you were. Open `.work\dashboard.html`, or rebuild it from any terminal (see [Dashboard](docs/pipeline.md#dashboard)).
 
 Something went wrong? See [Recovering from problems](docs/pipeline.md#recovering-from-problems).
 
@@ -40,4 +41,4 @@ Something went wrong? See [Recovering from problems](docs/pipeline.md#recovering
 | [Personal onboarding](docs/onboarding-personal.md) | Your fork and your `personal/` rules |
 | [Company onboarding](docs/onboarding-company.md) | Work PC setup, day-one checks, updating |
 | [Customization](docs/customization.md) | Files to review, how layers combine, agents, permission tiers, templates, changing Core |
-| [Pipeline](docs/pipeline.md) | How each phase works, gates, lanes, work files, repo guides and memory, pausing, recovery, tuning |
+| [Pipeline](docs/pipeline.md) | How each phase works, gates, lanes, work files, the dashboard, repo guides and memory, pausing, recovery, tuning |

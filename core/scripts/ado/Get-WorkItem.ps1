@@ -121,6 +121,7 @@ if ($Title) {
 
 - Type: <Bug | User Story | Feature | Task>
 - State: <state>
+- Link: <paste the work item URL from ADO>
 - Fetched: Pasted by engineer on $today
 
 ## Description
@@ -390,6 +391,12 @@ elseif ($IncludeComments) {
     }
 }
 
+# Web link to the work item, for the dashboard and PR text.
+$webLink = Get-Prop (Get-Prop (Get-Prop $item "_links") "html") "href"
+if (-not $webLink) {
+    $webLink = if ($conn.Project) { "$base/$([System.Uri]::EscapeDataString($conn.Project))/_workitems/edit/$Id" } else { "$base/_workitems/edit/$Id" }
+}
+
 $folder = New-WorkFolder $itemTitle
 
 $md = @"
@@ -401,6 +408,7 @@ $md = @"
 - Iteration: $iteration
 - Tags: $tags
 - ADO: $($conn.Name) ($($conn.Collection)$(if ($conn.Project) { "/" + $conn.Project }))
+- Link: $webLink
 - Fetched: $today
 
 ## Description

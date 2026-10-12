@@ -39,7 +39,6 @@ Every agent reads `personal/AGENTS.md`, so put agent-specific rules under a head
 
 | Command | Agent | What it does |
 |---|---|---|
-| `/standup [days]` | planner | Yesterday / Today / Blockers from every `progress.md` |
 | `/weekly` | planner | One line per work item for the week |
 | `/handoff <id>` | planner | Summary for a teammate taking over an item: status, decisions, gotchas |
 | `/review-branch <repo> <branch>` | reviewer | Review someone else's branch against `main` with the `/review` checklist |

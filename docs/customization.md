@@ -230,7 +230,7 @@ Open a pull request to eng-agents. Before merging:
 - [ ] It would help **anyone**. No company names, no personal preferences.
 - [ ] Shell permission changes for everyone go in `core/permissions/`. Changes for one agent go in that agent file, before its `{{BASH:guards}}` line.
 - [ ] `Status: DRAFT` lines in the `spec`, `plan`, `bug`, and `tsd` templates, `Status: PAUSED` in `paused`, and `## [ ] Task N:` headings in `tasks` are unchanged.
-- [ ] If you changed the next-command rules in `core/commands/status.md`, `Get-NextStep` in `core/scripts/dashboard/New-Dashboard.ps1` matches them.
+- [ ] If you changed the next-command rules in `core/commands/status.md`, `Get-NextStep` in `core/scripts/dashboard/New-Dashboard.ps1` matches them (the static and live dashboards both use it).
 - [ ] Docs that describe the behavior are updated.
 - [ ] `pwsh ./install.ps1 -DryRun` runs cleanly.
 - [ ] For a notable release, tag it (`core-v2`, ...) and tell teammates to `git fetch upstream` and `git merge upstream/main` in their forks.

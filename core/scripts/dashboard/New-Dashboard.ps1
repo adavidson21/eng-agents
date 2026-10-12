@@ -23,11 +23,18 @@
 
     The LAST line of output is always the path of the dashboard file.
 
+    With -AsJson it writes nothing: it prints the data as one line of JSON (ASCII only,
+    other characters escaped) and exits. The live dashboard (live-server.mjs) uses
+    this, so the static and live pages share one parser and one set of next-step rules.
+
 .EXAMPLE
     .\New-Dashboard.ps1 -WorkRoot .work
 
 .EXAMPLE
     .\New-Dashboard.ps1 -WorkRoot C:\src\work\.work -NoOpen
+
+.EXAMPLE
+    .\New-Dashboard.ps1 -WorkRoot .work -AsJson
 #>
 [CmdletBinding()]
 param(
@@ -42,7 +49,10 @@ param(
     [int]$Recent = 25,
 
     # Write the file but do not open a browser.
-    [switch]$NoOpen
+    [switch]$NoOpen,
+
+    # Print the data as JSON instead of writing the page.
+    [switch]$AsJson
 )
 
 $ErrorActionPreference = "Stop"
@@ -655,9 +665,20 @@ $data = [ordered]@{
     configFound = (Test-Path -LiteralPath $ConfigPath)
     refreshCommand = "/dashboard"
     refreshShell = "$psExe -NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`" -WorkRoot `"$workRootFull`""
+    liveShell = "$psExe -NoProfile -ExecutionPolicy Bypass -File `"$(Join-Path $PSScriptRoot 'Start-LiveDashboard.ps1')`""
     items = @($items | Sort-Object -Property @{ Expression = { $_.modifiedMs }; Descending = $true })
     repos = @($repos)
     activity = $sortedActivity
+}
+
+$json = ConvertTo-Json -InputObject $data -Depth 12 -Compress
+
+if ($AsJson) {
+    # ASCII only, so the console code page (Windows PowerShell 5.1) cannot garble it.
+    $json = [regex]::Replace($json, '[^\x00-\x7F]', { param($m) '\u{0:x4}' -f [int][char]$m.Value })
+    [Console]::Out.Write($json)
+    [Console]::Out.Flush()
+    return
 }
 
 # --------------------------------------------------------------- render
@@ -666,7 +687,6 @@ $templatePath = Join-Path $PSScriptRoot "dashboard.template.html"
 $template = Read-Text $templatePath
 if (-not $template) { throw "Template not found: $templatePath. Re-run install.ps1." }
 
-$json = ConvertTo-Json -InputObject $data -Depth 12 -Compress
 # Keep "</script>" and similar out of the inline JSON block.
 $json = $json.Replace("<", "\u003c").Replace(">", "\u003e").Replace("&", "\u0026")
 $html = $template.Replace("__ENG_DATA__", $json)

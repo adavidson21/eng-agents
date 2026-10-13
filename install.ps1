@@ -19,8 +19,9 @@
                                    file. Provider and model settings are kept.
       eng-agents\templates\        templates (later layer replaces same name)
       eng-agents\scripts\          scripts
-      eng-agents\manifest.json     what was installed, so removed files get
-                                   cleaned up next time
+      eng-agents\manifest.json     what was installed (files, versions, source repo and
+                                   commit, overridden files), so removed files get
+                                   cleaned up next time and update.ps1 can compare
       eng-agents\backup\<time>\    copies of anything overwritten
 
     Shell permissions (bash rules shared by every agent):
@@ -44,6 +45,12 @@
     .\install.ps1 -DryRun
 
 .EXAMPLE
+    .\install.ps1 -Component dashboard
+    Reinstalls only the dashboard (scripts\dashboard and commands\dashboard.md). Agents,
+    AGENTS.md, and opencode.json are left as they are. Needs a full install first.
+    update.ps1 runs this for you.
+
+.EXAMPLE
     .\install.ps1 -Target "$env:APPDATA\opencode" -Personal C:\tools\eng-agents-personal
 #>
 [CmdletBinding()]
@@ -52,10 +59,16 @@ param(
     [string]$Personal = (Join-Path $PSScriptRoot "personal"),
     [string]$Company = (Join-Path $(if ($env:USERPROFILE) { $env:USERPROFILE } else { $HOME }) ".config/eng-agents/overlay"),
     [switch]$CoreOnly,
+    # all: everything. dashboard: only the dashboard files (scripts/dashboard, commands/dashboard.md).
+    [ValidateSet("all", "dashboard")]
+    [string]$Component = "all",
     [switch]$DryRun
 )
 
 $ErrorActionPreference = "Stop"
+
+# Windows PowerShell 5.1 wraps some arrays as {"value":[...],"Count":n} in JSON without this.
+if ($PSVersionTable.PSVersion.Major -lt 6) { Remove-TypeData System.Array -ErrorAction SilentlyContinue }
 
 # ------------------------------------------------------------------ helpers
 
@@ -200,6 +213,27 @@ if (-not $CoreOnly) {
 }
 
 $engHome = Join-Path $Target "eng-agents"
+
+# Versions and the commit being installed, recorded in the manifest for update.ps1 and the dashboard.
+function Get-VersionFile {
+    param([string]$Path)
+    if (Test-Path $Path) { return (Read-Text $Path).Trim() }
+    return "0.0.0"
+}
+$versions = [ordered]@{
+    core = Get-VersionFile (Join-Path $coreDir "VERSION")
+    dashboard = Get-VersionFile (Join-Path $coreDir "scripts/dashboard/VERSION")
+}
+$commit = $null
+if (Get-Command git -ErrorAction SilentlyContinue) {
+    $commit = (& git -C $PSScriptRoot rev-parse HEAD 2>$null)
+    if ($LASTEXITCODE -ne 0) { $commit = $null }
+}
+$dashOnly = $Component -eq "dashboard"
+function Test-DashboardFile {
+    param([string]$Rel)
+    return ($Rel -like "scripts/dashboard/*") -or ($Rel -eq "commands/dashboard.md")
+}
 $script:EngHomeToken = $engHome.Replace("\", "/")
 $engConfig = Join-Path $(if ($env:USERPROFILE) { $env:USERPROFILE } else { $HOME }) ".config/eng-agents"
 $script:EngConfigToken = $engConfig.Replace("\", "/")
@@ -210,6 +244,8 @@ $backupDir = Join-Path $engHome "backup\$stamp"
 Write-Host "eng-agents install"
 Write-Host "  Target : $Target"
 Write-Host "  Layers : $(($layers | ForEach-Object { "$($_.Name) ($($_.Path))" }) -join ' -> ')"
+Write-Host "  Version: Core $($versions.core), dashboard $($versions.dashboard)$(if ($commit) { " ($($commit.Substring(0, 7)))" })"
+if ($dashOnly) { Write-Host "  Only   : dashboard (agents, AGENTS.md, and opencode.json are not touched)" }
 if ($DryRun) { Write-Host "  DRY RUN: nothing will be written." }
 Write-Host ""
 
@@ -239,6 +275,7 @@ foreach ($layer in $layers) {
 
 # Key = path relative to the layer folder (forward slashes). Value = source file.
 $files = [ordered]@{}
+$overrides = [ordered]@{}
 foreach ($layer in $layers) {
     foreach ($kind in @("agents", "commands", "templates", "scripts")) {
         $dir = Join-Path $layer.Path $kind
@@ -247,6 +284,7 @@ foreach ($layer in $layers) {
             $rel = $_.FullName.Substring($layer.Path.Length).TrimStart("\", "/").Replace("\", "/")
             if ($files.Contains($rel) -and $layer.Name -ne "Core") {
                 Write-Host "  override: $rel ($($layer.Name))"
+                $overrides[$rel] = $layer.Name
             }
             $files[$rel] = $_.FullName
         }
@@ -265,9 +303,11 @@ function Get-Destination {
 $manifestPath = Join-Path $engHome "manifest.json"
 $oldManifest = @()
 $oldBashKeys = $null
+$oldParsed = $null
 if (Test-Path $manifestPath) {
     $parsed = (Read-Text $manifestPath) | ConvertFrom-Json
     if ($parsed -is [System.Management.Automation.PSCustomObject] -and $parsed.PSObject.Properties["files"]) {
+        $oldParsed = $parsed
         foreach ($entry in $parsed.files) { $oldManifest += $entry }
         $oldBashKeys = @()
         foreach ($entry in $parsed.bashKeys) { $oldBashKeys += $entry }
@@ -279,8 +319,17 @@ if (Test-Path $manifestPath) {
     }
 }
 
-$newManifest = @($files.Keys)
-$stale = @($oldManifest | Where-Object { $newManifest -notcontains $_ })
+if ($dashOnly) {
+    if (-not $oldParsed) { throw "No earlier install found at $manifestPath. Run .\install.ps1 once (without -Component) first." }
+    # Only the dashboard files are written. Everything else stays as the last full install left it.
+    foreach ($k in @($files.Keys)) { if (-not (Test-DashboardFile $k)) { $files.Remove($k) } }
+    $newManifest = @($oldManifest | Where-Object { -not (Test-DashboardFile $_) }) + @($files.Keys)
+    $stale = @($oldManifest | Where-Object { (Test-DashboardFile $_) -and ($newManifest -notcontains $_) })
+}
+else {
+    $newManifest = @($files.Keys)
+    $stale = @($oldManifest | Where-Object { $newManifest -notcontains $_ })
+}
 
 function Backup-File {
     param([string]$Path, [string]$Name)
@@ -331,6 +380,7 @@ foreach ($rel in $files.Keys) {
 }
 Write-Host "  files: $count written"
 
+if (-not $dashOnly) {
 # ---------------------------------------------- AGENTS.md (sections, inside markers)
 
 $begin = "<!-- eng-agents:begin (generated by install.ps1. Edit the layer files, not this block.) -->"
@@ -444,10 +494,45 @@ if ($writeSidecar) {
     Write-Warning "Merge the 'permission' block from $sidecar into your opencode config by hand."
 }
 
+}
+
 # ---------------------------------------------- manifest
 
+function ConvertTo-Map {
+    param($Obj)
+    $m = [ordered]@{}
+    if ($Obj -is [System.Management.Automation.PSCustomObject]) { foreach ($p in $Obj.PSObject.Properties) { $m[$p.Name] = $p.Value } }
+    return $m
+}
+$stampIso = (Get-Date).ToString("o")
+$components = if ($oldParsed -and $oldParsed.PSObject.Properties["components"]) { ConvertTo-Map $oldParsed.components } else { [ordered]@{} }
+foreach ($name in @("core", "dashboard")) {
+    if ($dashOnly -and $name -ne "dashboard") { continue }
+    $components[$name] = [ordered]@{ version = $versions[$name]; commit = $commit; installed = $stampIso }
+}
+if ($dashOnly) {
+    $allOverrides = if ($oldParsed.PSObject.Properties["overrides"]) { ConvertTo-Map $oldParsed.overrides } else { [ordered]@{} }
+    foreach ($k in @($allOverrides.Keys)) { if (Test-DashboardFile $k) { $allOverrides.Remove($k) } }
+    foreach ($k in @($overrides.Keys)) { if (Test-DashboardFile $k) { $allOverrides[$k] = $overrides[$k] } }
+    $overrides = $allOverrides
+    $newBashKeys = @($oldBashKeys)
+}
+
 if (-not $DryRun) {
-    Write-Utf8 $manifestPath (ConvertTo-Json -Depth 4 -InputObject ([ordered]@{ files = @($newManifest); bashKeys = @($newBashKeys) }))
+    Write-Utf8 $manifestPath (ConvertTo-Json -Depth 6 -InputObject ([ordered]@{
+                files = @($newManifest)
+                bashKeys = @($newBashKeys)
+                source = $PSScriptRoot
+                components = $components
+                overrides = $overrides
+                layers = @($layers | ForEach-Object { [ordered]@{ name = $_.Name; path = $_.Path } })
+            }))
+}
+
+if ($dashOnly) {
+    if ($DryRun) { Write-Host "`nDry run complete. Nothing was written." }
+    else { Write-Host "`nDashboard $($versions.dashboard) installed. Reload the dashboard page; restart the live dashboard to load a new server." }
+    return
 }
 
 # ---------------------------------------------- readiness checks

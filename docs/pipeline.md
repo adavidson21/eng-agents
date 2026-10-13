@@ -271,6 +271,8 @@ What changes compared to `/dashboard`:
 - **Agent panel** on each item with a session: working or done, the current step (for example `bash: dotnet test ...`), the agent's last reply, a reply box, and Stop.
 - **Prompts.** Permission prompts (Allow once, Always allow, Reject) and agent questions show on the item and turn it amber. Prompts from sessions not tied to an item show under "Waiting for you".
 - **Open in terminal** opens the opencode TUI on that item's session (Windows and macOS). "Copy terminal command" gives the same command to paste.
+- **Themes.** The theme button in the header picks Slate, Graphite, Ivory, or Rosé, or follows your system setting. The static page has it too. The choice is remembered in that browser.
+- **Updates.** The header shows **Update available** when there is a new dashboard or Core version. The Updates panel lists what is new, warns about files you override, and updates and restarts the dashboard for you (see [Updating](onboarding-company.md#updating)). Updating is the one action that writes outside `.work\_dashboard\`: it runs `update.ps1`, the same as from a terminal.
 - **Alerts.** Click "Turn on alerts" in the header once. While the page is in the background, you get a browser notification when an agent starts waiting for you or finishes. The tab title shows how many prompts are waiting, for example `(1) Work dashboard`.
 
 How it fits together:
@@ -288,7 +290,9 @@ How it fits together:
 
 It reads the same files as `/dashboard` (through `New-Dashboard.ps1 -AsJson`) and writes only to `.work\_dashboard\`. It never calls ADO and never pushes. Commands run with the same agents and permission rules as in the TUI; a `bash` command that would ask in the TUI asks on the page.
 
-Options: `-Port <n>` (page), `-OpencodeUrl <url>` (use that opencode server instead of finding one), `-NoOpencode` (do not start opencode), `-NoOpen`, `-Workspace <path>`.
+Options: `-Port <n>` (page), `-OpencodeUrl <url>` (use that opencode server instead of finding one), `-NoOpencode` (do not start opencode), `-NoUpdateCheck` (no update checks), `-NoOpen`, `-Workspace <path>`.
+
+Start it with `Start-LiveDashboard.ps1`, not `node live-server.mjs` directly: the script restarts the server after an update.
 
 ### Autopilot
 

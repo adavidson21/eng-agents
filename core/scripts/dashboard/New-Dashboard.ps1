@@ -655,6 +655,8 @@ foreach ($s in $script:RepoCache.Values) { if ($s.Contains("_webObj")) { $s.Remo
 $sortedActivity = @($activity | Sort-Object -Property @{ Expression = { $_.date }; Descending = $true }, @{ Expression = { $_.modifiedMs }; Descending = $true }, @{ Expression = { $_.order }; Descending = $true } | Select-Object -First $Recent)
 
 $psExe = $(if ($PSVersionTable.PSVersion.Major -lt 6) { "powershell" } else { "pwsh" })
+$versionFile = Join-Path $PSScriptRoot "VERSION"
+$dashboardVersion = if (Test-Path -LiteralPath $versionFile) { (Read-Text $versionFile).Trim() } else { $null }
 $now = Get-Date
 $data = [ordered]@{
     generated = $now.ToString("o")
@@ -663,6 +665,7 @@ $data = [ordered]@{
     workRoot = $workRootFull
     gitAvailable = $script:GitOk
     configFound = (Test-Path -LiteralPath $ConfigPath)
+    dashboardVersion = $dashboardVersion
     refreshCommand = "/dashboard"
     refreshShell = "$psExe -NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`" -WorkRoot `"$workRootFull`""
     liveShell = "$psExe -NoProfile -ExecutionPolicy Bypass -File `"$(Join-Path $PSScriptRoot 'Start-LiveDashboard.ps1')`""

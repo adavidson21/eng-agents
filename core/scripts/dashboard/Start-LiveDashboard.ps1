@@ -16,6 +16,8 @@
         /do-task and /check-docs get a fresh one, as the pipeline requires.
       - Shows each item's agent: working or done, what it is doing, its last reply, and any
         permission prompt or question waiting for you. You can answer and reply from the page.
+      - Checks for eng-agents updates every few hours (update.ps1 -Check) and shows "Update
+        available" in the header. Updating from the page restarts the dashboard in this window.
       - Autopilot: after you approve the plan (or bug analysis), runs tasks, each task in a new
         session, review, and PR text, and stops only when it needs you. Never pushes.
 
@@ -53,7 +55,10 @@ param(
     [switch]$NoOpen,
 
     # Do not start opencode if it is not running.
-    [switch]$NoOpencode
+    [switch]$NoOpencode,
+
+    # Do not check for eng-agents updates.
+    [switch]$NoUpdateCheck
 )
 
 $ErrorActionPreference = "Stop"
@@ -80,6 +85,17 @@ $nodeArgs = @($server, "--workspace", $ws, "--port", $Port, "--ps", $ps, "--conf
 if ($OpencodeUrl) { $nodeArgs += @("--opencode", $OpencodeUrl) }
 if ($NoOpen) { $nodeArgs += "--no-open" }
 if ($NoOpencode) { $nodeArgs += "--no-start-opencode" }
+if ($NoUpdateCheck) { $nodeArgs += "--no-update-check" }
 
-& $node.Source @nodeArgs
-exit $LASTEXITCODE
+# The server exits with 75 after an update (or the Restart button) so it can start again on the new
+# code. The open page reloads by itself, so no new browser tab on a restart.
+$env:ENG_DASHBOARD_SUPERVISED = "1"
+while ($true) {
+    & $node.Source @nodeArgs
+    $code = $LASTEXITCODE
+    if ($code -ne 75) { break }
+    Write-Host ""
+    Write-Host "Restarting the live dashboard..."
+    if ($nodeArgs -notcontains "--no-open") { $nodeArgs += "--no-open" }
+}
+exit $code

@@ -8,7 +8,8 @@
     Ctrl+C stops it.
 
     What it does:
-      - Starts "opencode serve" on -OpencodePort, unless something is already listening there.
+      - Connects to opencode. opencode 2.x: its background service (started if needed), shared
+        with your TUI. opencode 1.x: "opencode serve" on port 4096 (started if needed).
       - Serves the dashboard on http://127.0.0.1:<Port>/ (this machine only) and opens it.
       - Rebuilds the page data when .work changes, and re-reads git every 20 seconds.
       - Run buttons send the next command to opencode. Each work item gets its own session;
@@ -16,8 +17,9 @@
       - Shows each item's agent: working or done, what it is doing, its last reply, and any
         permission prompt or question waiting for you. You can answer and reply from the page.
 
-    To use the terminal on the same sessions, attach the TUI instead of running plain opencode:
-      opencode attach http://127.0.0.1:<OpencodePort>
+    To use the terminal on the same sessions:
+      opencode 2.x  just run opencode (it uses the same background service)
+      opencode 1.x  opencode attach http://127.0.0.1:4096 instead of plain opencode
 
     Read-only apart from .work\_dashboard\ (session links and the opencode log). It never calls
     ADO and never pushes. Commands it runs follow the same permission rules as in the TUI.
@@ -38,8 +40,9 @@ param(
     # Port for the dashboard page.
     [int]$Port = 4300,
 
-    # Port for opencode serve.
-    [int]$OpencodePort = 4096,
+    # Use this opencode server instead of finding one. Default: opencode 2.x uses its
+    # background service; opencode 1.x uses (and starts) http://127.0.0.1:4096.
+    [string]$OpencodeUrl,
 
     # ADO config, only used to build work item links.
     [string]$ConfigPath = (Join-Path $(if ($env:USERPROFILE) { $env:USERPROFILE } else { $HOME }) ".config/eng-agents/config.json"),
@@ -47,7 +50,7 @@ param(
     # Do not open the browser.
     [switch]$NoOpen,
 
-    # Do not start opencode serve. Use one you started yourself on -OpencodePort.
+    # Do not start opencode if it is not running.
     [switch]$NoOpencode
 )
 
@@ -71,7 +74,8 @@ if ([int]($ver.Split('.')[0]) -lt 18) { throw "Node $ver is too old. The live da
 # Run New-Dashboard.ps1 with the same PowerShell that is running this script.
 $ps = [System.Diagnostics.Process]::GetCurrentProcess().MainModule.FileName
 
-$nodeArgs = @($server, "--workspace", $ws, "--port", $Port, "--opencode", "http://127.0.0.1:$OpencodePort", "--ps", $ps, "--config", $ConfigPath)
+$nodeArgs = @($server, "--workspace", $ws, "--port", $Port, "--ps", $ps, "--config", $ConfigPath)
+if ($OpencodeUrl) { $nodeArgs += @("--opencode", $OpencodeUrl) }
 if ($NoOpen) { $nodeArgs += "--no-open" }
 if ($NoOpencode) { $nodeArgs += "--no-start-opencode" }
 

@@ -632,7 +632,7 @@ tr:last-child td { border-bottom: 0; }
         '<span class="row">' +
         (busy ? '<button type="button" class="btn danger" data-abort="' + h(s.id) + '">Stop</button>' : "") +
         (L.canOpenTerminal ? '<button type="button" class="btn" data-term="' + h(s.id) + '" title="Opens the opencode TUI on this session">Open in terminal</button>' : "") +
-        copyBtn(s.attach, "Copy attach command") + "</span></div>";
+        copyBtn(s.attach, "Copy terminal command") + "</span></div>";
       if (busy && s.activity && !ask) out += '<div class="activity" title="' + h(s.activity) + '">' + h(s.activity) + "</div>";
       if (s.error) out += '<p class="err">' + h(s.error) + "</p>";
     }
@@ -860,10 +860,69 @@ tr:last-child td { border-bottom: 0; }
     return html + '<span class="fresh">' +
       '<span class="pill ' + page[0] + '"><span class="led"></span>' + h(page[1]) + "</span>" +
       '<span class="pill ' + ocp[0] + '" title="' + h(o.url || "") + '"><span class="led"></span>' + h(ocp[1]) + "</span>" +
+      alertsHtml() +
       (L && L.canOpenTerminal && o.connected ? '<button type="button" class="btn" data-term="">Open TUI</button>' : "") +
-      (o.attach ? copyBtn(o.attach, "Copy attach command") : "") +
+      (o.attach ? copyBtn(o.attach, "Copy terminal command") : "") +
       '<button type="button" class="btn" data-refresh="1" title="Re-read .work and git now">Refresh</button>' +
       "</span></header>";
+  }
+
+  // ---------------------------------------------------------------- alerts (live)
+  // Browser notifications when an agent starts waiting for you, or finishes, while this page is in the background.
+  var canNotify = LIVE && typeof window.Notification === "function";
+  function alertsHtml() {
+    if (!canNotify) return "";
+    if (Notification.permission === "granted") return '<span class="pill on" title="You get a notification when an agent waits for you or finishes, while this page is in the background"><span class="led"></span>Alerts on</span>';
+    if (Notification.permission === "denied") return '<span class="pill" title="Notifications are blocked for this page in your browser settings"><span class="led"></span>Alerts blocked</span>';
+    return '<button type="button" class="btn" data-alerts="1" title="Get a notification when an agent waits for you or finishes">Turn on alerts</button>';
+  }
+  function itemForFolder(folder) {
+    return (D.items || []).filter(function (x) { return x.folder === folder; })[0] || null;
+  }
+  function sessionLabel(sid) {
+    var s = L.sessions[sid];
+    var it = s && s.folder ? itemForFolder(s.folder) : null;
+    if (it) return it.id ? "#" + it.id + " " + it.title : it.title;
+    return (s && s.title) || "opencode session";
+  }
+  function alertUser(title, body, tag, folder) {
+    if (!canNotify || Notification.permission !== "granted") return;
+    if (!document.hidden && document.hasFocus()) return;
+    try {
+      var n = new Notification(title, { body: String(body || "").slice(0, 180), tag: tag });
+      n.onclick = function () {
+        window.focus();
+        var it = folder ? itemForFolder(folder) : null;
+        var el = it ? document.getElementById("item-" + (it.id || it.folder)) : null;
+        if (el && el.style.display !== "none" && el.offsetParent) el.scrollIntoView({ block: "center" });
+        n.close();
+      };
+    } catch (e) { }
+  }
+  var seenPrompts = null, wasBusy = {};
+  function watchForAlerts() {
+    if (!LIVE || !L) return;
+    var prompts = L.permissions.map(function (p) {
+      return { id: p.id, sid: p.sessionID, folder: p.folder, text: "Allow " + p.permission + (p.title ? ": " + p.title : "") };
+    }).concat(L.questions.map(function (q) {
+      return { id: q.id, sid: q.sessionID, folder: q.folder, text: ((q.questions || [])[0] || {}).question || "The agent has a question" };
+    }));
+    document.title = (prompts.length ? "(" + prompts.length + ") " : "") + "Work dashboard";
+    var first = seenPrompts === null;
+    if (first) seenPrompts = {};
+    var fresh = prompts.filter(function (p) { return !seenPrompts[p.id]; });
+    prompts.forEach(function (p) { seenPrompts[p.id] = 1; });
+    var finished = [];
+    Object.keys(L.sessions).forEach(function (id) {
+      var s = L.sessions[id], busy = isBusy(s);
+      if (wasBusy[id] && !busy && s.folder) finished.push(s);
+      wasBusy[id] = busy;
+    });
+    if (first) return; // nothing on page load, only what changes while it is open
+    fresh.forEach(function (p) { alertUser("Agent waiting: " + sessionLabel(p.sid), p.text, p.id, p.folder); });
+    finished.forEach(function (s) {
+      alertUser((s.error ? "Agent stopped: " : "Agent finished: ") + sessionLabel(s.id), s.error || s.command || "", "done-" + s.id, s.folder);
+    });
   }
 
   function bannersHtml() {
@@ -1034,6 +1093,8 @@ tr:last-child td { border-bottom: 0; }
       if (ab) { post("api/abort", { session: ab.getAttribute("data-abort") }).then(function () { toast("Stopping"); }, function (e) { toast(e.message, true); }); return; }
       var tm = t.closest("[data-term]");
       if (tm) { post("api/terminal", { session: tm.getAttribute("data-term") || null }).then(function () { toast("Opened a terminal"); }, function (e) { toast(e.message, true); }); return; }
+      var al = t.closest("[data-alerts]");
+      if (al && canNotify) { Notification.requestPermission().then(function () { schedule(); }, function () { }); return; }
       var rf = t.closest("[data-refresh]");
       if (rf) { post("api/refresh").catch(function (e) { toast(e.message, true); }); }
     });
@@ -1082,9 +1143,9 @@ tr:last-child td { border-bottom: 0; }
     var es = new EventSource("api/events?token=" + encodeURIComponent(D.liveMode.token));
     es.addEventListener("model", function (e) {
       var d = JSON.parse(e.data);
-      D = d; L = d.liveMode.live; conn = "on"; schedule();
+      D = d; L = d.liveMode.live; conn = "on"; watchForAlerts(); schedule();
     });
-    es.addEventListener("live", function (e) { L = JSON.parse(e.data); conn = "on"; schedule(); });
+    es.addEventListener("live", function (e) { L = JSON.parse(e.data); conn = "on"; watchForAlerts(); schedule(); });
     es.onopen = function () { conn = "on"; schedule(); };
     es.onerror = function () {
       conn = "off"; schedule();

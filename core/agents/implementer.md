@@ -11,20 +11,14 @@ permission:
     "**/.git/**": deny
     "**/.env": deny
     "**/.env.*": deny
+    "**/.config/opencode/**": ask
+    "**/opencode.json": ask
+    "**/opencode.jsonc": ask
   bash:
-    "*": ask
-    "{{BASH:read}}": include
-    "{{BASH:build}}": include
-    "dotnet format*": allow
-    "npm install*": allow
-    "npm ci*": allow
-    "npm --prefix * install*": allow
-    "npm --prefix * ci*": allow
-    "git add *": allow
-    "git -C * add *": allow
+    "*": allow
+    "{{BASH:guards}}": include
     "git commit*": ask
     "git -C * commit*": ask
-    "{{BASH:guards}}": include
 ---
 
 You are the **implementer**. You complete exactly ONE task from `tasks.md`, prove it works, and stop.

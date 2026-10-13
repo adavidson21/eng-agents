@@ -23,10 +23,9 @@
                                    cleaned up next time
       eng-agents\backup\<time>\    copies of anything overwritten
 
-    Shell permission tiers (bash rules shared by every agent):
-      <layer>\permissions\read.json     read-only commands
-      <layer>\permissions\build.json    build, test, lint
-      <layer>\permissions\guards.json   asks and denies, always placed last
+    Shell permissions (bash rules shared by every agent):
+      Shell commands are allowed by default. The exceptions live in
+      <layer>\permissions\guards.json   asks and denies, placed after "*": allow
       Each tier is merged across layers (a later layer adds keys or changes a
       value). A line "{{BASH:<tier>}}": include in an agent file or opencode.json
       is replaced with that tier's rules, so one entry reaches every agent.
@@ -217,14 +216,21 @@ Write-Host ""
 # ---------------------------------------------- shell permission tiers
 
 $script:Tiers = [ordered]@{}
+# "read" and "build" were allowlists before shell commands became allowed by default.
+# They stay as known (empty) tiers so older agent overrides that still reference them install cleanly.
+$script:Tiers["read"] = [ordered]@{}
+$script:Tiers["build"] = [ordered]@{}
 foreach ($layer in $layers) {
     $dir = Join-Path $layer.Path "permissions"
     if (-not (Test-Path $dir)) { continue }
     foreach ($f in (Get-ChildItem -Path $dir -Filter *.json -File | Sort-Object Name)) {
         $name = [System.IO.Path]::GetFileNameWithoutExtension($f.Name)
+        if (@("read", "build") -contains $name) {
+            Write-Host "  permissions: $($layer.Name) $($f.Name) is no longer needed. Shell commands are allowed unless guards.json says otherwise."
+        }
         $rules = Read-JsonOrdered $f.FullName -ExpandTokens
         if (-not $script:Tiers.Contains($name)) { $script:Tiers[$name] = [ordered]@{} }
-        elseif ($layer.Name -ne "Core") { Write-Host "  permissions: $($layer.Name) adds to tier '$name'" }
+        elseif (($layer.Name -ne "Core") -and -not (@("read", "build") -contains $name)) { Write-Host "  permissions: $($layer.Name) adds to tier '$name'" }
         Merge-Ordered $script:Tiers[$name] $rules
     }
 }

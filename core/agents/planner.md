@@ -8,17 +8,10 @@ permission:
     ".work/**": allow
     "**/.work/**": allow
   bash:
-    "*": ask
-    "{{BASH:read}}": include
-    "git checkout -b *": allow
-    "git -C * checkout -b *": allow
-    "git switch -c *": allow
-    "git -C * switch -c *": allow
-    "powershell -NoProfile -ExecutionPolicy Bypass -File *Get-WorkItem.ps1*": allow
-    "pwsh -NoProfile -ExecutionPolicy Bypass -File *Get-WorkItem.ps1*": allow
-    "powershell -NoProfile -ExecutionPolicy Bypass -File *New-Dashboard.ps1*": allow
-    "pwsh -NoProfile -ExecutionPolicy Bypass -File *New-Dashboard.ps1*": allow
+    "*": allow
     "{{BASH:guards}}": include
+    "git commit*": ask
+    "git -C * commit*": ask
 ---
 
 You are the **planner**. You turn a work item into a clear spec, a plan, and small tasks.

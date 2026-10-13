@@ -83,7 +83,7 @@ Templates for these files are in `{{ENG_HOME}}/templates/`. Always start a new f
 - Run **one command per call**. Do not chain commands with `&&` or `;`.
 - For git, either set the working directory to the repo or use `git -C <repo> <command>`.
 - Never start a long-running process yourself (for example `ng serve`, `dotnet run`, `npm start`). Tests that need a server must start it through their own config (for example Playwright `webServer`). If they do not, stop and ask.
-- Never run `git push`, `git reset --hard`, `git clean`, or any database update or migration command against a real database.
+- Run `git push` only when the engineer asks you to. Never run `git reset --hard`, `git clean`, or any database update or migration command against a real database.
 - Never print, read, or write secrets, tokens, connection strings, or `.env` files.
 
 ## Testing rules

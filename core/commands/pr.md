@@ -26,4 +26,4 @@ Draft the pull request text for work item **$1**.
 ## Step 4: Hand off
 
 - Add a `progress.md` entry for `/pr`.
-- Tell the engineer: "PR text is in `pr.md`. Push each branch yourself with `git -C <repo> push -u origin <branch>`, then open the PR in ADO targeting `main`."
+- Tell the engineer: "PR text is in `pr.md`. Push each branch with `git -C <repo> push -u origin <branch>` (or tell me to), then open the PR in ADO targeting `main`." If they ask you to push, run that command for each repo; each push asks for approval.

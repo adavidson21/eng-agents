@@ -263,14 +263,14 @@ Run these in a scratch opencode session. Each confirms an assumption the setup d
 | 2 | Shell is PowerShell | Ask: "Run `$PSVersionTable.PSVersion` and show the output." | Tell the agents which shell in your overlay `AGENTS.md`. |
 | 3 | Planner can write to `.work` | As `planner`, ask: "Create `.work/_test/hello.md` with the word hi." No prompt. | The edit path pattern did not match on Windows. Change `edit` to `ask` in the planner, reviewer, investigator, and writer agents, reinstall, and report it. |
 | 4 | Planner cannot edit code | Ask `planner` to add a comment to any `.cs` file. Denied. | Same as check 3. |
-| 5 | Templates are readable | Ask `planner`: "Read the spec template in the eng-agents templates folder and show its first line." No external directory prompt. | Approve once with "always", or add the path to `external_directory` in your overlay `opencode.json`. |
-| 6 | Push is blocked | As `implementer`, ask it to run `git -C <repo> push`. Denied. | Check the `permission` block in the installed `opencode.json`. |
+| 5 | Other folders are readable | Ask `planner`: "Read the spec template in the eng-agents templates folder and show its first line." Then ask it to list a sibling repo. No external directory prompt. | Check `external_directory` in the installed `opencode.json` starts with `"*": "allow"`. |
+| 6 | Push asks first | As `implementer`, ask it to run `git -C <repo> push`. You get an approval prompt; reject it. | Check the `permission` block in the installed `opencode.json`. |
 | 7 | Repo `AGENTS.md` is read when needed | Ask `planner` for a repo's test command without naming the file. | It may not know until it reads the file. Commands always read it, so this is fine. |
 | 8 | Global memory works | `/memory -global Test rule, delete me`, then `/new` and ask: "What rules are in your global memory?" Delete the line from `memory.md` afterwards. | Check `instructions` in the installed `opencode.json` lists `memory.md`. |
 | 9 | Repo memory works | `/memory <repo> Test rule, delete me`. The line appears under `## Remembered` in the repo guide with no prompt. Delete it. | The writer could not edit the file. Approve once and report it. |
 | 10 | Each ADO connection resolves | Run the `-ShowConnection` command from step 3 once per connection (`-From <name>`) and once for a repo in each collection. | Fix `paths` or the connection's `serverUrl` and `collection`. |
-| 11 | Dashboard builds | Run `/dashboard`. No approval prompt, and a page opens listing your repos. Click a repo's Branch link: it opens in ADO. | A prompt means the planner permission did not match; check the `New-Dashboard.ps1` lines in the installed planner agent. Wrong links mean an unusual remote URL format; report it. |
-| 12 | Normal work does not prompt | Run one real item through `/start` to `/review`. Note every approval you give. | Add each safe command to `overlay\permissions\read.json` or `build.json` ([Permissions](customization.md#permissions)) and reinstall. |
+| 11 | Dashboard builds | Run `/dashboard`. No approval prompt, and a page opens listing your repos. Click a repo's Branch link: it opens in ADO. | A prompt means a guard matched; the prompt shows which command. Wrong links mean an unusual remote URL format; report it. |
+| 12 | Normal work does not prompt | Run one real item through `/start` to `/review`. The only prompts should be `git push` and anything else in `guards.json`. | Set that command to `allow` in `overlay\permissions\guards.json` ([Permissions](customization.md#permissions)) and reinstall. |
 
 Then delete the test folder yourself (agents cannot delete recursively): `Remove-Item C:\src\work\.work\_test -Recurse`. Keep `.work`.
 
@@ -298,7 +298,7 @@ Run `/dashboard` at any point along the way to check it shows the right stage an
 | Change | Then |
 |---|---|
 | Model makes a company-specific mistake | `/memory <rule>` in the session where it happened, or edit that repo's guide (one repo) or `overlay\AGENTS.md` (every repo) by hand |
-| Agents keep asking about a safe command | Add it to `overlay\permissions\read.json` or `build.json`, then `.\install.ps1` |
+| Agents keep asking about a safe command | Set it to `allow` in `overlay\permissions\guards.json`, then `.\install.ps1` |
 | Edited the overlay | Run `.\install.ps1` again |
 | Edited the repo map or a repo `AGENTS.md` | Start a new opencode session |
 | Base repo changed | At home: `git fetch upstream`, `git merge upstream/main`, `git push`. At work: `git pull`, then `.\install.ps1` |

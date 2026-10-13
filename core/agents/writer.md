@@ -10,11 +10,11 @@ permission:
     "**/*.md": allow
     "**/docs/**": allow
     "{{ENG_CONFIG}}/memory.md": allow
+    "**/.config/opencode/**": ask
+    "**/opencode.json": ask
+    "**/opencode.jsonc": ask
   bash:
-    "*": ask
-    "{{BASH:read}}": include
-    "powershell -NoProfile -ExecutionPolicy Bypass -File *Test-Mermaid.ps1*": allow
-    "pwsh -NoProfile -ExecutionPolicy Bypass -File *Test-Mermaid.ps1*": allow
+    "*": allow
     "{{BASH:guards}}": include
     "git add*": deny
     "git -C * add*": deny

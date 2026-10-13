@@ -11,9 +11,7 @@ permission:
     "**/AGENTS.local.md": ask
     "**/.git/info/exclude": ask
   bash:
-    "*": ask
-    "{{BASH:read}}": include
-    "{{BASH:build}}": include
+    "*": allow
     "{{BASH:guards}}": include
     "git add*": deny
     "git -C * add*": deny

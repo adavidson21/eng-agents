@@ -4,10 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Work dashboard</title>
+<link rel="icon" href="data:,">
 <!--
-  eng-agents dashboard template. New-Dashboard.ps1 replaces the data block below
-  with the current state of .work and the workspace repos. No network access:
-  system fonts only, no external scripts.
+  eng-agents dashboard template. Two modes, one file:
+  - Static: New-Dashboard.ps1 replaces the data block below with the current state
+    of .work and the workspace repos. No network access: system fonts only, no
+    external scripts.
+  - Live: live-server.mjs serves it with "liveMode" in the data. The page then
+    follows the server's event stream and can run commands in opencode.
 -->
 <style>
 :root {
@@ -26,6 +30,7 @@
   --hold: #4f5596;
   --hold-soft: #e3e4f4;
   --focus: #2e6fd8;
+  --on-go: #ffffff;
   --sans: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
   --mono: "Cascadia Mono", "Cascadia Code", Consolas, "SF Mono", Menlo, ui-monospace, monospace;
 }
@@ -46,6 +51,7 @@
     --hold: #a3a9e6;
     --hold-soft: #262a4a;
     --focus: #7fb0ff;
+    --on-go: #06231e;
   }
 }
 * { box-sizing: border-box; }
@@ -253,8 +259,76 @@ tr:last-child td { border-bottom: 0; }
 .empty p { margin: 0 0 10px; color: var(--muted); }
 .note { color: var(--muted); font-size: 13px; margin: 8px 0 0; }
 
+/* ---------- live mode */
+.btn {
+  border: 1px solid var(--line); background: var(--surface); border-radius: 5px; padding: 3px 12px;
+  font-size: 13px; font-weight: 600; cursor: pointer; flex: 0 0 auto; line-height: 1.5;
+}
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--go); border-color: var(--go); color: var(--on-go); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.warn { background: var(--gate); border-color: var(--gate); color: var(--on-go); }
+.btn.danger { color: var(--stop); }
+.btn:disabled { opacity: .5; cursor: default; filter: none; }
+.do .btn.primary { font-size: 15px; padding: 6px 18px; }
+.top .btn { padding: 1px 10px; font-weight: 500; }
+.pill {
+  display: inline-flex; gap: 6px; align-items: center; font-size: 12.5px; padding: 1px 10px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+}
+.pill .led { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.pill.on .led { background: var(--go); }
+.pill.off .led { background: var(--stop); }
+.banner { border: 1px solid var(--stop); background: var(--stop-soft); border-radius: 6px; padding: 10px 14px; margin: 0 0 18px; font-size: 14px; }
+.banner code { word-break: break-all; }
+
+.agent { margin-top: 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--sunk); padding: 10px 12px; display: grid; gap: 8px; min-width: 0; }
+.agent.busy { border-color: color-mix(in srgb, var(--go) 55%, var(--line)); }
+.agent.asking { border-color: var(--gate); }
+.agent-head { display: flex; gap: 8px 12px; align-items: center; flex-wrap: wrap; font-size: 13px; }
+.agent-head .state { font-weight: 650; display: inline-flex; gap: 7px; align-items: center; }
+.agent-head .cmdname { font-family: var(--mono); font-size: 12.5px; }
+.agent-head .row { margin-left: auto; }
+.spin {
+  width: 12px; height: 12px; border-radius: 50%; flex: 0 0 12px;
+  border: 2px solid color-mix(in srgb, var(--go) 30%, transparent); border-top-color: var(--go);
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.activity { font-family: var(--mono); font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.say {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px;
+  font: 13.5px/1.5 var(--sans); white-space: pre-wrap; overflow-wrap: anywhere; max-height: 260px; overflow-y: auto; margin: 0;
+}
+.say-h { font-size: 12.5px; color: var(--muted); margin: 0 0 -4px; }
+.ask { border: 1px solid var(--gate); background: var(--gate-soft); border-radius: 6px; padding: 10px 12px; display: grid; gap: 8px; }
+.ask .q { font-weight: 600; margin: 0; }
+.ask .q-h { font-size: 12px; font-weight: 650; color: var(--gate); text-transform: uppercase; letter-spacing: .03em; margin: 0; }
+.ask code { background: var(--surface); padding: 1px 6px; border-radius: 4px; word-break: break-all; }
+.ask .opts { display: grid; gap: 4px; }
+.ask label { display: flex; gap: 8px; align-items: baseline; font-size: 13.5px; cursor: pointer; }
+.ask label .d { color: var(--muted); font-size: 12.5px; }
+.ask input[type="text"] { font: inherit; font-size: 13.5px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 5px; background: var(--surface); color: var(--ink); width: 100%; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.reply { display: flex; gap: 8px; align-items: flex-end; }
+.reply textarea {
+  flex: 1; min-width: 0; min-height: 38px; height: 38px; resize: vertical; font: inherit; font-size: 13.5px; padding: 7px 9px;
+  border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink);
+}
+.err { color: var(--stop); font-size: 13px; margin: 0; }
+.waiting { display: grid; gap: 10px; margin: 0 0 18px; }
+.waiting .ask { background: var(--surface); }
+.hist { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 13px; }
+.hist li { display: flex; gap: 8px; align-items: center; justify-content: space-between; }
+.hist .ht { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.toasts { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); display: grid; gap: 8px; z-index: 10; width: min(560px, calc(100% - 32px)); }
+.toast { background: var(--ink); color: var(--bg); padding: 10px 14px; border-radius: 6px; font-size: 14px; box-shadow: 0 4px 18px rgba(0, 0, 0, .25); }
+.toast.bad { background: var(--stop); color: #fff; }
+
 @media (max-width: 600px) {
   .wrap { padding: 14px 16px 48px; }
+  .agent-head .row { margin-left: 0; }
+  .reply { flex-direction: column; align-items: stretch; }
   .do .cmd { font-size: 17px; }
   .pickup h2 { font-size: 19px; }
   .next-line .lbl, .left-off .lbl { min-width: 0; }
@@ -266,11 +340,12 @@ tr:last-child td { border-bottom: 0; }
   .pickup .rail { margin-top: 6px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
-@media print { .copy { display: none; } body { background: #fff; } }
+@media print { .copy, .btn, .reply { display: none; } body { background: #fff; } }
 </style>
 </head>
 <body>
 <div class="wrap" id="app"></div>
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script type="application/json" id="eng-data">__ENG_DATA__</script>
 <script>
@@ -284,6 +359,11 @@ tr:last-child td { border-bottom: 0; }
     return;
   }
 
+  // Live mode: served by live-server.mjs, which adds D.liveMode.
+  var LIVE = !!D.liveMode;
+  var L = LIVE ? D.liveMode.live : null;   // opencode state: sessions, prompts, item links
+  var conn = LIVE ? "connecting" : null;  // page <-> live server
+
   // ---------------------------------------------------------------- helpers
   function h(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
@@ -292,14 +372,14 @@ tr:last-child td { border-bottom: 0; }
   }
   function md(s) {
     // Inline `code` and **bold** only, plus "- " list lines as bullets. Everything else stays plain text.
-    return h(s).replace(/^\s*[-*]\s+/gm, "\u2022 ").replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+    return h(s).replace(/^\s*[-*]\s+/gm, "• ").replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   }
   function link(href, text, cls) {
     if (!href) return h(text);
     return '<a href="' + h(href) + '" target="_blank" rel="noopener"' + (cls ? ' class="' + cls + '"' : "") + ">" + h(text) + "</a>";
   }
   function fileHref(folder, name) {
-    return encodeURIComponent(folder) + "/" + encodeURIComponent(name);
+    return (LIVE ? "files/" : "") + encodeURIComponent(folder) + "/" + encodeURIComponent(name);
   }
   var copyStore = [];
   function copyBtn(text, label) {
@@ -308,7 +388,7 @@ tr:last-child td { border-bottom: 0; }
   }
   function plural(n, one, many) { return n + " " + (n === 1 ? one : (many || one + "s")); }
 
-  var now = Date.now();
+  var now, today, yest;
   function ago(ms) {
     var m = Math.round((now - ms) / 60000);
     if (m < 1) return "just now";
@@ -323,8 +403,6 @@ tr:last-child td { border-bottom: 0; }
     var y = d.getFullYear(), m = ("0" + (d.getMonth() + 1)).slice(-2), dd = ("0" + d.getDate()).slice(-2);
     return y + "-" + m + "-" + dd;
   }
-  var today = dayKey(new Date());
-  var yest = dayKey(new Date(now - 864e5));
   function dayName(s) {
     var k = (s || "").slice(0, 10);
     if (k === today) return "Today";
@@ -336,11 +414,41 @@ tr:last-child td { border-bottom: 0; }
   }
   function timeOf(ms) { return new Date(ms).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }); }
 
+  // ------------------------------------------------------------ live state helpers
+  function ocReady() { return LIVE && conn === "on" && L && L.opencode && L.opencode.connected; }
+  function itemSession(it) {
+    if (!LIVE || !L || !L.items[it.folder]) return null;
+    var id = L.items[it.folder].current;
+    return id && L.sessions[id] ? L.sessions[id] : null;
+  }
+  function itemPerms(it) { return LIVE && L ? L.permissions.filter(function (p) { return p.folder === it.folder; }) : []; }
+  function itemQs(it) { return LIVE && L ? L.questions.filter(function (q) { return q.folder === it.folder; }) : []; }
+  function isBusy(s) { return !!s && s.status && s.status !== "idle"; }
+  function asking(it) { return itemPerms(it).length + itemQs(it).length > 0; }
+  function bucketOf(it) {
+    if (LIVE && it.kind === "item" && asking(it)) return "needs";
+    if (LIVE && it.kind !== "item" && asking(it)) return "notes";
+    return it.bucket;
+  }
+  // A command to run for spikes, docs, and TSDs, from their "next" text: the first `/command ...`.
+  function noteCommand(it) {
+    var m = /`(\/[a-z][a-z0-9-]*[^`]*)`/i.exec(it.nextText || "");
+    return m ? m[1].trim() : null;
+  }
+
+  // UI state that must survive re-rendering: open sections, reply drafts, question picks, focus.
+  var ui = { open: {}, drafts: {}, picks: {}, busy: {} };
+  function openAttr(key, dflt) {
+    var v = ui.open.hasOwnProperty(key) ? ui.open[key] : dflt;
+    return ' data-key="' + h(key) + '"' + (v ? " open" : "");
+  }
+
   // ------------------------------------------------------------ state colors
   function stateVar(it) {
+    if (LIVE && asking(it)) return "var(--gate)";
     if (it.bucket === "paused") return "var(--hold)";
     if (it.blocked) return "var(--stop)";
-    if (it.bucket === "needs") return "var(--gate)";
+    if (bucketOf(it) === "needs") return "var(--gate)";
     return "var(--go)";
   }
 
@@ -396,6 +504,24 @@ tr:last-child td { border-bottom: 0; }
   }
 
   // --------------------------------------------------------------- next step
+  function runBtn(it, cmd, big) {
+    if (!LIVE || !cmd) return "";
+    var s = itemSession(it);
+    var fresh = /^\/(do-task|check-docs)\b/.test(cmd);
+    var blocked = !ocReady() ? "opencode is not connected" : (isBusy(s) && !fresh ? "This item's session is still working" : (ui.busy[it.folder] ? "Starting" : ""));
+    var label = "Run " + (big ? cmd : cmd.split(" ")[0]);
+    var tip = blocked || ("Runs " + cmd + " in opencode" + (fresh ? " in a new session" : (s ? " in this item's session" : " in a new session for this item")));
+    return '<button type="button" class="btn primary" data-run="' + h(it.folder) + '" data-cmd="' + h(cmd) + '" title="' + h(tip) + '"' + (blocked ? " disabled" : "") + ">" + h(label) + "</button>";
+  }
+
+  // The file to read before approving, for "Review spec.md" style steps.
+  function gateFileLink(it) {
+    if (!it.next || !it.next.needsYou) return "";
+    var f = { spec: "spec.md", plan: "plan.md", bug: "bug.md", review: "review.md" }[it.next.stage];
+    if (!f || !it.files || it.files.indexOf(f) < 0) return "";
+    return '<a href="' + fileHref(it.folder, f) + '" target="_blank" rel="noopener" class="then">Open ' + h(f) + "</a>";
+  }
+
   function nextHtml(it, big) {
     var n = it.next || {};
     var cmd = it.paused ? "/resume " + it.id : n.command;
@@ -405,22 +531,28 @@ tr:last-child td { border-bottom: 0; }
       if (act) {
         parts.push('<span class="act">' + md(act) + "</span>");
         if (cmd) parts.push('<span class="then">then <code>' + h(cmd) + "</code></span>");
-        if (cmd) parts.push(copyBtn(cmd, "Copy " + h(cmd.split(" ")[0])));
+        if (LIVE) parts.push(gateFileLink(it));
+        if (cmd) parts.push('<span class="row" style="margin-left:auto">' + runBtn(it, cmd, false) + copyBtn(cmd, "Copy " + h(cmd.split(" ")[0])) + "</span>");
       } else if (cmd) {
         parts.push('<span class="cmd">' + h(cmd) + "</span>");
-        parts.push(copyBtn(cmd));
+        parts.push('<span class="row" style="margin-left:auto">' + runBtn(it, cmd, false) + copyBtn(cmd) + "</span>");
       }
       return '<div class="do">' + parts.join("") + "</div>";
     }
     var out = '<div class="next-line"><span class="lbl">Next</span>';
     if (act) {
       out += '<span class="act">' + md(act) + "</span>";
-      if (cmd) out += '<span class="then">then <code>' + h(cmd) + "</code></span>" + copyBtn(cmd);
+      if (cmd) out += '<span class="then">then <code>' + h(cmd) + "</code></span>" + runBtn(it, cmd, false) + copyBtn(cmd);
+      if (LIVE) out += gateFileLink(it);
     } else if (cmd) {
-      out += '<span class="cmd">' + h(cmd) + "</span>" + copyBtn(cmd);
+      out += '<span class="cmd">' + h(cmd) + "</span>" + runBtn(it, cmd, false) + copyBtn(cmd);
     }
-    if (n.note && !it.paused) out += '<span class="then">' + md(n.note) + "</span>";
+    if (n.note && !it.paused) out += '<span class="then">' + md(LIVE ? liveNote(n.note) : n.note) + "</span>";
     return out + "</div>";
+  }
+  // The live page opens new sessions by itself, so drop "start a new session" advice.
+  function liveNote(note) {
+    return String(note).replace(/\s*Start a new session \(\/new\)( first| before \/do-task)?\.?/gi, "").replace(/Start a new session,? (and run|then) /gi, "Run ").trim();
   }
 
   function leftOffHtml(it) {
@@ -441,6 +573,108 @@ tr:last-child td { border-bottom: 0; }
       body = '<span class="dim">Nothing in progress.md yet.</span>';
     }
     return '<div class="left-off"><span class="lbl">Left off</span><div class="body">' + body + "</div></div>";
+  }
+
+  // ------------------------------------------------------------- agent panel (live)
+  function permHtml(p, showWho) {
+    var s = L.sessions[p.sessionID];
+    var what = p.title || (p.patterns || []).join(", ");
+    var who = showWho ? '<p class="q-h">' + h((s && s.title) || p.sessionID) + "</p>" : "";
+    var always = (p.always || []).length ? " (" + (p.always || []).join(", ") + ")" : "";
+    return '<div class="ask">' + who +
+      '<p class="q">Allow <strong>' + h(p.permission) + "</strong>" + (what ? ": <code>" + h(what) + "</code>" : "") + "</p>" +
+      '<div class="row">' +
+      '<button type="button" class="btn warn" data-perm="' + h(p.id) + '" data-answer="once">Allow once</button>' +
+      '<button type="button" class="btn" data-perm="' + h(p.id) + '" data-answer="always" title="Stop asking for this in this session' + h(always) + '">Always allow</button>' +
+      '<button type="button" class="btn danger" data-perm="' + h(p.id) + '" data-answer="reject">Reject</button>' +
+      "</div></div>";
+  }
+
+  function questionHtml(q, showWho) {
+    var s = L.sessions[q.sessionID];
+    var picks = ui.picks[q.id] || {};
+    var out = '<div class="ask" data-qform="' + h(q.id) + '">';
+    if (showWho) out += '<p class="q-h">' + h((s && s.title) || q.sessionID) + "</p>";
+    (q.questions || []).forEach(function (qq, i) {
+      var name = q.id + "-" + i;
+      var chosen = picks[i] || [];
+      out += (qq.header ? '<p class="q-h">' + h(qq.header) + "</p>" : "") + '<p class="q">' + md(qq.question) + '</p><div class="opts">';
+      (qq.options || []).forEach(function (o) {
+        var on = chosen.indexOf(o.label) >= 0;
+        out += '<label><input type="' + (qq.multiple ? "checkbox" : "radio") + '" name="' + h(name) + '" value="' + h(o.label) + '" data-qpick="' + h(q.id) + '" data-qi="' + i + '"' + (on ? " checked" : "") + ">" +
+          "<span>" + h(o.label) + (o.description ? ' <span class="d">' + h(o.description) + "</span>" : "") + "</span></label>";
+      });
+      if (qq.custom !== false) {
+        var draftKey = "q:" + q.id + ":" + i;
+        out += '<input type="text" placeholder="Or type your own answer" data-draft="' + h(draftKey) + '" value="' + h(ui.drafts[draftKey] || "") + '">';
+      }
+      out += "</div>";
+    });
+    out += '<div class="row"><button type="button" class="btn warn" data-qsend="' + h(q.id) + '">Answer</button>' +
+      '<button type="button" class="btn" data-qreject="' + h(q.id) + '">Dismiss</button></div></div>';
+    return out;
+  }
+
+  function agentHtml(it) {
+    if (!LIVE || !L) return "";
+    var s = itemSession(it);
+    var perms = itemPerms(it), qs = itemQs(it);
+    var links = L.items[it.folder];
+    if (!s && !perms.length && !qs.length) return "";
+    var busy = isBusy(s);
+    var ask = perms.length + qs.length > 0;
+    var out = '<div class="agent' + (ask ? " asking" : busy ? " busy" : "") + '">';
+
+    if (s) {
+      var state = ask ? "Waiting for you" : busy ? (s.status === "retry" ? "Retrying" : "Working") : (s.error ? "Stopped" : "Done");
+      out += '<div class="agent-head"><span class="state">' + (busy && !ask ? '<span class="spin" aria-hidden="true"></span>' : "") + h(state) + "</span>" +
+        (s.command ? '<span class="cmdname">' + h(s.command) + "</span>" : "") +
+        '<span class="row">' +
+        (busy ? '<button type="button" class="btn danger" data-abort="' + h(s.id) + '">Stop</button>' : "") +
+        (L.canOpenTerminal ? '<button type="button" class="btn" data-term="' + h(s.id) + '" title="Opens the opencode TUI on this session">Open in terminal</button>' : "") +
+        copyBtn(s.attach, "Copy terminal command") + "</span></div>";
+      if (busy && s.activity && !ask) out += '<div class="activity" title="' + h(s.activity) + '">' + h(s.activity) + "</div>";
+      if (s.error) out += '<p class="err">' + h(s.error) + "</p>";
+    }
+
+    perms.forEach(function (p) { out += permHtml(p, false); });
+    qs.forEach(function (q) { out += questionHtml(q, false); });
+
+    if (s && s.text) {
+      var writing = busy && s.textAt && s.busySince && s.textAt >= s.busySince;
+      out += '<p class="say-h">' + (writing ? "Agent is writing" : "Agent said") + (s.textAt ? " (" + ago(s.textAt) + ")" : "") + "</p>" +
+        '<pre class="say"' + (writing ? " data-follow" : "") + ">" + h(s.text) + "</pre>";
+    }
+    if (s && !busy) {
+      var dk = "r:" + s.id;
+      out += '<div class="reply"><textarea data-draft="' + h(dk) + '" data-sid="' + h(s.id) + '" placeholder="Reply to the agent, or type a command (for example /status ' + h(it.id || it.folder) + '). Ctrl+Enter sends." aria-label="Reply to the agent">' +
+        h(ui.drafts[dk] || "") + '</textarea><button type="button" class="btn" data-reply="' + h(s.id) + '">Send</button></div>';
+    }
+    if (links && links.sessions.length > 1) {
+      var older = links.sessions.slice(0, -1).reverse();
+      out += "<details" + openAttr("h:" + it.folder, false) + "><summary>Earlier sessions for this item (" + older.length + ")</summary>" +
+        '<ul class="hist" style="margin-top:6px">' + older.map(function (x) {
+          return '<li><span class="ht" title="' + h(x.id) + '">' + h(x.title || x.command || x.id) + "</span>" +
+            (L.canOpenTerminal ? '<button type="button" class="btn" data-term="' + h(x.id) + '">Open</button>' : "") + "</li>";
+        }).join("") + "</ul></details>";
+    }
+    return out + "</div>";
+  }
+
+  function agentNote(it) {
+    var s = itemSession(it);
+    if (!LIVE || (!isBusy(s) && !asking(it))) return "";
+    return '<p class="note">' + (asking(it) ? "The agent is waiting for you" : "The agent is working") + ': see <a href="#pickup-h">Pick up here</a>.</p>';
+  }
+
+  // Prompts from sessions that are not linked to a .work item (for example, started in the TUI).
+  function waitingHtml() {
+    if (!LIVE || !L) return "";
+    var perms = L.permissions.filter(function (p) { return !p.folder; });
+    var qs = L.questions.filter(function (q) { return !q.folder; });
+    if (!perms.length && !qs.length) return "";
+    return '<section class="waiting" aria-label="Waiting for you"><h3 style="margin:0;font-size:15px">Waiting for you</h3>' +
+      perms.map(function (p) { return permHtml(p, true); }).join("") + qs.map(function (q) { return questionHtml(q, true); }).join("") + "</section>";
   }
 
   // ------------------------------------------------------------- repo flags
@@ -495,7 +729,15 @@ tr:last-child td { border-bottom: 0; }
     return '<div><p class="sub-h">Tasks <span class="bar" aria-hidden="true"><i style="width:' + Math.round(100 * t.done / t.total) + '%"></i></span> ' + t.done + " of " + t.total + ' done</p><ul class="tasks">' + li + "</ul></div>";
   }
 
-  function kitHtml(lines) {
+  function kitHtml(lines, it) {
+    if (LIVE) {
+      // Live: the page runs commands itself. Offer the TUI on this item's session instead.
+      var s = it ? itemSession(it) : null;
+      var cmd = s ? s.attach : (L && L.opencode ? L.opencode.attach : null);
+      if (!cmd) return "";
+      return '<div class="kit"><div class="kit-head"><span>Work in the terminal (opencode TUI on ' + (s ? "this item's session" : "this server") + ")</span></div>" +
+        '<div class="kit-line"><code>' + h(cmd) + "</code>" + copyBtn(cmd) + "</div></div>";
+    }
     if (!lines || !lines.length) return "";
     return '<div class="kit"><div class="kit-head"><span>After a restart, paste these into a terminal</span>' + copyBtn(lines.join("\n"), "Copy all") + "</div>" +
       lines.map(function (l) { return '<div class="kit-line"><code>' + h(l) + "</code>" + copyBtn(l) + "</div>"; }).join("") + "</div>";
@@ -513,7 +755,8 @@ tr:last-child td { border-bottom: 0; }
   }
 
   // ------------------------------------------------------------- item card
-  function itemCard(it) {
+  // noAgent: the item is also shown in "Pick up here", which carries its agent panel.
+  function itemCard(it, noAgent) {
     if (it.kind !== "item") return noteCard(it);
     var meta = [];
     meta.push('<span class="tag ' + h(it.lane) + '">' + h(it.lane) + (it.laneGuessed ? "?" : "") + "</span>");
@@ -522,9 +765,9 @@ tr:last-child td { border-bottom: 0; }
     var title = it.url ? link(it.url, it.title) : h(it.title);
     return '<article class="item" id="item-' + h(it.id) + '">' +
       '<div class="item-head"><h4 class="t">' + idLink(it) + title + '</h4><div class="meta">' + meta.join("") + "</div></div>" +
-      track(it) + nextHtml(it, false) + leftOffHtml(it) +
-      "<details><summary>Repos, tasks, files, resume commands</summary><div class=\"detail-body\">" +
-      reposTable(it) + tasksHtml(it) + kitHtml(it.resume) + filesHtml(it) +
+      track(it) + nextHtml(it, false) + (noAgent ? agentNote(it) : agentHtml(it)) + leftOffHtml(it) +
+      "<details" + openAttr("d:" + it.folder, false) + "><summary>Repos, tasks, files" + (LIVE ? "" : ", resume commands") + "</summary><div class=\"detail-body\">" +
+      reposTable(it) + tasksHtml(it) + kitHtml(it.resume, it) + filesHtml(it) +
       "</div></details></article>";
   }
 
@@ -533,18 +776,19 @@ tr:last-child td { border-bottom: 0; }
     var body = "";
     if (it.state) body += '<p style="margin:6px 0 0"><strong>' + h(it.state) + "</strong></p>";
     if (it.summary) body += '<p class="pre" style="margin:6px 0 0">' + md(it.summary) + "</p>";
-    if (it.nextText) body += '<div class="next-line"><span class="lbl">Next</span><span>' + md(it.nextText) + "</span></div>";
-    return '<article class="item"><div class="item-head"><h4 class="t">' + h(it.title) + '</h4><div class="meta"><span class="tag">' + label +
-      "</span><span>Touched " + ago(it.modifiedMs) + "</span></div></div>" + body +
-      (it.files && it.files.length ? "<details><summary>Files</summary><div class=\"detail-body\">" + filesHtml(it) + "</div></details>" : "") + "</article>";
+    if (it.nextText) body += '<div class="next-line"><span class="lbl">Next</span><span>' + md(LIVE ? liveNote(it.nextText) : it.nextText) + "</span>" + runBtn(it, noteCommand(it), false) + "</div>";
+    return '<article class="item" id="item-' + h(it.folder) + '"><div class="item-head"><h4 class="t">' + h(it.title) + '</h4><div class="meta"><span class="tag">' + label +
+      "</span><span>Touched " + ago(it.modifiedMs) + "</span></div></div>" + body + agentHtml(it) +
+      (it.files && it.files.length ? "<details" + openAttr("d:" + it.folder, false) + "><summary>Files</summary><div class=\"detail-body\">" + filesHtml(it) + "</div></details>" : "") + "</article>";
   }
 
   // --------------------------------------------------------- pick up here
   function pickupHtml(it) {
     var why;
-    if (it.bucket === "paused") why = "Nothing is moving. This is the most recent paused item.";
+    if (LIVE && asking(it)) why = "<strong>The agent is waiting for you.</strong>";
+    else if (it.bucket === "paused") why = "Nothing is moving. This is the most recent paused item.";
     else if (it.blocked) why = "<strong>Blocked.</strong> " + md(it.blocked);
-    else if (it.next && it.next.note) why = md(it.next.note);
+    else if (it.next && it.next.note) why = md(LIVE ? liveNote(it.next.note) : it.next.note);
     else why = "";
     var lo = "";
     if (it.paused) lo = leftOffHtml(it);
@@ -553,9 +797,9 @@ tr:last-child td { border-bottom: 0; }
     return '<section class="pickup" style="--state:' + stateVar(it) + '" aria-labelledby="pickup-h">' +
       '<p class="eyebrow">Pick up here, touched ' + ago(it.modifiedMs) + "</p>" +
       '<h2 id="pickup-h">' + idLink(it) + title + "</h2>" +
-      track(it) + nextHtml(it, true) +
+      track(it) + nextHtml(it, true) + agentHtml(it) +
       (why ? '<p class="why">' + why + "</p>" : "") + lo +
-      '<details><summary>Resume commands and repos</summary><div class="detail-body">' + kitHtml(it.resume) + reposTable(it) + "</div></details>" +
+      "<details" + openAttr("p:" + it.folder, false) + "><summary>" + (LIVE ? "Terminal command and repos" : "Resume commands and repos") + '</summary><div class="detail-body">' + kitHtml(it.resume, it) + reposTable(it) + "</div></details>" +
       "</section>";
   }
 
@@ -600,70 +844,292 @@ tr:last-child td { border-bottom: 0; }
     return '<section class="panel" aria-labelledby="act-h"><h3 id="act-h">Recent activity</h3><ul class="timeline">' + out + "</ul></section>";
   }
 
+  // ---------------------------------------------------------------- header
+  function headerHtml() {
+    var html = '<header class="top"><h1>Work dashboard</h1><span class="ws">' + h(D.workspace) + "</span>";
+    if (!LIVE) {
+      var stale = (now - D.generatedMs) > 3 * 3600e3;
+      return html + '<span class="fresh"><span title="' + h(new Date(D.generatedMs).toLocaleString()) + '">Built ' + h(timeOf(D.generatedMs)) +
+        (stale ? ' <span class="stale">(' + ago(D.generatedMs) + ", may be out of date)</span>" : " (" + ago(D.generatedMs) + ")") +
+        "</span><span>Refresh: <code>" + h(D.refreshCommand) + "</code> " + copyBtn(D.refreshCommand) + " " + copyBtn(D.refreshShell, "Copy shell command") + "</span>" +
+        (D.liveShell ? "<span>Live version: " + copyBtn(D.liveShell, "Copy launch command") + "</span>" : "") + "</span></header>";
+    }
+    var o = (L && L.opencode) || {};
+    var page = conn === "on" ? ["on", "Live, updated " + timeOf(D.generatedMs)] : conn === "off" ? ["off", "Dashboard server not reachable"] : ["", "Connecting"];
+    var ocp = o.connected ? ["on", "opencode " + (o.version || "") + " connected"] : ["off", "opencode not connected"];
+    return html + '<span class="fresh">' +
+      '<span class="pill ' + page[0] + '"><span class="led"></span>' + h(page[1]) + "</span>" +
+      '<span class="pill ' + ocp[0] + '" title="' + h(o.url || "") + '"><span class="led"></span>' + h(ocp[1]) + "</span>" +
+      alertsHtml() +
+      (L && L.canOpenTerminal && o.connected ? '<button type="button" class="btn" data-term="">Open TUI</button>' : "") +
+      (o.attach ? copyBtn(o.attach, "Copy terminal command") : "") +
+      '<button type="button" class="btn" data-refresh="1" title="Re-read .work and git now">Refresh</button>' +
+      "</span></header>";
+  }
+
+  // ---------------------------------------------------------------- alerts (live)
+  // Browser notifications when an agent starts waiting for you, or finishes, while this page is in the background.
+  var canNotify = LIVE && typeof window.Notification === "function";
+  function alertsHtml() {
+    if (!canNotify) return "";
+    if (Notification.permission === "granted") return '<span class="pill on" title="You get a notification when an agent waits for you or finishes, while this page is in the background"><span class="led"></span>Alerts on</span>';
+    if (Notification.permission === "denied") return '<span class="pill" title="Notifications are blocked for this page in your browser settings"><span class="led"></span>Alerts blocked</span>';
+    return '<button type="button" class="btn" data-alerts="1" title="Get a notification when an agent waits for you or finishes">Turn on alerts</button>';
+  }
+  function itemForFolder(folder) {
+    return (D.items || []).filter(function (x) { return x.folder === folder; })[0] || null;
+  }
+  function sessionLabel(sid) {
+    var s = L.sessions[sid];
+    var it = s && s.folder ? itemForFolder(s.folder) : null;
+    if (it) return it.id ? "#" + it.id + " " + it.title : it.title;
+    return (s && s.title) || "opencode session";
+  }
+  function alertUser(title, body, tag, folder) {
+    if (!canNotify || Notification.permission !== "granted") return;
+    if (!document.hidden && document.hasFocus()) return;
+    try {
+      var n = new Notification(title, { body: String(body || "").slice(0, 180), tag: tag });
+      n.onclick = function () {
+        window.focus();
+        var it = folder ? itemForFolder(folder) : null;
+        var el = it ? document.getElementById("item-" + (it.id || it.folder)) : null;
+        if (el && el.style.display !== "none" && el.offsetParent) el.scrollIntoView({ block: "center" });
+        n.close();
+      };
+    } catch (e) { }
+  }
+  var seenPrompts = null, wasBusy = {};
+  function watchForAlerts() {
+    if (!LIVE || !L) return;
+    var prompts = L.permissions.map(function (p) {
+      return { id: p.id, sid: p.sessionID, folder: p.folder, text: "Allow " + p.permission + (p.title ? ": " + p.title : "") };
+    }).concat(L.questions.map(function (q) {
+      return { id: q.id, sid: q.sessionID, folder: q.folder, text: ((q.questions || [])[0] || {}).question || "The agent has a question" };
+    }));
+    document.title = (prompts.length ? "(" + prompts.length + ") " : "") + "Work dashboard";
+    var first = seenPrompts === null;
+    if (first) seenPrompts = {};
+    var fresh = prompts.filter(function (p) { return !seenPrompts[p.id]; });
+    prompts.forEach(function (p) { seenPrompts[p.id] = 1; });
+    var finished = [];
+    Object.keys(L.sessions).forEach(function (id) {
+      var s = L.sessions[id], busy = isBusy(s);
+      if (wasBusy[id] && !busy && s.folder) finished.push(s);
+      wasBusy[id] = busy;
+    });
+    if (first) return; // nothing on page load, only what changes while it is open
+    fresh.forEach(function (p) { alertUser("Agent waiting: " + sessionLabel(p.sid), p.text, p.id, p.folder); });
+    finished.forEach(function (s) {
+      alertUser((s.error ? "Agent stopped: " : "Agent finished: ") + sessionLabel(s.id), s.error || s.command || "", "done-" + s.id, s.folder);
+    });
+  }
+
+  function bannersHtml() {
+    if (!LIVE) return "";
+    var out = "";
+    if (conn === "off") out += '<div class="banner">The live dashboard server stopped or restarted. This page reconnects by itself. If it does not, start it again: <code>Start-LiveDashboard.ps1</code></div>';
+    else if (L && L.opencode && !L.opencode.connected && L.opencode.error) out += '<div class="banner">' + md(L.opencode.error) + "</div>";
+    if (D.liveMode && D.liveMode.error) out += '<div class="banner">Could not read <code>.work</code>: ' + h(D.liveMode.error) + "</div>";
+    return out;
+  }
+
   // ---------------------------------------------------------------- page
-  var items = D.items || [];
   var groups = [
-    ["needs", "Needs you", "Drafts to review and /approve, review findings, and blocked tasks."],
+    ["needs", "Needs you", "Drafts to review and /approve, review findings, blocked tasks" + (LIVE ? ", and agents waiting for an answer." : ".")],
     ["active", "In progress", ""],
     ["paused", "Paused", "Run /resume to pick one up."],
     ["ship", "Ready to ship", "PR text is written. Push and open the PRs, then delete the .work folder when merged."],
     ["notes", "Spikes, docs, and TSDs", ""]
   ];
-  var by = {};
-  items.forEach(function (it) { (by[it.bucket] = by[it.bucket] || []).push(it); });
 
-  var stale = (now - D.generatedMs) > 3 * 3600e3;
-  var html = '<header class="top"><h1>Work dashboard</h1><span class="ws">' + h(D.workspace) + "</span>" +
-    '<span class="fresh"><span title="' + h(new Date(D.generatedMs).toLocaleString()) + '">Built ' + h(timeOf(D.generatedMs)) +
-    (stale ? ' <span class="stale">(' + ago(D.generatedMs) + ", may be out of date)</span>" : " (" + ago(D.generatedMs) + ")") +
-    "</span><span>Refresh: <code>" + h(D.refreshCommand) + "</code> " + copyBtn(D.refreshCommand) + " " + copyBtn(D.refreshShell, "Copy shell command") + "</span></span></header>";
+  function render() {
+    copyStore = [];
+    now = Date.now();
+    today = dayKey(new Date());
+    yest = dayKey(new Date(now - 864e5));
+    var items = D.items || [];
+    var by = {};
+    items.forEach(function (it) { var b = bucketOf(it); (by[b] = by[b] || []).push(it); });
 
-  if (!items.length) {
-    html += '<div class="empty"><h2>No work in .work yet</h2><p>Start a work item and it shows up here the next time you refresh.</p><div class="do"><span class="cmd">/start &lt;id&gt; feature</span></div></div>';
-    html += '<div style="margin-top:28px">' + reposPanel() + "</div>";
-    app.innerHTML = html;
-    wire();
-    return;
+    var html = headerHtml() + bannersHtml();
+
+    if (!items.length) {
+      html += waitingHtml();
+      html += '<div class="empty"><h2>No work in .work yet</h2><p>Start a work item and it shows up here' + (LIVE ? "." : " the next time you refresh.") + '</p><div class="do"><span class="cmd">/start &lt;id&gt; feature</span></div></div>';
+      html += '<div style="margin-top:28px">' + reposPanel() + "</div>";
+      paint(html);
+      return;
+    }
+
+    // Pick up here: an item whose agent is waiting, else the most recently touched item that is moving, else the most recent paused one.
+    function newest(list) { return list.length ? list.reduce(function (a, b) { return b.modifiedMs > a.modifiedMs ? b : a; }) : null; }
+    var askingItems = LIVE ? items.filter(function (it) { return it.kind === "item" && asking(it); }) : [];
+    var pick = newest(askingItems) || newest((by.needs || []).concat(by.active || []).filter(function (it) { return it.kind === "item"; })) || newest(by.paused || []);
+
+    html += '<div class="grid"><main>' + waitingHtml();
+    if (pick) html += pickupHtml(pick);
+
+    html += '<ul class="counts" aria-label="Jump to a group">' + groups.map(function (g) {
+      var n = (by[g[0]] || []).length;
+      return '<li><a href="#g-' + g[0] + '" data-b="' + g[0] + '" class="' + (n ? "" : "zero") + '">' + h(g[1]) + " <b>" + n + "</b></a></li>";
+    }).join("") + "</ul>";
+
+    groups.forEach(function (g) {
+      var list = by[g[0]];
+      if (!list || !list.length) return;
+      html += '<section class="group" id="g-' + g[0] + '" aria-labelledby="gh-' + g[0] + '"><h3 id="gh-' + g[0] + '">' + h(g[1]) + ' <span class="n">' + list.length + "</span></h3>" +
+        (g[2] ? '<p class="hint">' + md(g[2]) + "</p>" : "") +
+        '<div class="items">' + list.map(function (it) { return itemCard(it, it === pick); }).join("") + "</div></section>";
+    });
+    if (!D.gitAvailable && D.items) html += '<p class="note">git was not found on PATH, so repo state is missing.</p>';
+    html += "</main><aside>" + reposPanel() + activityPanel() + "</aside></div>";
+    paint(html);
   }
 
-  // Pick up here: the most recently touched item that is moving, else the most recent paused one.
-  function newest(list) { return list.length ? list.reduce(function (a, b) { return b.modifiedMs > a.modifiedMs ? b : a; }) : null; }
-  var pick = newest((by.needs || []).concat(by.active || [])) || newest(by.paused || []);
+  // Replace the page, keeping focus and the caret in whatever the user was typing in.
+  function paint(html) {
+    var a = document.activeElement;
+    var key = a && a.getAttribute && a.getAttribute("data-draft");
+    var sel = key && typeof a.selectionStart === "number" ? [a.selectionStart, a.selectionEnd] : null;
+    app.innerHTML = html;
+    Array.prototype.forEach.call(app.querySelectorAll("[data-follow]"), function (el) { el.scrollTop = el.scrollHeight; });
+    if (key) {
+      var el = app.querySelector('[data-draft="' + (window.CSS && CSS.escape ? CSS.escape(key) : key) + '"]');
+      if (el) { el.focus(); if (sel) try { el.setSelectionRange(sel[0], sel[1]); } catch (e) { } }
+    }
+  }
 
-  html += '<div class="grid"><main>';
-  if (pick) html += pickupHtml(pick);
+  // Coalesce bursts of live updates into one paint per animation frame.
+  // Never repaint mid-click: the button under the pointer would be replaced and the click lost.
+  var pending = false, pointerDown = false, deferred = false;
+  function schedule() {
+    if (pending) return;
+    pending = true;
+    requestAnimationFrame(function () {
+      pending = false;
+      if (pointerDown) { deferred = true; return; }
+      render();
+    });
+  }
+  document.addEventListener("pointerdown", function () { pointerDown = true; }, true);
+  document.addEventListener("pointerup", function () {
+    pointerDown = false;
+    if (deferred) { deferred = false; setTimeout(schedule, 0); }
+  }, true);
 
-  html += '<ul class="counts" aria-label="Jump to a group">' + groups.map(function (g) {
-    var n = (by[g[0]] || []).length;
-    return '<li><a href="#g-' + g[0] + '" data-b="' + g[0] + '" class="' + (n ? "" : "zero") + '">' + h(g[1]) + " <b>" + n + "</b></a></li>";
-  }).join("") + "</ul>";
+  // ---------------------------------------------------------------- events
+  function toast(msg, bad) {
+    var box = document.getElementById("toasts");
+    var t = document.createElement("div");
+    t.className = "toast" + (bad ? " bad" : "");
+    t.textContent = msg;
+    box.appendChild(t);
+    setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, bad ? 7000 : 3500);
+  }
 
-  groups.forEach(function (g) {
-    var list = by[g[0]];
-    if (!list || !list.length) return;
-    html += '<section class="group" id="g-' + g[0] + '" aria-labelledby="gh-' + g[0] + '"><h3 id="gh-' + g[0] + '">' + h(g[1]) + ' <span class="n">' + list.length + "</span></h3>" +
-      (g[2] ? '<p class="hint">' + md(g[2]) + "</p>" : "") +
-      '<div class="items">' + list.map(itemCard).join("") + "</div></section>";
-  });
-  if (!D.gitAvailable) html += '<p class="note">git was not found on PATH, so repo state is missing.</p>';
-  html += "</main><aside>" + reposPanel() + activityPanel() + "</aside></div>";
+  function post(path, body) {
+    return fetch(path, {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-eng-token": D.liveMode.token },
+      body: JSON.stringify(body || {})
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) {
+        if (!r.ok) throw new Error(j.error || ("HTTP " + r.status));
+        return j;
+      });
+    });
+  }
 
-  app.innerHTML = html;
-  wire();
+  function sendReply(sid) {
+    var key = "r:" + sid;
+    var text = (ui.drafts[key] || "").trim();
+    if (!text) return;
+    post("api/reply", { session: sid, text: text }).then(function () {
+      ui.drafts[key] = "";
+      schedule();
+    }, function (e) { toast(e.message, true); });
+  }
+
+  function sendQuestion(id) {
+    var q = (L.questions || []).filter(function (x) { return x.id === id; })[0];
+    if (!q) return;
+    var picks = ui.picks[id] || {};
+    var answers = (q.questions || []).map(function (qq, i) {
+      var a = (picks[i] || []).slice();
+      var typed = (ui.drafts["q:" + id + ":" + i] || "").trim();
+      if (typed) a.push(typed);
+      return a;
+    });
+    if (answers.some(function (a) { return !a.length; })) { toast("Pick or type an answer for each question.", true); return; }
+    post("api/question", { id: id, answers: answers }).then(function () { delete ui.picks[id]; }, function (e) { toast(e.message, true); });
+  }
 
   function wire() {
     app.addEventListener("click", function (ev) {
-      var b = ev.target.closest ? ev.target.closest("button.copy") : null;
-      if (!b) return;
-      var text = copyStore[+b.getAttribute("data-copy")];
-      var done = function () {
-        var old = b.textContent; b.textContent = "Copied"; b.classList.add("ok");
-        setTimeout(function () { b.textContent = old; b.classList.remove("ok"); }, 1400);
-      };
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(done, function () { fallback(text); done(); });
-      } else { fallback(text); done(); }
+      var t = ev.target.closest ? ev.target : null;
+      if (!t) return;
+      var b = t.closest("button.copy");
+      if (b) { copy(b); return; }
+      if (!LIVE) return;
+      var run = t.closest("[data-run]");
+      if (run) {
+        var folder = run.getAttribute("data-run"), cmd = run.getAttribute("data-cmd");
+        ui.busy[folder] = true; schedule();
+        post("api/run", { folder: folder, command: cmd }).then(function () {
+          toast("Started " + cmd);
+        }, function (e) { toast(e.message, true); }).then(function () { delete ui.busy[folder]; schedule(); });
+        return;
+      }
+      var pm = t.closest("[data-perm]");
+      if (pm) { post("api/permission", { id: pm.getAttribute("data-perm"), reply: pm.getAttribute("data-answer") }).catch(function (e) { toast(e.message, true); }); return; }
+      var qs = t.closest("[data-qsend]");
+      if (qs) { sendQuestion(qs.getAttribute("data-qsend")); return; }
+      var qr = t.closest("[data-qreject]");
+      if (qr) { post("api/question", { id: qr.getAttribute("data-qreject"), reject: true }).catch(function (e) { toast(e.message, true); }); return; }
+      var rp = t.closest("[data-reply]");
+      if (rp) { sendReply(rp.getAttribute("data-reply")); return; }
+      var ab = t.closest("[data-abort]");
+      if (ab) { post("api/abort", { session: ab.getAttribute("data-abort") }).then(function () { toast("Stopping"); }, function (e) { toast(e.message, true); }); return; }
+      var tm = t.closest("[data-term]");
+      if (tm) { post("api/terminal", { session: tm.getAttribute("data-term") || null }).then(function () { toast("Opened a terminal"); }, function (e) { toast(e.message, true); }); return; }
+      var al = t.closest("[data-alerts]");
+      if (al && canNotify) { Notification.requestPermission().then(function () { schedule(); }, function () { }); return; }
+      var rf = t.closest("[data-refresh]");
+      if (rf) { post("api/refresh").catch(function (e) { toast(e.message, true); }); }
     });
+    app.addEventListener("toggle", function (ev) {
+      var k = ev.target && ev.target.getAttribute && ev.target.getAttribute("data-key");
+      if (k) ui.open[k] = ev.target.open;
+    }, true);
+    app.addEventListener("input", function (ev) {
+      var k = ev.target.getAttribute("data-draft");
+      if (k) ui.drafts[k] = ev.target.value;
+    });
+    app.addEventListener("change", function (ev) {
+      var id = ev.target.getAttribute("data-qpick");
+      if (!id) return;
+      var i = +ev.target.getAttribute("data-qi");
+      var p = ui.picks[id] = ui.picks[id] || {};
+      var form = ev.target.closest("[data-qform]");
+      p[i] = Array.prototype.map.call(form.querySelectorAll('input[name="' + ev.target.name + '"]:checked'), function (x) { return x.value; });
+    });
+    app.addEventListener("keydown", function (ev) {
+      if (ev.key === "Enter" && (ev.ctrlKey || ev.metaKey) && ev.target.getAttribute("data-sid")) {
+        ev.preventDefault();
+        sendReply(ev.target.getAttribute("data-sid"));
+      }
+    });
+  }
+  function copy(b) {
+    var text = copyStore[+b.getAttribute("data-copy")];
+    var done = function () {
+      var old = b.textContent; b.textContent = "Copied"; b.classList.add("ok");
+      setTimeout(function () { b.textContent = old; b.classList.remove("ok"); }, 1400);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { fallback(text); done(); });
+    } else { fallback(text); done(); }
   }
   function fallback(text) {
     var ta = document.createElement("textarea");
@@ -671,6 +1137,34 @@ tr:last-child td { border-bottom: 0; }
     document.body.appendChild(ta); ta.select();
     try { document.execCommand("copy"); } catch (e) { }
     document.body.removeChild(ta);
+  }
+
+  function connect() {
+    var es = new EventSource("api/events?token=" + encodeURIComponent(D.liveMode.token));
+    es.addEventListener("model", function (e) {
+      var d = JSON.parse(e.data);
+      D = d; L = d.liveMode.live; conn = "on"; watchForAlerts(); schedule();
+    });
+    es.addEventListener("live", function (e) { L = JSON.parse(e.data); conn = "on"; watchForAlerts(); schedule(); });
+    es.onopen = function () { conn = "on"; schedule(); };
+    es.onerror = function () {
+      conn = "off"; schedule();
+      // A restarted server has a new token, so the stream is refused: reload once the server answers.
+      if (es.readyState === 2) waitThenReload();
+    };
+  }
+
+  function waitThenReload() {
+    fetch("api/ping", { cache: "no-store" }).then(function (r) {
+      if (r.ok) location.reload(); else throw new Error();
+    }).catch(function () { setTimeout(waitThenReload, 3000); });
+  }
+
+  wire();
+  render();
+  if (LIVE) {
+    connect();
+    setInterval(schedule, 30000); // keep "x min ago" fresh
   }
 })();
 </script>

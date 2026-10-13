@@ -489,6 +489,14 @@ $mem = Join-Path $engConfig "memory.md"
 if (Test-Path $mem) { Write-Host "  [ok]   Global memory: $mem" }
 else { Write-Host "  [info] No global memory yet. /memory -global creates $mem" }
 
+$nodeCmd = Get-Command node -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($nodeCmd) {
+    $nodeVer = ((& $nodeCmd.Source --version) -replace '^v', '')
+    if ([int]($nodeVer.Split('.')[0]) -ge 18) { Write-Host "  [ok]   Node $nodeVer (live dashboard)" }
+    else { Write-Host "  [info] Node $nodeVer is too old for the live dashboard (needs 18+). /dashboard works without it." }
+}
+else { Write-Host "  [info] Node not found. Only the live dashboard needs it (18+). /dashboard works without it." }
+
 $mmdc = Get-Command mmdc -ErrorAction SilentlyContinue | Select-Object -First 1
 if ($mmdc) { Write-Host "  [ok]   mermaid-cli: $($mmdc.Source)" }
 else { Write-Host "  [info] mermaid-cli not installed. /tsd will check diagrams by checklist only. To render-check: npm install -g @mermaid-js/mermaid-cli" }

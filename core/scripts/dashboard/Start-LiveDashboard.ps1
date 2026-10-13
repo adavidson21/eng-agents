@@ -18,6 +18,8 @@
         permission prompt or question waiting for you. You can answer and reply from the page.
       - Checks for eng-agents updates every few hours (update.ps1 -Check) and shows "Update
         available" in the header. Updating from the page restarts the dashboard in this window.
+      - Optional shell: a site listed in config.json ("dashboard": { "shellOrigins": [...] }) can show
+        this dashboard inside its own page and read where each work item stands. Prioritizer does this.
       - Autopilot: after you approve the plan (or bug analysis), runs tasks, each task in a new
         session, review, and PR text, and stops only when it needs you. Never pushes.
 
@@ -58,7 +60,11 @@ param(
     [switch]$NoOpencode,
 
     # Do not check for eng-agents updates.
-    [switch]$NoUpdateCheck
+    [switch]$NoUpdateCheck,
+
+    # Sites allowed to embed the dashboard and read item stages (a shell such as Prioritizer).
+    # Usually set once in config.json instead: "dashboard": { "shellOrigins": ["https://..."] }.
+    [string[]]$ShellOrigin
 )
 
 $ErrorActionPreference = "Stop"
@@ -86,6 +92,7 @@ if ($OpencodeUrl) { $nodeArgs += @("--opencode", $OpencodeUrl) }
 if ($NoOpen) { $nodeArgs += "--no-open" }
 if ($NoOpencode) { $nodeArgs += "--no-start-opencode" }
 if ($NoUpdateCheck) { $nodeArgs += "--no-update-check" }
+foreach ($o in @($ShellOrigin | Where-Object { $_ })) { $nodeArgs += @("--shell-origin", $o) }
 
 # The server exits with 75 after an update (or the Restart button) so it can start again on the new
 # code. The open page reloads by itself, so no new browser tab on a restart.

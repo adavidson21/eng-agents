@@ -4,6 +4,14 @@ Core and the dashboard have their own versions (`core/VERSION`, `core/scripts/da
 
 Format: one `## Core <version> (<date>)` or `## Dashboard <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Dashboard 1.1.0 (2026-10-13)
+
+- Shows inside a shell app: sites listed in `config.json` under `dashboard.shellOrigins` can embed the live dashboard and read each work item's stage. Prioritizer uses this for its Dashboard view and task badges.
+- `/api/shell/start` starts a work item (`/start <id> <lane>`) from a listed shell, in a new opencode session.
+- The page can only be framed by itself and listed shells.
+- Themes now come from Prioritizer's `themes.css` (`sync-themes.mjs`). Adds Solarized Light, Nord, and Dracula, and a warn color for each theme.
+- `Start-LiveDashboard.ps1 -ShellOrigin <url>` for a one-off shell without editing `config.json`.
+
 ## Dashboard 1.0.0 (2026-10-13)
 
 - First versioned release of the live dashboard.

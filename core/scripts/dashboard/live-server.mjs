@@ -43,6 +43,7 @@ function parseArgs(argv) {
     open: true,
     poll: 20,
     checkUpdates: true,
+    shellOrigins: [],
   };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -60,6 +61,7 @@ function parseArgs(argv) {
     else if (a === "--no-open") o.open = false;
     else if (a === "--no-update-check") o.checkUpdates = false;
     else if (a === "--poll") o.poll = Math.max(5, +v());
+    else if (a === "--shell-origin") o.shellOrigins.push(v());
     else if (a === "--help" || a === "-h") {
       console.log(`Usage: node live-server.mjs [options]
 
@@ -73,7 +75,10 @@ function parseArgs(argv) {
   --config <path>        ADO config.json passed to New-Dashboard.ps1 (for work item links)
   --poll <seconds>       How often to re-read git state. Default: 20
   --no-open              Do not open the browser
-  --no-update-check      Do not check for eng-agents updates (update.ps1 -Check)`);
+  --no-update-check      Do not check for eng-agents updates (update.ps1 -Check)
+  --shell-origin <url>   A site allowed to embed this dashboard and read item stages, for example
+                         https://prioritizer.example.com. Repeatable. Also read from
+                         "dashboard": { "shellOrigins": [...] } in the --config file.`);
       process.exit(0);
     } else fail(`Unknown option: ${a}. Run with --help.`);
   }
@@ -101,6 +106,39 @@ if (!fs.existsSync(templatePath)) fail(`Missing ${templatePath}. Re-run install.
 fs.mkdirSync(stateDir, { recursive: true });
 
 const token = crypto.randomBytes(18).toString("base64url");
+
+// Sites allowed to embed this dashboard (a "shell" such as Prioritizer) and to use /api/shell/*.
+// Off unless configured: --shell-origin, or "dashboard": { "shellOrigins": [...] } in config.json.
+function normalizeOrigin(o) {
+  try {
+    const u = new URL(String(o).trim());
+    const local = u.hostname === "127.0.0.1" || u.hostname === "localhost";
+    if (u.protocol !== "https:" && !(u.protocol === "http:" && local)) return null; // https, or http on this machine (for testing)
+    if (u.pathname !== "/" || u.search || u.hash || u.username) return null;
+    return u.origin;
+  } catch {
+    return null;
+  }
+}
+function readShellOrigins() {
+  const list = [...opt.shellOrigins];
+  if (opt.config) {
+    try {
+      const cfg = JSON.parse(fs.readFileSync(opt.config, "utf8").replace(/^\uFEFF/, ""));
+      const fromCfg = cfg && cfg.dashboard && cfg.dashboard.shellOrigins;
+      if (Array.isArray(fromCfg)) list.push(...fromCfg);
+    } catch {} // no config, or unreadable: New-Dashboard.ps1 reports that
+  }
+  const out = [];
+  for (const o of list) {
+    const n = normalizeOrigin(o);
+    if (!n) console.warn(`live dashboard: ignoring shell origin "${o}" (use https://host, or http://localhost:<port> for testing).`);
+    else if (!out.includes(n)) out.push(n);
+  }
+  return out;
+}
+const shellOrigins = readShellOrigins();
+const selfOrigins = () => [`http://127.0.0.1:${opt.port}`, `http://localhost:${opt.port}`];
 const log = (...a) => console.log(new Date().toLocaleTimeString(), ...a);
 const sameDir = (a, b) => {
   if (!a || !b) return false;
@@ -1048,6 +1086,88 @@ async function runCommand({ folder, command }, { fresh = false, fromAuto = false
   return { session: sid };
 }
 
+// /start for a work item that has no .work folder yet (from a shell such as Prioritizer).
+// The folder appears once /start creates it; the session is linked to it then.
+const starting = new Map(); // id -> { sid, at }, until its folder shows up (or 10 minutes pass)
+const START_FORGET_MS = 10 * 60e3;
+async function startItem({ id, lane }) {
+  needOpencode();
+  const wid = String(id || "").trim();
+  if (!/^\d{1,10}$/.test(wid)) throw httpError(400, "The work item id must be a number.");
+  if (lane !== "feature" && lane !== "bug") throw httpError(400, 'Lane must be "feature" or "bug".');
+  if (folderForToken(wid)) throw httpError(409, `Work item ${wid} is already started. Open the dashboard to continue it.`);
+  const prev = starting.get(wid);
+  if (prev && (sessions.get(prev.sid) || {}).status !== "idle") throw httpError(409, `Work item ${wid} is already starting.`);
+  if (oc.commands.size && !oc.commands.has("start")) throw httpError(400, "opencode has no /start command. Re-run install.ps1, then restart opencode.");
+
+  const args = `${wid} ${lane}`;
+  const created = await oc.api.createSession(`${wid}: /start ${args}`);
+  const sid = created.id;
+  starting.set(wid, { sid, at: Date.now() });
+  upsertSession(sid, { title: created.title, status: "busy", busySince: Date.now(), activity: "Starting /start", error: null, text: null, command: `/start ${args}` });
+  linkFrom(sid, () => folderForToken(wid), `/start ${args}`);
+  broadcastLive();
+  oc.api
+    .runCommand(sid, "start", args)
+    .then((err) => {
+      if (err) {
+        upsertSession(sid, { status: "idle", activity: null, error: `/start failed: ${err}` });
+        broadcastLive();
+      }
+      scheduleRefresh(0);
+    })
+    .catch((e) => {
+      upsertSession(sid, { error: `/start: ${e.message}` });
+      broadcastLive();
+    });
+  log(`run /start ${args} in ${sid} (from the shell)`);
+  return { session: sid };
+}
+
+// What a shell needs to badge its tasks: one row per numbered work item, plus /start in progress.
+function shellData() {
+  const items = [];
+  for (const it of (model && model.items) || []) {
+    if (it.kind !== "item" || !it.id) continue;
+    const sid = currentSession(it.folder);
+    const s = sid ? sessions.get(sid) : null;
+    items.push({
+      id: String(it.id),
+      title: it.title,
+      lane: it.lane,
+      stage: it.stage,
+      bucket: it.bucket,
+      next: it.next ? { command: it.next.command || null, action: it.next.action || null, needsYou: !!it.next.needsYou } : null,
+      tasks: it.tasks ? { done: it.tasks.done || 0, total: it.tasks.total || 0 } : null,
+      paused: !!it.paused,
+      blocked: !!it.blocked,
+      agent: s ? s.status : null,
+      waiting: !!s && ([...permissions.values()].some((p) => p.sessionID === sid) || [...questions.values()].some((q) => q.sessionID === sid)),
+    });
+  }
+  // Started from the shell, folder not there yet: /start is running, waiting on the engineer (it asks
+  // when it cannot fetch the item), or done and the next refresh will pick the folder up.
+  const pending = [];
+  for (const [wid, st] of starting) {
+    const s = sessions.get(st.sid);
+    if (folderForToken(wid) || !s || Date.now() - st.at > START_FORGET_MS) {
+      starting.delete(wid);
+      continue;
+    }
+    const waiting = [...permissions.values()].some((p) => p.sessionID === st.sid) || [...questions.values()].some((q) => q.sessionID === st.sid);
+    pending.push({ id: wid, agent: s.status, waiting, error: s.error || null });
+  }
+  return {
+    app: APP,
+    version: runningVersion,
+    workspace: path.basename(opt.workspace),
+    opencode: { connected: oc.connected, error: oc.error },
+    error: modelError,
+    items,
+    starting: pending,
+  };
+}
+
 async function reply({ session, text }) {
   needOpencode();
   if (!sessions.has(session)) throw httpError(404, "Unknown session.");
@@ -1544,7 +1664,7 @@ function liveData() {
 
 function pageData() {
   const base = model || { items: [], repos: [], activity: [], workspace: opt.workspace, generatedMs: Date.now(), generated: new Date().toISOString() };
-  return { ...base, liveMode: { token, error: modelError, live: liveData() } };
+  return { ...base, liveMode: { token, error: modelError, live: liveData(), embedOrigins: shellOrigins } };
 }
 
 const clients = new Set();
@@ -1632,16 +1752,64 @@ const actions = {
   },
 };
 
+// The shell API: a configured shell site reads item stages and starts items. Browsers send Origin on
+// these cross-site requests and cannot fake it, so the allowlist is the check (like the ADO helper).
+const shellActions = {
+  "GET /api/shell/status": async () => shellData(),
+  "POST /api/shell/start": (body) => startItem(body),
+};
+
+function sendShell(res, origin, status, body) {
+  res.writeHead(status, {
+    "content-type": "application/json; charset=utf-8",
+    "cache-control": "no-store",
+    "x-content-type-options": "nosniff",
+    "access-control-allow-origin": origin,
+    vary: "Origin",
+  });
+  res.end(JSON.stringify(body));
+}
+
+// Only these sites may put the page in a frame (clickjacking guard): this page and configured shells.
+const frameAncestors = () => ["'self'", ...shellOrigins].join(" ");
+
 const server = http.createServer(async (req, res) => {
   // Only this machine, only this page: block other sites and DNS rebinding.
   const host = String(req.headers.host || "");
   if (host !== `127.0.0.1:${opt.port}` && host !== `localhost:${opt.port}`) return send(res, 403, { error: "Bad host." });
   const origin = req.headers.origin;
-  if (origin && origin !== `http://127.0.0.1:${opt.port}` && origin !== `http://localhost:${opt.port}`) return send(res, 403, { error: "Bad origin." });
-
   const url = new URL(req.url, `http://${host}`);
+
+  if (url.pathname.startsWith("/api/shell/")) {
+    if (!origin || !shellOrigins.includes(origin)) return send(res, 403, { error: "This site is not an allowed shell. Add it to dashboard.shellOrigins in config.json." });
+    if (req.method === "OPTIONS") {
+      res.writeHead(204, {
+        "access-control-allow-origin": origin,
+        "access-control-allow-methods": "GET, POST, OPTIONS",
+        "access-control-allow-headers": "content-type",
+        "access-control-allow-private-network": "true",
+        "access-control-max-age": "600",
+        vary: "Origin",
+      });
+      return res.end();
+    }
+    const fn = shellActions[`${req.method} ${url.pathname}`];
+    if (!fn) return sendShell(res, origin, 404, { error: "Not found." });
+    try {
+      const body = req.method === "POST" ? await readBody(req) : {};
+      return sendShell(res, origin, 200, await fn(body));
+    } catch (e) {
+      if (!e.status) log("error:", e.stack || e.message);
+      return sendShell(res, origin, e.status || 500, { error: e.message });
+    }
+  }
+
+  if (origin && !selfOrigins().includes(origin)) return send(res, 403, { error: "Bad origin." });
   try {
-    if (req.method === "GET" && (url.pathname === "/" || url.pathname === "/index.html")) return send(res, 200, renderPage(), "text/html; charset=utf-8");
+    if (req.method === "GET" && (url.pathname === "/" || url.pathname === "/index.html")) {
+      res.setHeader("content-security-policy", `frame-ancestors ${frameAncestors()}`);
+      return send(res, 200, renderPage(), "text/html; charset=utf-8");
+    }
     if (req.method === "GET" && url.pathname === "/api/ping") return send(res, 200, { app: APP, workspace: opt.workspace });
     if (req.method === "GET" && url.pathname.startsWith("/files/")) return serveWorkFile(res, url.pathname.slice(7));
     if (req.method === "GET" && url.pathname === "/api/events") {
@@ -1704,6 +1872,7 @@ server.on("error", (e) => fail(e.code === "EADDRINUSE" ? `Port ${opt.port} is in
 server.listen(opt.port, "127.0.0.1", async () => {
   console.log(`Live dashboard: ${pageUrl}`);
   console.log(`Workspace:      ${opt.workspace}`);
+  if (shellOrigins.length) console.log(`Shell sites:    ${shellOrigins.join(", ")}`);
   console.log("Keep this window open. Ctrl+C stops the dashboard (and opencode 1.x if the dashboard started it).");
   await refresh();
   watchWork();

@@ -8,7 +8,7 @@
 <script>
   // Theme before first paint, so there is no flash. "system" (no attribute) follows the OS setting.
   (function () { var t = null; try { t = localStorage.getItem("eng-dashboard.theme"); } catch (e) { }
-    if (/^(slate|graphite|ivory|rose)$/.test(t || "")) document.documentElement.setAttribute("data-theme", t); })();
+    if (/*theme-names*/["slate","graphite","ivory","rose","solarized","nord","dracula"]/*/theme-names*/.indexOf(t) >= 0) document.documentElement.setAttribute("data-theme", t); })();
 </script>
 <!--
   eng-agents dashboard template. Two modes, one file:
@@ -19,52 +19,42 @@
     follows the server's event stream and can run commands in opencode.
 -->
 <style>
-/* ---------- themes: the Prioritizer palette. Seven base colors each, everything else is derived. */
-:root, :root[data-theme="slate"] {
-  --bg: #F7F7F8; --surface: #FFFFFF; --ink: #1C1D21; --muted: #5C5F66;
-  --accent: #4F46E5; --on-accent: #FFFFFF; --danger: #B42318; --warn: #94570A;
-  color-scheme: light;
+/* themes:begin  Copied from Prioritizer's themes.css by sync-themes.mjs. Do not edit here: change
+   themes.css in Prioritizer, then run node sync-themes.mjs. */
+:root,
+:root[data-theme=slate]    {--bg:#F7F7F8;--surface:#FFFFFF;--ink:#1C1D21;--muted:#5C5F66;--accent:#4F46E5;--on-accent:#FFFFFF;--danger:#B42318;--warn:#94570A;color-scheme:light}
+:root[data-theme=graphite] {--bg:#141518;--surface:#1C1E22;--ink:#E8E9EC;--muted:#A0A4AB;--accent:#8C88FF;--on-accent:#141518;--danger:#F97066;--warn:#E3A64A;color-scheme:dark}
+:root[data-theme=ivory]    {--bg:#FBF8F1;--surface:#FFFDF8;--ink:#3A3230;--muted:#6B5F59;--accent:#9C5A6A;--on-accent:#FFFFFF;--danger:#B42318;--warn:#8F560B;color-scheme:light}
+:root[data-theme=rose]     {--bg:#FBF4F2;--surface:#FFFAF9;--ink:#3B2F33;--muted:#6F5D63;--accent:#A04F6C;--on-accent:#FFFFFF;--danger:#B42318;--warn:#8F560B;color-scheme:light}
+:root[data-theme=solarized]{--bg:#FDF6E3;--surface:#FFFCF4;--ink:#073642;--muted:#4F646B;--accent:#1F6FA8;--on-accent:#FFFFFF;--danger:#B42318;--warn:#8A5A00;color-scheme:light}
+:root[data-theme=nord]     {--bg:#2E3440;--surface:#3B4252;--ink:#ECEFF4;--muted:#BCC4D2;--accent:#88C0D0;--on-accent:#2E3440;--danger:#F4B6BC;--warn:#EBCB8B;color-scheme:dark}
+:root[data-theme=dracula]  {--bg:#282A36;--surface:#303241;--ink:#F8F8F2;--muted:#B0B6D3;--accent:#BD93F9;--on-accent:#282A36;--danger:#FF9494;--warn:#FFB86C;color-scheme:dark}
+/* No theme set: follow the system (Graphite when it is dark). */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme]){--bg:#141518;--surface:#1C1E22;--ink:#E8E9EC;--muted:#A0A4AB;--accent:#8C88FF;--on-accent:#141518;--danger:#F97066;--warn:#E3A64A;color-scheme:dark}
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
-    --bg: #141518; --surface: #1C1E22; --ink: #E8E9EC; --muted: #A0A4AB;
-    --accent: #8C88FF; --on-accent: #141518; --danger: #F97066; --warn: #E3A64A;
-    color-scheme: dark;
-  }
+:root{
+  --line:color-mix(in srgb,var(--ink) 12%,var(--surface));
+  --hover:color-mix(in srgb,var(--ink) 5%,var(--surface));
+  --sunk:color-mix(in srgb,var(--ink) 4%,var(--bg));
+  --side:color-mix(in srgb,var(--ink) 3%,var(--bg));
+  --accent-soft:color-mix(in srgb,var(--accent) 14%,var(--surface));
+  --danger-soft:color-mix(in srgb,var(--danger) 10%,var(--surface));
+  --warn-soft:color-mix(in srgb,var(--warn) 14%,var(--surface));
+  --shadow:0 1px 2px color-mix(in srgb,var(--ink) 8%,transparent),0 8px 24px -10px color-mix(in srgb,var(--ink) 22%,transparent);
+  --shadow-lg:0 2px 6px color-mix(in srgb,var(--ink) 10%,transparent),0 24px 48px -16px color-mix(in srgb,var(--ink) 35%,transparent);
+  /* No web fonts, so both apps work offline: Inter and JetBrains Mono when installed, else system fonts. */
+  --sans:Inter,"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --mono:"JetBrains Mono","Cascadia Mono","Cascadia Code",Consolas,"SF Mono",Menlo,ui-monospace,monospace;
 }
-:root[data-theme="graphite"] {
-  --bg: #141518; --surface: #1C1E22; --ink: #E8E9EC; --muted: #A0A4AB;
-  --accent: #8C88FF; --on-accent: #141518; --danger: #F97066; --warn: #E3A64A;
-  color-scheme: dark;
-}
-:root[data-theme="ivory"] {
-  --bg: #FBF8F1; --surface: #FFFDF8; --ink: #3A3230; --muted: #6B5F59;
-  --accent: #9C5A6A; --on-accent: #FFFFFF; --danger: #B42318; --warn: #8F560B;
-  color-scheme: light;
-}
-:root[data-theme="rose"] {
-  --bg: #FBF4F2; --surface: #FFFAF9; --ink: #3B2F33; --muted: #6F5D63;
-  --accent: #A04F6C; --on-accent: #FFFFFF; --danger: #B42318; --warn: #8F560B;
-  color-scheme: light;
-}
+/* themes:end */
 :root {
-  --line: color-mix(in srgb, var(--ink) 12%, var(--surface));
-  --hover: color-mix(in srgb, var(--ink) 5%, var(--surface));
-  --sunk: color-mix(in srgb, var(--ink) 4%, var(--bg));
-  --accent-soft: color-mix(in srgb, var(--accent) 14%, var(--surface));
-  --danger-soft: color-mix(in srgb, var(--danger) 10%, var(--surface));
-  --warn-soft: color-mix(in srgb, var(--warn) 14%, var(--surface));
   /* State names the page uses: go = moving or approved, gate = needs you, stop = failed, hold = paused. */
   --go: var(--accent); --go-soft: var(--accent-soft); --on-go: var(--on-accent);
   --gate: var(--warn); --gate-soft: var(--warn-soft);
   --stop: var(--danger); --stop-soft: var(--danger-soft);
   --hold: var(--muted); --hold-soft: var(--hover);
   --focus: var(--accent);
-  --shadow: 0 1px 2px color-mix(in srgb, var(--ink) 8%, transparent), 0 8px 24px -10px color-mix(in srgb, var(--ink) 22%, transparent);
-  --shadow-lg: 0 2px 6px color-mix(in srgb, var(--ink) 10%, transparent), 0 24px 48px -16px color-mix(in srgb, var(--ink) 35%, transparent);
-  /* No web fonts (the page works offline): Inter and JetBrains Mono when installed, else the system fonts. */
-  --sans: Inter, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
-  --mono: "JetBrains Mono", "Cascadia Mono", "Cascadia Code", Consolas, "SF Mono", Menlo, ui-monospace, monospace;
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
@@ -432,6 +422,10 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
   .pickup .rail { margin-top: 6px; }
   .sheet { padding: 16px; }
 }
+/* ---------- embedded in a shell: the shell shows the name and owns the theme */
+.embed .brand { display: none; }
+.embed .wrap { padding-top: 14px; }
+.item.flash { box-shadow: 0 0 0 2px var(--accent); transition: box-shadow .3s; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 @media print { .copy, .btn, .ibtn, .reply { display: none; } body { background: #fff; } }
 </style>
@@ -456,6 +450,10 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
   var LIVE = !!D.liveMode;
   var L = LIVE ? D.liveMode.live : null;   // opencode state: sessions, prompts, item links
   var conn = LIVE ? "connecting" : null;  // page <-> live server
+  // Embedded: framed by a shell site the server allows (Prioritizer), opened as /?embed=1. Live only.
+  var embedOrigins = LIVE ? (D.liveMode.embedOrigins || []) : [];
+  var EMBED = LIVE && /[?&]embed=1(&|$)/.test(location.search) && window.parent !== window && embedOrigins.length > 0;
+  if (EMBED) document.documentElement.classList.add("embed");
 
   // ---------------------------------------------------------------- helpers
   function h(s) {
@@ -987,8 +985,8 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
     theme: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="6.5"/><path d="M10 3.5a6.5 6.5 0 0 0 0 13z" fill="currentColor"/></svg>',
     x: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg>'
   };
-  var THEMES = [["system", "System"], ["slate", "Slate"], ["graphite", "Graphite"], ["ivory", "Ivory"], ["rose", "Ros\u00e9"]];
-  var SWATCH = { slate: ["#F7F7F8", "#4F46E5"], graphite: ["#141518", "#8C88FF"], ivory: ["#FBF8F1", "#9C5A6A"], rose: ["#FBF4F2", "#A04F6C"] };
+  var THEMES = /*theme-menu*/[["system","System"],["slate","Slate"],["graphite","Graphite"],["ivory","Ivory"],["rose","Ros\u00e9"],["solarized","Solarized Light"],["nord","Nord"],["dracula","Dracula"]]/*/theme-menu*/;
+  var SWATCH = /*theme-swatch*/{"slate":["#F7F7F8","#4F46E5"],"graphite":["#141518","#8C88FF"],"ivory":["#FBF8F1","#9C5A6A"],"rose":["#FBF4F2","#A04F6C"],"solarized":["#FDF6E3","#1F6FA8"],"nord":["#2E3440","#88C0D0"],"dracula":["#282A36","#BD93F9"]}/*/theme-swatch*/;
   function currentTheme() { return document.documentElement.getAttribute("data-theme") || "system"; }
   function setTheme(t) {
     if (t === "system") document.documentElement.removeAttribute("data-theme");
@@ -1008,7 +1006,35 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
     var v = LIVE && L && L.updates ? L.updates.running : D.dashboardVersion;
     return '<div class="brand"><span class="logo" aria-hidden="true"><i></i></span><h1>Work dashboard</h1>' + (v ? '<span class="ver">v' + h(v) + "</span>" : "") + "</div>";
   }
-  var themeBtn = '<button type="button" class="ibtn" data-theme-menu="1" aria-label="Theme" title="Theme">' + ICON.theme + "</button>";
+  // Embedded, the shell owns the theme, so there is no theme button.
+  var themeBtn = EMBED ? "" : '<button type="button" class="ibtn" data-theme-menu="1" aria-label="Theme" title="Theme">' + ICON.theme + "</button>";
+
+  // ---------------------------------------------------------------- embedded in a shell
+  // The shell sends { type: "eng-theme", theme } and { type: "eng-focus", id }; the page answers with
+  // { type: "eng-ready" } when it loads. Messages from any other window or site are ignored.
+  var focusWanted = null;
+  function focusItem(id) {
+    var el = document.getElementById("item-" + id);
+    if (!el || !el.offsetParent) return false;
+    el.scrollIntoView({ block: "center" });
+    el.classList.add("flash");
+    setTimeout(function () { el.classList.remove("flash"); }, 1600);
+    return true;
+  }
+  if (EMBED) {
+    window.addEventListener("message", function (ev) {
+      if (ev.source !== window.parent || embedOrigins.indexOf(ev.origin) < 0) return;
+      var m = ev.data || {};
+      if (m.type === "eng-theme") {
+        var known = THEMES.some(function (t) { return t[0] === m.theme && t[0] !== "system"; });
+        if (known) document.documentElement.setAttribute("data-theme", m.theme);
+        else document.documentElement.removeAttribute("data-theme");
+      } else if (m.type === "eng-focus" && m.id) {
+        focusWanted = focusItem(String(m.id)) ? null : { id: String(m.id), until: Date.now() + 15000 };
+      }
+    });
+    embedOrigins.forEach(function (o) { try { window.parent.postMessage({ type: "eng-ready" }, o); } catch (e) { } });
+  }
 
   function headerHtml() {
     var html = '<header class="top">' + brandHtml() + '<span class="ws">' + h(D.workspace) + "</span>";
@@ -1261,6 +1287,9 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
     var key = a && a.getAttribute && a.getAttribute("data-draft");
     var sel = key && typeof a.selectionStart === "number" ? [a.selectionStart, a.selectionEnd] : null;
     app.innerHTML = html;
+    if (focusWanted) {
+      if (Date.now() > focusWanted.until || focusItem(focusWanted.id)) focusWanted = null;
+    }
     sh = app.querySelector(".sheet");
     if (sh) sh.scrollTop = sheetTop;
     Array.prototype.forEach.call(app.querySelectorAll("[data-follow]"), function (el) { el.scrollTop = el.scrollHeight; });

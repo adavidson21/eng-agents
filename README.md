@@ -21,6 +21,7 @@ Open opencode from your workspace root (for example `C:\src\work`).
 | New repo in the workspace | `/onboard-repo <folder>` |
 | Remember a rule | `/memory <rule>` (one repo) or `/memory -global <rule>` (every repo). `/memory -list` shows them. |
 | Work item in another ADO collection | `/start <id> <lane> <repo folder or connection>` |
+| Update eng-agents | `.\update.ps1` in your clone (`-Component dashboard` for just the dashboard), or **Update available** in the live dashboard header (see [Updating](docs/onboarding-company.md#updating)) |
 
 - **Approve** a spec, plan, or bug analysis with `/approve <id>` (it picks the current draft; add `spec`, `plan`, or `bug` to choose). Edit the file first if anything is wrong. Changing `Status: DRAFT` to `Status: APPROVED` by hand still works.
 - **Publish** a finished document with `/publish <folder>`, for example `/publish tsd-orders`. It approves it, moves it to the product docs folder, and you commit it.
@@ -36,12 +37,14 @@ Something went wrong? See [Recovering from problems](docs/pipeline.md#recovering
 
 1. [Personal onboarding](docs/onboarding-personal.md): create your fork and fill in `personal/`.
 2. [Company onboarding](docs/onboarding-company.md): set up the work PC, install, and smoke test.
+3. Later: `.\update.ps1` pulls and reinstalls. You install once; updates never need a fresh setup. What changed is in [CHANGELOG.md](CHANGELOG.md).
 
 ## Docs
 
 | Doc | Read it for |
 |---|---|
 | [Personal onboarding](docs/onboarding-personal.md) | Your fork and your `personal/` rules |
-| [Company onboarding](docs/onboarding-company.md) | Work PC setup, day-one checks, updating |
+| [Company onboarding](docs/onboarding-company.md) | Work PC setup, day-one checks, [updating](docs/onboarding-company.md#updating) |
+| [Changelog](CHANGELOG.md) | What is new in each Core and dashboard version |
 | [Customization](docs/customization.md) | Files to review, how layers combine, agents, permissions, templates, changing Core |
 | [Pipeline](docs/pipeline.md) | How each phase works, gates, lanes, work files, the dashboard, repo guides and memory, pausing, recovery, tuning |

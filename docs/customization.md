@@ -236,8 +236,9 @@ Open a pull request to eng-agents. Before merging:
 - [ ] `Status: DRAFT` lines in the `spec`, `plan`, `bug`, and `tsd` templates, `Status: PAUSED` in `paused`, and `## [ ] Task N:` headings in `tasks` are unchanged.
 - [ ] If you changed the next-command rules in `core/commands/status.md`, `Get-NextStep` in `core/scripts/dashboard/New-Dashboard.ps1` matches them (the static and live dashboards both use it).
 - [ ] Docs that describe the behavior are updated.
+- [ ] The version is bumped: `core/VERSION` for Core, `core/scripts/dashboard/VERSION` for the dashboard (major for breaking changes, minor for features, patch for fixes), with a `## Core <version> (<date>)` or `## Dashboard <version> (<date>)` entry at the top of `CHANGELOG.md`. `update.ps1` and the live dashboard show these entries.
 - [ ] `pwsh ./install.ps1 -DryRun` runs cleanly.
-- [ ] For a notable release, tag it (`core-v2`, ...) and tell teammates to `git fetch upstream` and `git merge upstream/main` in their forks.
+- [ ] For a notable release, tag it (`core-v2.1.0`, `dashboard-v1.2.0`) and tell teammates to `git fetch upstream` and `git merge upstream/main` in their forks, then run `.\update.ps1`.
 
 ## Never
 

@@ -27,7 +27,7 @@ Read these once so you know what you are overriding. Change them through your ow
 |---|---|
 | [`core/AGENTS.md`](../core/AGENTS.md) | Conventions (base branch, branch names, commit format, 3-file task cap), shell rules, testing rules |
 | [`core/templates/`](../core/templates/) | The format of every file the agents write, especially `spec.md`, `plan.md`, and `pr.md` |
-| [`core/permissions/`](../core/permissions/) | The shell permission tiers every agent shares: `read`, `build`, `guards` ([Permissions](#permissions)) |
+| [`core/permissions/`](../core/permissions/) | `guards.json`: the shell commands every agent asks about or never runs ([Permissions](#permissions)) |
 | [`core/opencode.json`](../core/opencode.json) | Global permissions, the global memory file in `instructions` |
 
 ## How layering works
@@ -91,7 +91,7 @@ Use the lightest option that works. A rule in `AGENTS.md` keeps you on Core upda
 | Change how one agent works | Rules under `## When you are the <agent>` in `personal/AGENTS.md` ([ideas](../personal/TODO.md#rules-for-one-agent)) |
 | Commit by hand | Rule: "Never commit. Stage the files and tell me the commit message." |
 | Bigger or smaller tasks (Core cap: 3 files) | Rule: "A task changes at most N files." |
-| Stop being asked about a shell command | Add it to `personal/permissions/read.json` (read-only) or `build.json` ([Permissions](#permissions)) |
+| Stop being asked about a shell command | Set it to `allow` in `personal/permissions/guards.json` ([Permissions](#permissions)) |
 | Different model for one agent | Copy `core/agents/<agent>.md` to `personal/agents/` and add `model:` |
 | A new command | New file in `personal/commands/` |
 
@@ -107,7 +107,7 @@ Use the lightest option that works. A rule in `AGENTS.md` keeps you on Core upda
 | Team PR or spec format | `overlay\templates\pr.md` or `spec.md` |
 | Team TSD format or diagram colors | `overlay\templates\tsd.md` or `tsd-diagrams.md` |
 | Company-specific command or agent | `overlay\commands\`, `overlay\agents\` |
-| Company-specific shell command (for example an internal CLI) | `overlay\permissions\read.json` or `build.json` |
+| Company-specific command that should ask or never run (for example an internal deploy CLI) | `overlay\permissions\guards.json` |
 | Work items live in more than one ADO collection | One entry per collection under `connections` in `config.json`, plus `paths` ([ADO setup](onboarding-company.md#3-connect-to-ado)) |
 | A rule the agents keep forgetting | `/memory <rule>` (one repo) or `/memory -global <rule>` |
 
@@ -120,37 +120,41 @@ Use the lightest option that works. A rule in `AGENTS.md` keeps you on Core upda
 
 ## Agents
 
-Override an agent by copying its file from `core/agents/` into your layer. Keep its `{{BASH:...}}` lines and its agent-specific denials. Every agent may run the `read` tier (file reads, search, read-only `git` including `fetch`, version checks); the table lists what else it can do.
+Override an agent by copying its file from `core/agents/` into your layer. Keep its `"*": allow` and `{{BASH:guards}}` lines and its agent-specific rules. Every agent may run any shell command except what [`guards`](#permissions) asks about or denies; the table lists what differs per agent.
 
-| Agent | Runs | Can edit | Extra shell commands |
+| Agent | Runs | Can edit | Shell, beyond `guards` |
 |---|---|---|---|
-| `planner` | `/start`, `/spec`, `/plan`, `/tasks`, `/approve`, `/status`, `/standup`, `/pause`, `/resume` | `.work/` only | Branch creation, the ADO script. Switching branches and WIP commits ask. |
-| `implementer` | `/do-task` | Code and tests. Repo guides and `CLAUDE.md` ask. | `build` tier, `dotnet format`, `npm install` / `ci`, `git add`. `git commit` asks. |
-| `reviewer` | `/review`, `/check-docs` | `.work/` only | `build` tier, the diagram check script |
-| `investigator` | `/bug`, `/spike`, `/onboard-repo` | `.work/`. A repo guide and `.git/info/exclude` ask. | `build` tier |
-| `writer` | `/pr`, `/docs`, `/tsd`, `/publish`, `/memory` | Any `*.md` file, `docs/`, `.work/`, the global memory file | The diagram check script (`Test-Mermaid.ps1`) |
+| `planner` | `/start`, `/spec`, `/plan`, `/tasks`, `/approve`, `/status`, `/standup`, `/pause`, `/resume` | `.work/` only | Can commit (WIP commits from `/pause`) |
+| `implementer` | `/do-task` | Code and tests. Repo guides, `CLAUDE.md`, and opencode config ask. | Can commit |
+| `reviewer` | `/review`, `/check-docs` | `.work/` only | Cannot `git add` or `git commit` |
+| `investigator` | `/bug`, `/spike`, `/onboard-repo` | `.work/`. A repo guide and `.git/info/exclude` ask. | Cannot `git add` or `git commit` |
+| `writer` | `/pr`, `/docs`, `/tsd`, `/publish`, `/memory` | Any `*.md` file, `docs/`, `.work/`, the global memory file. opencode config asks. | Cannot `git add` or `git commit` |
 
-Unlisted commands ask. Reviewer, investigator, and writer cannot `git add` or `git commit`.
+Lanes are kept by what each agent can **edit** and **commit**, not by which shell commands it may run.
 
 ## Permissions
 
-The goal: an agent never stops to ask about something its command needs, and never runs something risky without asking. Shell rules live in three **tiers**, written once and copied into every agent at install:
+The goal: an agent only stops for something you would actually care about. Shell commands, reads, and file access outside the workspace are **allowed by default**. The exceptions live in one shared tier, [`guards`](../core/permissions/guards.json), copied into every agent at install:
 
-| Tier | Contains | Used by |
-|---|---|---|
-| [`read`](../core/permissions/read.json) | Read-only commands: `Get-Content`, `Select-String`, `rg`, `Select-Object`, `Measure-Object`, read-only `git` (`status`, `diff`, `log`, `show`, `fetch`, `grep`, `merge-base`, `worktree list`, ...), version and list commands for `dotnet`, `node`, `npm` | Every agent and `opencode.json` |
-| [`build`](../core/permissions/build.json) | `dotnet restore` / `build` / `test`, `dotnet format --verify-no-changes`, npm `test` / `lint` / `build` / `e2e` scripts, `ng`, Playwright, Jest, ESLint, Prettier check, `tsc --noEmit` | Implementer, reviewer, investigator, `opencode.json` |
-| [`guards`](../core/permissions/guards.json) | **Ask:** file writes and deletes, web requests, `Start-Process`, `Invoke-Expression`, `cmd /c`, chained commands (`&&`, `\|\|`), environment variables (`env:`), `.env` files, deleting or renaming branches. **Deny:** `git push`, `reset --hard`, `clean`, `restore`, `checkout --`, recursive deletes, `dotnet ef database`, shutdown, anything naming `ADO_PAT`. | Every agent and `opencode.json`, always last |
+| | What |
+|---|---|
+| **Ask** | `git push`, `npm publish`, `dotnet nuget push`, `docker push`. Deleting a file. Git that rewrites or moves history or branches (`merge`, `rebase`, `pull`, `reset`, `cherry-pick`, `revert`, deleting or renaming branches, `stash drop`/`clear`, creating tags, changing `git config` or remotes). Secrets (`.env` files, env var listings, `~/.ssh`, `~/.azure`, `~/.aws`, `.npmrc`, `.git-credentials`, `dotnet user-secrets`, `cmdkey`). Network and remote machines (web requests, `ssh`, PowerShell remoting, `az`). `Invoke-Expression` and encoded commands. Machine-wide changes (global npm and dotnet tools, `winget`/`choco`/`brew`, `Install-Module`, `sudo`/RunAs, execution policy, registry, persistent env vars, services, killing processes, scheduled tasks, firewall, Defender, ACLs). `sqlcmd`, Docker removals. |
+| **Deny** | Anything with `--force`, plus force pushes (`push -f`, `+branch`) and `branch -f`/`tag -f`. `reset --hard`, `clean`, `restore`, `checkout --`/`.`/`-f`, `switch -f`/`--discard-changes`, history rewrites (`filter-branch`, `reflog expire`). Recursive deletes. `dotnet ef database`, `dotnet ef migrations remove`. Unpublishing or deleting packages (`npm unpublish`, `npm deprecate`, `dotnet nuget delete`). Disk formatting, shutdown, restart. Anything naming `ADO_PAT`. |
 
-Other settings in [`core/opencode.json`](../core/opencode.json): templates, scripts, and `~/.config/eng-agents` (global memory) are readable without an external-directory prompt; `webfetch` and repeated identical tool calls (`doom_loop`) ask.
+Other settings in [`core/opencode.json`](../core/opencode.json):
+
+- `external_directory` allows everything except the secret folders above (`~/.ssh`, `~/.azure`, Windows credential stores, ...), so agents work across sibling repos and the shared repo without prompts.
+- `edit` denies `.git` internals and `.env` files, and asks before changing opencode's own config (`~/.config/opencode`, any `opencode.json`), so an agent cannot rewrite its own permissions.
+- `webfetch` is allowed. Repeated identical tool calls (`doom_loop`) ask.
 
 How it fits together:
 
-- Rules are checked top to bottom and the **last match wins**. Each agent lists `"*": ask`, then its tiers, then its own extras, then `guards`. So an allowed command with a risky one chained after it (`dotnet test && git push`) still hits the guard.
-- Agent rules are merged with the global `opencode.json` and **win over it**. Because every agent starts with `"*": ask`, a rule added only to `opencode.json` does not reach the eng-agents agents. Add it to a tier instead.
-- To stop being asked about a command: add it to `read.json` (read-only) or `build.json` in your Personal or Company layer, re-run `install.ps1`. Keep allows narrow (`npx playwright show-report*`, not `npx *`).
-- To change what one agent may do: override that agent and edit its extra lines.
-- Day-one check: after installing, run a normal feature through `/start`, `/spec`, `/do-task`, and `/review`. Every prompt you approve with "always" is a candidate for a tier. Add it there so it survives reinstalls.
+- opencode splits a command line into its separate commands (each side of `|`, `;`, `&&`) and checks each one. One guarded command anywhere in the line triggers the ask or deny.
+- Rules are checked top to bottom and the **last match wins**. Each agent lists `"*": allow`, then `guards`, then its own rules (such as the `git add` and `git commit` denials).
+- Agent rules are merged with the global `opencode.json` and **win over it**. Add shared rules to `guards`, not only to `opencode.json`.
+- To stop being asked about a guarded command, change its value in a `guards.json` in your Personal or Company layer (for example `"Stop-Process *": "allow"`) and re-run `install.ps1`. A later layer changes the value in place, so order is kept.
+- To be asked about something new, add it to that `guards.json` with `"ask"`. Patterns match one command, so start them with the command name (`"terraform apply*": "ask"`). Use a leading `*` only to catch the command when it is wrapped (`"*rm -rf*"`).
+- Older setups had `read.json` and `build.json` allowlists. They are no longer needed and install ignores what they would add.
 
 ## Customizing templates
 
@@ -228,7 +232,7 @@ To have `/publish` move the new document out of `.work` when it is finished, add
 Open a pull request to eng-agents. Before merging:
 
 - [ ] It would help **anyone**. No company names, no personal preferences.
-- [ ] Shell permission changes for everyone go in `core/permissions/`. Changes for one agent go in that agent file, before its `{{BASH:guards}}` line.
+- [ ] Shell permission changes for everyone go in `core/permissions/`. Changes for one agent go in that agent file, after its `{{BASH:guards}}` line.
 - [ ] `Status: DRAFT` lines in the `spec`, `plan`, `bug`, and `tsd` templates, `Status: PAUSED` in `paused`, and `## [ ] Task N:` headings in `tasks` are unchanged.
 - [ ] If you changed the next-command rules in `core/commands/status.md`, `Get-NextStep` in `core/scripts/dashboard/New-Dashboard.ps1` matches them (the static and live dashboards both use it).
 - [ ] Docs that describe the behavior are updated.
@@ -240,4 +244,4 @@ Open a pull request to eng-agents. Before merging:
 - Company names, URLs, code, or work item content in `core/` or `personal/`
 - A pull request to eng-agents that includes a `personal/` folder
 - The PAT in any file
-- An agent that can push, merge, or deploy
+- An agent that can push without asking, merge, or deploy

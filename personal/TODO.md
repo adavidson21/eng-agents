@@ -47,13 +47,13 @@ Every agent reads `personal/AGENTS.md`, so put agent-specific rules under a head
 
 File format: [Personal onboarding, step 3](../docs/onboarding-personal.md#3-optional-commands-overrides-permissions).
 
-## Permissions to add
+## Permissions to change
 
-Commands you approve every time can go in `personal/permissions/read.json` (read-only, every agent) or `build.json` (build and test agents). Only the keys you add:
+Shell commands are allowed unless `core/permissions/guards.json` asks about or denies them. To stop being asked about one, or to be asked about something new, put only those keys in `personal/permissions/guards.json`:
 
 ```json
 {
-  "npx playwright show-report*": "allow"
+  "Stop-Process *": "allow"
 }
 ```
 

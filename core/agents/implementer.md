@@ -11,19 +11,11 @@ permission:
     "**/.git/**": deny
     "**/.env": deny
     "**/.env.*": deny
+    "**/.config/opencode/**": ask
+    "**/opencode.json": ask
+    "**/opencode.jsonc": ask
   bash:
-    "*": ask
-    "{{BASH:read}}": include
-    "{{BASH:build}}": include
-    "dotnet format*": allow
-    "npm install*": allow
-    "npm ci*": allow
-    "npm --prefix * install*": allow
-    "npm --prefix * ci*": allow
-    "git add *": allow
-    "git -C * add *": allow
-    "git commit*": ask
-    "git -C * commit*": ask
+    "*": allow
     "{{BASH:guards}}": include
 ---
 

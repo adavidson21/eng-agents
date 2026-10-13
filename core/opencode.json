@@ -8,19 +8,28 @@
       "*": "allow",
       "**/.git/**": "deny",
       "**/.env": "deny",
-      "**/.env.*": "deny"
+      "**/.env.*": "deny",
+      "**/.config/opencode/**": "ask",
+      "**/opencode.json": "ask",
+      "**/opencode.jsonc": "ask"
     },
-    "webfetch": "ask",
+    "webfetch": "allow",
     "external_directory": {
-      "*": "ask",
-      "{{ENG_HOME}}/**": "allow",
-      "{{ENG_CONFIG}}/**": "allow"
+      "*": "allow",
+      "~/.ssh/**": "ask",
+      "~/.aws/**": "ask",
+      "~/.azure/**": "ask",
+      "~/.kube/**": "ask",
+      "~/.docker/**": "ask",
+      "~/.gnupg/**": "ask",
+      "~/.git-credentials": "ask",
+      "~/.npmrc": "ask",
+      "~/AppData/Roaming/Microsoft/Credentials/**": "ask",
+      "~/AppData/Roaming/Microsoft/Protect/**": "ask"
     },
     "doom_loop": "ask",
     "bash": {
-      "*": "ask",
-      "{{BASH:read}}": "include",
-      "{{BASH:build}}": "include",
+      "*": "allow",
       "{{BASH:guards}}": "include"
     }
   }

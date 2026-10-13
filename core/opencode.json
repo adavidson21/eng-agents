@@ -13,7 +13,7 @@
       "**/opencode.json": "ask",
       "**/opencode.jsonc": "ask"
     },
-    "webfetch": "ask",
+    "webfetch": "allow",
     "external_directory": {
       "*": "allow",
       "~/.ssh/**": "ask",

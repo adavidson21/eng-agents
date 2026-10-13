@@ -24,7 +24,7 @@ Open opencode from your workspace root (for example `C:\src\work`).
 - **Publish** a finished document with `/publish <folder>`, for example `/publish tsd-orders`. It approves it, moves it to the product docs folder, and you commit it.
 - **New session** (`/new`) before every `/do-task`.
 - **Review findings** you accept become new tasks. Run `/do-task` for each, then `/review` again.
-- **You push** and open the PR. No agent can push, merge, or deploy.
+- **You approve every push** and open the PR. No agent can merge or deploy.
 - Every command ends with the next command to run. If lost, run `/dashboard` or `/status <id>`.
 - **After a restart**, you don't need opencode to see where you were. Open `.work\dashboard.html`, or rebuild it from any terminal (see [Dashboard](docs/pipeline.md#dashboard)).
 

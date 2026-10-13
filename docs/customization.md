@@ -124,8 +124,8 @@ Override an agent by copying its file from `core/agents/` into your layer. Keep 
 
 | Agent | Runs | Can edit | Shell, beyond `guards` |
 |---|---|---|---|
-| `planner` | `/start`, `/spec`, `/plan`, `/tasks`, `/approve`, `/status`, `/standup`, `/pause`, `/resume` | `.work/` only | `git commit` asks (WIP commits from `/pause`) |
-| `implementer` | `/do-task` | Code and tests. Repo guides, `CLAUDE.md`, and opencode config ask. | `git commit` asks |
+| `planner` | `/start`, `/spec`, `/plan`, `/tasks`, `/approve`, `/status`, `/standup`, `/pause`, `/resume` | `.work/` only | Can commit (WIP commits from `/pause`) |
+| `implementer` | `/do-task` | Code and tests. Repo guides, `CLAUDE.md`, and opencode config ask. | Can commit |
 | `reviewer` | `/review`, `/check-docs` | `.work/` only | Cannot `git add` or `git commit` |
 | `investigator` | `/bug`, `/spike`, `/onboard-repo` | `.work/`. A repo guide and `.git/info/exclude` ask. | Cannot `git add` or `git commit` |
 | `writer` | `/pr`, `/docs`, `/tsd`, `/publish`, `/memory` | Any `*.md` file, `docs/`, `.work/`, the global memory file. opencode config asks. | Cannot `git add` or `git commit` |
@@ -138,19 +138,19 @@ The goal: an agent only stops for something you would actually care about. Shell
 
 | | What |
 |---|---|
-| **Ask** | Deleting a file. Git that rewrites or moves history or branches (`merge`, `rebase`, `pull`, `reset`, `cherry-pick`, `revert`, deleting, renaming, or force-moving branches, `stash drop`/`clear`, creating tags, changing `git config` or remotes). Secrets (`.env` files, env var listings, `~/.ssh`, `~/.azure`, `~/.aws`, `.npmrc`, `.git-credentials`, `dotnet user-secrets`, `cmdkey`). Network and remote machines (web requests, `ssh`, PowerShell remoting, `az`). `Invoke-Expression` and encoded commands. Machine-wide changes (global npm and dotnet tools, `winget`/`choco`/`brew`, `Install-Module`, `sudo`/RunAs, execution policy, registry, persistent env vars, services, killing processes, scheduled tasks, firewall, Defender, ACLs). `sqlcmd`, Docker removals. |
-| **Deny** | `git push`, `reset --hard`, `clean`, `restore`, `checkout --`/`.`/`-f`, `switch -f`/`--discard-changes`, history rewrites (`filter-branch`, `reflog expire`). Recursive deletes. `dotnet ef database`, `dotnet ef migrations remove`. Publishing (`npm publish`, `dotnet nuget push`, `docker push`). Disk formatting, shutdown, restart. Anything naming `ADO_PAT`. |
+| **Ask** | `git push`. Deleting a file. Git that rewrites or moves history or branches (`merge`, `rebase`, `pull`, `reset`, `cherry-pick`, `revert`, deleting, renaming, or force-moving branches, `stash drop`/`clear`, creating tags, changing `git config` or remotes). Secrets (`.env` files, env var listings, `~/.ssh`, `~/.azure`, `~/.aws`, `.npmrc`, `.git-credentials`, `dotnet user-secrets`, `cmdkey`). Network and remote machines (web requests, `ssh`, PowerShell remoting, `az`). `Invoke-Expression` and encoded commands. Machine-wide changes (global npm and dotnet tools, `winget`/`choco`/`brew`, `Install-Module`, `sudo`/RunAs, execution policy, registry, persistent env vars, services, killing processes, scheduled tasks, firewall, Defender, ACLs). `sqlcmd`, Docker removals. |
+| **Deny** | `reset --hard`, `clean`, `restore`, `checkout --`/`.`/`-f`, `switch -f`/`--discard-changes`, history rewrites (`filter-branch`, `reflog expire`). Recursive deletes. `dotnet ef database`, `dotnet ef migrations remove`. Publishing (`npm publish`, `dotnet nuget push`, `docker push`). Disk formatting, shutdown, restart. Anything naming `ADO_PAT`. |
 
 Other settings in [`core/opencode.json`](../core/opencode.json):
 
 - `external_directory` allows everything except the secret folders above (`~/.ssh`, `~/.azure`, Windows credential stores, ...), so agents work across sibling repos and the shared repo without prompts.
 - `edit` denies `.git` internals and `.env` files, and asks before changing opencode's own config (`~/.config/opencode`, any `opencode.json`), so an agent cannot rewrite its own permissions.
-- `webfetch` and repeated identical tool calls (`doom_loop`) ask.
+- `webfetch` is allowed. Repeated identical tool calls (`doom_loop`) ask.
 
 How it fits together:
 
 - opencode splits a command line into its separate commands (each side of `|`, `;`, `&&`) and checks each one. One guarded command anywhere in the line triggers the ask or deny.
-- Rules are checked top to bottom and the **last match wins**. Each agent lists `"*": allow`, then `guards`, then its own rules (such as `git commit`).
+- Rules are checked top to bottom and the **last match wins**. Each agent lists `"*": allow`, then `guards`, then its own rules (such as the `git add` and `git commit` denials).
 - Agent rules are merged with the global `opencode.json` and **win over it**. Add shared rules to `guards`, not only to `opencode.json`.
 - To stop being asked about a guarded command, change its value in a `guards.json` in your Personal or Company layer (for example `"Stop-Process *": "allow"`) and re-run `install.ps1`. A later layer changes the value in place, so order is kept.
 - To be asked about something new, add it to that `guards.json` with `"ask"`. Patterns match one command, so start them with the command name (`"terraform apply*": "ask"`). Use a leading `*` only to catch the command when it is wrapped (`"*rm -rf*"`).
@@ -244,4 +244,4 @@ Open a pull request to eng-agents. Before merging:
 - Company names, URLs, code, or work item content in `core/` or `personal/`
 - A pull request to eng-agents that includes a `personal/` folder
 - The PAT in any file
-- An agent that can push, merge, or deploy
+- An agent that can push without asking, merge, or deploy

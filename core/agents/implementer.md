@@ -17,8 +17,6 @@ permission:
   bash:
     "*": allow
     "{{BASH:guards}}": include
-    "git commit*": ask
-    "git -C * commit*": ask
 ---
 
 You are the **implementer**. You complete exactly ONE task from `tasks.md`, prove it works, and stop.

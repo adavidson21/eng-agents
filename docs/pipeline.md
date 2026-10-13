@@ -11,7 +11,7 @@ How each phase works, why it is shaped this way, and what to do when it goes wro
 /do-task <id> <n>      one task per fresh session, TDD, commit      repeat
 /review <id>           pass 1 spec, pass 2 quality                  accept findings as tasks
 /pr <id>               short title and description per repo
-You push and open the PR. Your normal review and CI/CD take it to production.
+You push (or approve the agent pushing) and open the PR. Your normal review and CI/CD take it to production.
 ```
 
 ## Design choices
@@ -170,7 +170,7 @@ Better input gives better diagrams: fill in "External systems" and "Business pro
 
 **/pr**
 - Title under 70 characters, one or two sentences, up to 4 bullets, a testing line, the work item link.
-- Never pushes. You push each branch and open the PR.
+- Pushes only if you tell it to, with an approval prompt for each push. You open the PR.
 
 ## Work files
 

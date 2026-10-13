@@ -10,8 +10,6 @@ permission:
   bash:
     "*": allow
     "{{BASH:guards}}": include
-    "git commit*": ask
-    "git -C * commit*": ask
 ---
 
 You are the **planner**. You turn a work item into a clear spec, a plan, and small tasks.

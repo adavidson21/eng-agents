@@ -16,6 +16,8 @@
         /do-task and /check-docs get a fresh one, as the pipeline requires.
       - Shows each item's agent: working or done, what it is doing, its last reply, and any
         permission prompt or question waiting for you. You can answer and reply from the page.
+      - Autopilot: after you approve the plan (or bug analysis), runs tasks, each task in a new
+        session, review, and PR text, and stops only when it needs you. Never pushes.
 
     To use the terminal on the same sessions:
       opencode 2.x  just run opencode (it uses the same background service)

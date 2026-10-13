@@ -285,6 +285,15 @@ tr:last-child td { border-bottom: 0; }
 .agent { margin-top: 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--sunk); padding: 10px 12px; display: grid; gap: 8px; min-width: 0; }
 .agent.busy { border-color: color-mix(in srgb, var(--go) 55%, var(--line)); }
 .agent.asking { border-color: var(--gate); }
+.auto { margin-top: 10px; border: 1px dashed var(--line); border-radius: 6px; padding: 8px 12px; display: grid; gap: 6px; font-size: 13px; min-width: 0; }
+.auto.run { border-style: solid; border-color: color-mix(in srgb, var(--go) 55%, var(--line)); }
+.auto.wait { border-style: solid; border-color: var(--gate); background: var(--gate-soft); }
+.auto-head { display: flex; gap: 8px 12px; align-items: center; flex-wrap: wrap; }
+.auto-head .state { font-weight: 650; display: inline-flex; gap: 7px; align-items: center; }
+.auto-head .cmdname { font-family: var(--mono); font-size: 12.5px; }
+.auto-head .row { margin-left: auto; }
+.auto .msg { margin: 0; }
+.auto .hist { margin: 4px 0 0; }
 .agent-head { display: flex; gap: 8px 12px; align-items: center; flex-wrap: wrap; font-size: 13px; }
 .agent-head .state { font-weight: 650; display: inline-flex; gap: 7px; align-items: center; }
 .agent-head .cmdname { font-family: var(--mono); font-size: 12.5px; }
@@ -425,8 +434,11 @@ tr:last-child td { border-bottom: 0; }
   function itemQs(it) { return LIVE && L ? L.questions.filter(function (q) { return q.folder === it.folder; }) : []; }
   function isBusy(s) { return !!s && s.status && s.status !== "idle"; }
   function asking(it) { return itemPerms(it).length + itemQs(it).length > 0; }
+  function itemAuto(it) { return LIVE && L && L.autopilot ? L.autopilot[it.folder] || null : null; }
+  function autoIs(it, status) { var a = itemAuto(it); return !!a && a.status === status; }
   function bucketOf(it) {
-    if (LIVE && it.kind === "item" && asking(it)) return "needs";
+    if (LIVE && it.kind === "item" && (asking(it) || autoIs(it, "waiting"))) return "needs";
+    if (LIVE && it.kind === "item" && autoIs(it, "running") && it.bucket === "needs") return "active";
     if (LIVE && it.kind !== "item" && asking(it)) return "notes";
     return it.bucket;
   }
@@ -445,7 +457,7 @@ tr:last-child td { border-bottom: 0; }
 
   // ------------------------------------------------------------ state colors
   function stateVar(it) {
-    if (LIVE && asking(it)) return "var(--gate)";
+    if (LIVE && (asking(it) || autoIs(it, "waiting"))) return "var(--gate)";
     if (it.bucket === "paused") return "var(--hold)";
     if (it.blocked) return "var(--stop)";
     if (bucketOf(it) === "needs") return "var(--gate)";
@@ -508,7 +520,7 @@ tr:last-child td { border-bottom: 0; }
     if (!LIVE || !cmd) return "";
     var s = itemSession(it);
     var fresh = /^\/(do-task|check-docs)\b/.test(cmd);
-    var blocked = !ocReady() ? "opencode is not connected" : (isBusy(s) && !fresh ? "This item's session is still working" : (ui.busy[it.folder] ? "Starting" : ""));
+    var blocked = !ocReady() ? "opencode is not connected" : (autoIs(it, "running") ? "Autopilot is running this item" : (isBusy(s) && !fresh ? "This item's session is still working" : (ui.busy[it.folder] ? "Starting" : "")));
     var label = "Run " + (big ? cmd : cmd.split(" ")[0]);
     var tip = blocked || ("Runs " + cmd + " in opencode" + (fresh ? " in a new session" : (s ? " in this item's session" : " in a new session for this item")));
     return '<button type="button" class="btn primary" data-run="' + h(it.folder) + '" data-cmd="' + h(cmd) + '" title="' + h(tip) + '"' + (blocked ? " disabled" : "") + ">" + h(label) + "</button>";
@@ -613,6 +625,48 @@ tr:last-child td { border-bottom: 0; }
     out += '<div class="row"><button type="button" class="btn warn" data-qsend="' + h(q.id) + '">Answer</button>' +
       '<button type="button" class="btn" data-qreject="' + h(q.id) + '">Dismiss</button></div></div>';
     return out;
+  }
+
+  // ---------------------------------------------------------- autopilot
+  // Which start button fits: approve the waiting plan or bug analysis first, or start from an approved one.
+  function autoStartKind(it) {
+    if (it.kind !== "item" || it.paused) return null;
+    var n = it.next || {};
+    if (n.command && /^\/approve\b/.test(n.command) && (n.stage === "plan" || n.stage === "bug")) return "approve-start";
+    var gate = it.lane === "bug" ? it.gates.bug : it.gates.plan;
+    return gate === "APPROVED" && n.stage !== "ship" ? "start" : null;
+  }
+  function autoBtn(it, act, label, cls, tip, off) {
+    var dis = off || (!ocReady() && act !== "stop" && act !== "dismiss" ? "opencode is not connected" : (ui.busy["a:" + it.folder] ? "Working" : ""));
+    return '<button type="button" class="btn' + (cls ? " " + cls : "") + '" data-auto="' + h(it.folder) + '" data-act="' + act + '" title="' + h(dis || tip) + '"' + (dis ? " disabled" : "") + ">" + h(label) + "</button>";
+  }
+  function autoHtml(it) {
+    if (!LIVE || !L || it.kind !== "item") return "";
+    var a = itemAuto(it);
+    var kind = autoStartKind(it);
+    var tip = (kind === "approve-start" ? "Approves " + (it.lane === "bug" ? "bug.md" : "plan.md") + ", then runs" : "Runs") +
+      " the rest: tasks, each task in a new session, review (fix rounds for Blockers), and PR text. Stops when it needs you. Never pushes.";
+    var log = a && a.log && a.log.length ? "<details" + openAttr("a:" + it.folder, false) + "><summary>Autopilot log</summary>" +
+      '<ul class="hist">' + a.log.slice().reverse().map(function (x) { return "<li>" + h(timeOf(Date.parse(x.at))) + " " + h(x.text) + "</li>"; }).join("") + "</ul></details>" : "";
+    var rounds = a && a.fixRounds ? '<span class="then">fix round ' + a.fixRounds + " of " + a.maxFixRounds + "</span>" : "";
+
+    if (a && a.status === "running") {
+      return '<div class="auto run"><div class="auto-head"><span class="state"><span class="spin" aria-hidden="true"></span>Autopilot</span>' +
+        (a.command ? '<span class="cmdname">' + h(a.command) + "</span>" : "") + rounds +
+        '<span class="row">' + autoBtn(it, "stop", "Stop after this step", "", "The current step finishes. Nothing runs after it.") + "</span></div>" + log + "</div>";
+    }
+    if (a && a.status === "waiting") {
+      return '<div class="auto wait"><div class="auto-head"><span class="state">Autopilot needs you</span>' + rounds +
+        '<span class="row">' + autoBtn(it, "resume", "Resume", "primary", "Re-reads .work and runs the next step") + autoBtn(it, "stop", "Stop", "", "Turn autopilot off for this item") + "</span></div>" +
+        '<p class="msg">' + md(a.message || "") + "</p>" + log + "</div>";
+    }
+    var head = "";
+    if (a && a.status === "done") head = '<span class="state">Autopilot finished</span><span class="then">' + md(a.message || "") + "</span>";
+    else if (a && a.status === "stopped") head = '<span class="state">Autopilot stopped</span>';
+    if (!kind && !head) return "";
+    var btns = (kind ? autoBtn(it, kind, kind === "approve-start" ? "Approve and start autopilot" : "Start autopilot", "primary", tip, autoIs(it, "running") ? "Running" : "") : "") +
+      (a ? autoBtn(it, "dismiss", "Clear", "", "Hide this autopilot note") : "");
+    return '<div class="auto"><div class="auto-head">' + head + '<span class="row">' + btns + "</span></div>" + log + "</div>";
   }
 
   function agentHtml(it) {
@@ -765,7 +819,7 @@ tr:last-child td { border-bottom: 0; }
     var title = it.url ? link(it.url, it.title) : h(it.title);
     return '<article class="item" id="item-' + h(it.id) + '">' +
       '<div class="item-head"><h4 class="t">' + idLink(it) + title + '</h4><div class="meta">' + meta.join("") + "</div></div>" +
-      track(it) + nextHtml(it, false) + (noAgent ? agentNote(it) : agentHtml(it)) + leftOffHtml(it) +
+      track(it) + nextHtml(it, false) + (noAgent ? "" : autoHtml(it)) + (noAgent ? agentNote(it) : agentHtml(it)) + leftOffHtml(it) +
       "<details" + openAttr("d:" + it.folder, false) + "><summary>Repos, tasks, files" + (LIVE ? "" : ", resume commands") + "</summary><div class=\"detail-body\">" +
       reposTable(it) + tasksHtml(it) + kitHtml(it.resume, it) + filesHtml(it) +
       "</div></details></article>";
@@ -797,7 +851,7 @@ tr:last-child td { border-bottom: 0; }
     return '<section class="pickup" style="--state:' + stateVar(it) + '" aria-labelledby="pickup-h">' +
       '<p class="eyebrow">Pick up here, touched ' + ago(it.modifiedMs) + "</p>" +
       '<h2 id="pickup-h">' + idLink(it) + title + "</h2>" +
-      track(it) + nextHtml(it, true) + agentHtml(it) +
+      track(it) + nextHtml(it, true) + autoHtml(it) + agentHtml(it) +
       (why ? '<p class="why">' + why + "</p>" : "") + lo +
       "<details" + openAttr("p:" + it.folder, false) + "><summary>" + (LIVE ? "Terminal command and repos" : "Resume commands and repos") + '</summary><div class="detail-body">' + kitHtml(it.resume, it) + reposTable(it) + "</div></details>" +
       "</section>";
@@ -899,7 +953,7 @@ tr:last-child td { border-bottom: 0; }
       };
     } catch (e) { }
   }
-  var seenPrompts = null, wasBusy = {};
+  var seenPrompts = null, wasBusy = {}, wasAuto = {};
   function watchForAlerts() {
     if (!LIVE || !L) return;
     var prompts = L.permissions.map(function (p) {
@@ -915,10 +969,22 @@ tr:last-child td { border-bottom: 0; }
     var finished = [];
     Object.keys(L.sessions).forEach(function (id) {
       var s = L.sessions[id], busy = isBusy(s);
-      if (wasBusy[id] && !busy && s.folder) finished.push(s);
+      var ap = s.folder && L.autopilot ? L.autopilot[s.folder] : null;
+      if (wasBusy[id] && !busy && s.folder && !(ap && ap.status === "running" && ap.session === id)) finished.push(s);
       wasBusy[id] = busy;
     });
+    var autoAlerts = [];
+    Object.keys(L.autopilot || {}).forEach(function (f) {
+      var a = L.autopilot[f];
+      if (wasAuto[f] && wasAuto[f] !== a.status && (a.status === "waiting" || a.status === "done")) autoAlerts.push([f, a]);
+      wasAuto[f] = a.status;
+    });
     if (first) return; // nothing on page load, only what changes while it is open
+    autoAlerts.forEach(function (x) {
+      var it = itemForFolder(x[0]);
+      var who = it ? (it.id ? "#" + it.id + " " + it.title : it.title) : x[0];
+      alertUser((x[1].status === "done" ? "Ready for PR: " : "Autopilot needs you: ") + who, x[1].message || "", "auto-" + x[0] + "-" + x[1].updated, x[0]);
+    });
     fresh.forEach(function (p) { alertUser("Agent waiting: " + sessionLabel(p.sid), p.text, p.id, p.folder); });
     finished.forEach(function (s) {
       alertUser((s.error ? "Agent stopped: " : "Agent finished: ") + sessionLabel(s.id), s.error || s.command || "", "done-" + s.id, s.folder);
@@ -1079,6 +1145,15 @@ tr:last-child td { border-bottom: 0; }
         post("api/run", { folder: folder, command: cmd }).then(function () {
           toast("Started " + cmd);
         }, function (e) { toast(e.message, true); }).then(function () { delete ui.busy[folder]; schedule(); });
+        return;
+      }
+      var ap = t.closest("[data-auto]");
+      if (ap) {
+        var af = ap.getAttribute("data-auto"), act = ap.getAttribute("data-act");
+        ui.busy["a:" + af] = true; schedule();
+        post("api/autopilot", { folder: af, action: act }).then(function () {
+          if (act === "start" || act === "approve-start" || act === "resume") toast("Autopilot started");
+        }, function (e) { toast(e.message, true); }).then(function () { delete ui.busy["a:" + af]; schedule(); });
         return;
       }
       var pm = t.closest("[data-perm]");

@@ -1,15 +1,18 @@
 ---
-description: "Two-pass review of all changes for a work item: spec compliance, then code quality. Usage: /review <id>"
+description: "Two-pass review of all changes for a work item: spec compliance, then code quality. Usage: /review <id> [auto]"
 agent: reviewer
 ---
 
-Review all changes for work item **$1**.
+Review all changes for work item **$1**. Mode: **$2**
+
+If the mode above is `auto`, autopilot is running this review and nobody is watching. Do not ask questions. Where a step below says to ask, follow its `auto` rule instead.
 
 ## Step 1: Find the work folder
 
 - Find the folder in `.work/` that starts with `$1-`.
 - Read `repos.md`, `spec.md` (or `bug.md` for the bug lane), `plan.md` if it exists, `tasks.md`, and `progress.md`.
 - If any task in `tasks.md` is not checked, list them and ask the engineer whether to review anyway. Wait.
+  - `auto`: do not review. Add a `progress.md` entry that names the unchecked tasks, and stop.
 
 ## Step 2: Read the rules
 
@@ -53,5 +56,6 @@ Check every changed file against this list and the repo `AGENTS.md`:
 
 - Add a `progress.md` entry for `/review`.
 - Summarize for the engineer: verdict, number of findings by severity, and the Blockers in one line each.
-- If there are findings, ask: "Which findings should become fix tasks?" When they answer, append those tasks to the end of `tasks.md`, numbered after the last task, in the normal task format. Then tell them to run `/do-task $1 <n>` for each in a new session, then `/review $1` again.
+- `auto`: if the verdict is not READY, append one fix task for each `Blocker` finding to the end of `tasks.md`, numbered after the last task, in the normal task format (one repo, at most 3 files, one verify command from the repo `AGENTS.md`). Do not add tasks for `Should fix` or `Nit`. Name the added tasks in the `progress.md` entry. Do not ask anything, and stop.
+- Not `auto`: if there are findings, ask: "Which findings should become fix tasks?" When they answer, append those tasks to the end of `tasks.md`, numbered after the last task, in the normal task format. Then tell them to run `/do-task $1 <n>` for each in a new session, then `/review $1` again.
 - If the verdict is READY, tell them to run `/pr $1`.

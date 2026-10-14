@@ -45,8 +45,8 @@ param(
 
     [string]$ConfigPath = (Join-Path $(if ($env:USERPROFILE) { $env:USERPROFILE } else { $HOME }) ".config/eng-agents/config.json"),
 
-    # How many progress entries to show in Recent activity.
-    [int]$Recent = 25,
+    # How many progress entries to send for Recent activity (the page groups them by day and item).
+    [int]$Recent = 80,
 
     # Write the file but do not open a browser.
     [switch]$NoOpen,
@@ -386,6 +386,49 @@ function Get-RepoRows {
     return , @($rows)
 }
 
+# pr.md: one "## <repo>" section per repo with Branch, Title, and Description (templates\pr.md).
+function Get-PrSections {
+    param([string]$Text)
+    $list = New-Object System.Collections.ArrayList
+    if (-not $Text) { return , @() }
+    $Text = [regex]::Replace(($Text -replace "\r\n", "`n"), '(?s)<!--.*?-->', '')
+    foreach ($p in @([regex]::Split($Text, '(?m)^##[ \t]+') | Select-Object -Skip 1)) {
+        $nl = $p.IndexOf("`n")
+        $head = $(if ($nl -ge 0) { $p.Substring(0, $nl) } else { $p })
+        $body = $(if ($nl -ge 0) { $p.Substring($nl + 1) } else { "" })
+        $repo = Get-CleanValue $head
+        if (-not $repo) { continue }
+        $branch = $null; $target = $null
+        $bm = [regex]::Match($body, '(?mi)^\s*(?:-\s*)?(?:\*\*)?Branch:(?:\*\*)?\s*`?([^`\s]+)`?\s*(?:->|=>|to|→)\s*`?([^`\s]+)`?')
+        if ($bm.Success) { $branch = Get-CleanValue $bm.Groups[1].Value; $target = Get-CleanValue $bm.Groups[2].Value }
+        $title = $null
+        $tm = [regex]::Match($body, '(?mi)^\s*(?:\*\*)?Title:(?:\*\*)?[ \t]*(.+?)\s*$')
+        if ($tm.Success) { $title = Get-CleanValue ($tm.Groups[1].Value.Trim('*').Trim()) }
+        $desc = $null
+        $dm = [regex]::Match($body, '(?msi)^\s*(?:\*\*)?Description:(?:\*\*)?[ \t]*\n?(.*)\z')
+        if ($dm.Success) {
+            $d = [regex]::Replace($dm.Groups[1].Value, '(?m)^\s*-{3,}\s*$', '').Trim()
+            if ($d -and $d -notmatch '^<[^>]*>$') { $desc = $d }
+        }
+        [void]$list.Add([ordered]@{ repo = $repo; branch = $branch; target = $target; title = $title; description = $desc })
+    }
+    return , @($list)
+}
+
+# Whether a branch is on origin, from what this clone last saw (no network).
+function Get-PushState {
+    param([string]$Repo, [string]$Branch)
+    $s = [ordered]@{ local = $false; remote = $false; unpushed = $null }
+    if (-not $Branch) { return $s }
+    $s.local = $null -ne (Invoke-Git $Repo @("rev-parse", "--verify", "--quiet", "refs/heads/$Branch"))
+    $s.remote = $null -ne (Invoke-Git $Repo @("rev-parse", "--verify", "--quiet", "refs/remotes/origin/$Branch"))
+    if ($s.local -and $s.remote) {
+        $n = Invoke-Git $Repo @("rev-list", "--count", "origin/$Branch..$Branch")
+        if ($n -match '^\d+$') { $s.unpushed = [int]$n }
+    }
+    return $s
+}
+
 function Get-LastModified {
     param([string]$Folder)
     $files = @(Get-ChildItem -LiteralPath $Folder -File -Recurse -ErrorAction SilentlyContinue)
@@ -612,6 +655,30 @@ foreach ($dir in @(Get-ChildItem -LiteralPath $workRootFull -Directory | Where-O
         modified = $base.modified; modifiedMs = $base.modifiedMs
         files = $base.files
     }
+
+    # PR text per repo, with the ADO "create PR" link and whether the branch is pushed.
+    $prList = New-Object System.Collections.ArrayList
+    if ($item.hasPr) {
+        foreach ($sec in (Get-PrSections (Read-Text (Join-Path $folder "pr.md")))) {
+            $row = @($repoStates | Where-Object { $_.folder -ieq $sec.repo -or (Split-Path -Leaf $_.folder) -ieq $sec.repo }) | Select-Object -First 1
+            $folderName = $(if ($row) { $row.folder } else { $sec.repo })
+            $branch = $(if ($sec.branch) { $sec.branch } elseif ($row) { $row.branch } else { $null })
+            $repoPath = Join-Path $workspace $folderName
+            $gs = Get-RepoState $repoPath
+            $target = $(if ($sec.target) { $sec.target } else { $gs.defaultBranch })
+            $links = $null
+            if ($branch -and $gs._webObj) { $links = Get-BranchLinks $gs._webObj $branch $target }
+            $push = $(if ($gs.isGit) { Get-PushState $repoPath $branch } else { $null })
+            $q = $(if ($folderName -match '\s') { "`"$folderName`"" } else { $folderName })
+            [void]$prList.Add([ordered]@{
+                    repo = $folderName; branch = $branch; target = $target
+                    title = $sec.title; description = $sec.description
+                    links = $links; web = $gs.web; push = $push
+                    pushCmd = $(if ($branch) { "git -C $q push -u origin $branch" } else { $null })
+                })
+        }
+    }
+    $item.pr = @($prList)
 
     $next = Get-NextStep $item $folder
     $item.next = $next

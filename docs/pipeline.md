@@ -226,12 +226,13 @@ All state lives in the workspace, outside every git repo, and never leaves the w
 | Part of the page | What it shows |
 |---|---|
 | Pick up here | The most recently touched item that is not paused: where it is on the track, the exact next command, and what the last session did. |
-| Track | The pipeline stages for the item's lane. Diamonds are approval gates: green is approved, amber is waiting for you, red is review changes needed. |
+| Track | The pipeline stages for the item's lane. Finished stages have a check mark. The current stage is a filled label in the item's color (blue moving, amber needs you, red blocked, gray paused) with what is happening under it, for example "2 of 5 done" or "Approve". Later stages are faint, on a dashed line. Hover a stage for details. |
 | Needs you | Items waiting on you: a `DRAFT` spec, plan, or bug to review and `/approve`, review findings to accept, or a `/do-task` that failed or was blocked. |
 | In progress, Paused, Ready to ship | Every other item, grouped. Each card shows the next command, where you left off (the last `progress.md` entry, or `paused.md` when paused), its repos, tasks, files, and resume commands. |
+| Pull requests | On Ready to ship items: the PR text from `pr.md` for each repo, with Copy title and Copy description, a **Create PR in ADO** button that opens the new PR page with the branches filled in, and a push command to copy when the branch is not pushed yet. |
 | Spikes, docs, and TSDs | `spike-`, `docs-`, and `tsd-` folders with their state and next step (for a TSD: fact-check, fix, or `/publish`). |
 | Repos with work in progress | Repos that are off their default branch or have uncommitted or unpushed work, and which item owns each branch. Clean repos are listed in one line. |
-| Recent activity | The latest `progress.md` entries across all items, newest first. |
+| Recent activity | One line per item per day, newest first, summing up what moved (for example "Did 3 tasks, reviewed, wrote PR text"). A red dot means a verify step failed that day. |
 
 Links are built locally, with no network calls and no PAT:
 
@@ -273,6 +274,7 @@ What changes compared to `/dashboard`:
 - **Open in terminal** opens the opencode TUI on that item's session (Windows and macOS). "Copy terminal command" gives the same command to paste.
 - **Themes.** The theme button in the header picks Slate, Graphite, Ivory, Rosé, Solarized Light, Nord, or Dracula, or follows your system setting. The static page has it too. The choice is remembered in that browser. The themes come from Prioritizer (see [Shared themes](#shared-themes)).
 - **Updates.** The header shows **Update available** when there is a new dashboard or Core version. The Updates panel lists what is new, warns about files you override, and updates and restarts the dashboard for you (see [Updating](onboarding-company.md#updating)). Updating is the one action that writes outside `.work\_dashboard\`: it runs `update.ps1`, the same as from a terminal.
+- **Abandon and Remove.** Each card has an **Abandon** button (**Remove** on Ready to ship items, spikes, docs, and TSDs). It asks you to type the item id, then deletes the item's `.work` folder and its sessions and autopilot state. It never touches the repos: the dialog lists unpushed or uncommitted work that stays behind, and gives the commands to delete the branches yourself. It is not available while the item's agent or autopilot is working.
 - **Alerts.** Click "Turn on alerts" in the header once. While the page is in the background, you get a browser notification when an agent starts waiting for you or finishes. The tab title shows how many prompts are waiting, for example `(1) Work dashboard`.
 
 How it fits together:
@@ -288,7 +290,7 @@ How it fits together:
 - Item to session links are kept in `.work\_dashboard\sessions.json`, so after a restart each item opens its old session again.
 - Ctrl+C or closing the window stops the dashboard.
 
-It reads the same files as `/dashboard` (through `New-Dashboard.ps1 -AsJson`) and writes only to `.work\_dashboard\`. It never calls ADO and never pushes. Commands run with the same agents and permission rules as in the TUI; a `bash` command that would ask in the TUI asks on the page.
+It reads the same files as `/dashboard` (through `New-Dashboard.ps1 -AsJson`) and writes only to `.work\_dashboard\`, except Abandon and Remove, which delete that item's `.work` folder. It never calls ADO and never pushes. Commands run with the same agents and permission rules as in the TUI; a `bash` command that would ask in the TUI asks on the page.
 
 Options: `-Port <n>` (page), `-OpencodeUrl <url>` (use that opencode server instead of finding one), `-NoOpencode` (do not start opencode), `-NoUpdateCheck` (no update checks), `-NoOpen`, `-Workspace <path>`, `-ShellOrigin <url>` (see below).
 
@@ -387,7 +389,7 @@ Plus **global memory** in `%USERPROFILE%\.config\eng-agents\memory.md` (`/memory
 | A task keeps failing | Read the blocked entry in `progress.md`. Usually the task is too big or the pattern file is wrong. Split the task or fix the plan. |
 | The plan was wrong after tasks started | Edit `plan.md` and `tasks.md` by hand. Add new tasks at the end; do not renumber finished ones. |
 | Work item scope changed | Update `workitem.md`, set `spec.md` back to DRAFT, re-run `/spec`, then re-plan. |
-| Abandon an item | Delete its `.work` folder and its branches yourself. |
+| Abandon an item | In the live dashboard, click **Abandon** on its card. Otherwise delete its `.work` folder yourself. Delete its branches yourself either way. |
 
 ## Tuning when the model struggles
 

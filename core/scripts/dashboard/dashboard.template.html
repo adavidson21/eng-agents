@@ -175,30 +175,26 @@ details > summary::before { content: ""; width: 0; height: 0; border-left: 5px s
 details[open] > summary::before { transform: rotate(90deg); }
 .detail-body { margin-top: 8px; display: grid; gap: 12px; }
 
-/* ---------- the track */
-.track { display: flex; align-items: flex-start; margin: 12px 0 2px; overflow-x: auto; padding-bottom: 2px; }
-.stop { display: flex; flex-direction: column; align-items: center; min-width: 46px; flex: 0 0 auto; }
+/* ---------- the track: done stages are checked, the current one is a filled label in the item's
+   state color with what is happening under it, later stages are faint with a dashed line */
+.track { display: flex; align-items: flex-start; margin: 14px 0 2px; overflow-x: auto; padding: 4px 2px 2px; }
+.stop { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 50px; flex: 0 0 auto; }
 .stop .dot {
-  width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--line); background: var(--surface);
+  width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center;
+  border: 1.5px dashed color-mix(in srgb, var(--muted) 55%, var(--surface)); background: var(--surface);
 }
-.stop .name { font-size: 12px; color: var(--muted); margin-top: 4px; white-space: nowrap; }
-.stop .sub { font-size: 11px; color: var(--muted); font-family: var(--mono); font-variant-numeric: tabular-nums; min-height: 15px; }
-.stop.done .dot { background: var(--muted); border-color: var(--muted); }
+.stop .dot svg { width: 11px; height: 11px; display: block; }
+.stop .name { font-size: 12px; line-height: 20px; padding: 0 8px; border-radius: 999px; white-space: nowrap; color: color-mix(in srgb, var(--muted) 75%, var(--surface)); }
+.stop .sub { font-size: 11px; line-height: 14px; min-height: 14px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.stop.done .dot { background: var(--go); border: 0; color: var(--on-go); }
 .stop.done .name { color: var(--ink); }
-.stop.here .dot { border-color: var(--state); background: var(--state); box-shadow: 0 0 0 4px color-mix(in srgb, var(--state) 20%, transparent); }
-.stop.here .name { color: var(--ink); font-weight: 600; }
-.rail { flex: 1 1 22px; min-width: 18px; height: 2px; background: var(--line); margin-top: 6px; position: relative; border-radius: 2px; }
-.rail.done { background: var(--muted); }
-.rail .gate {
-  position: absolute; left: 50%; top: -5px; width: 12px; height: 12px; margin-left: -6px;
-  transform: rotate(45deg); border: 1.5px solid var(--line); background: var(--surface); border-radius: 3px;
-}
-.rail .gate.ok { background: var(--go); border-color: var(--go); }
-.rail .gate.wait { background: var(--gate); border-color: var(--gate); }
-.rail .gate.no { background: var(--stop); border-color: var(--stop); }
+.stop.here .dot { width: 22px; height: 22px; margin: -2px 0; border: 0; background: var(--state); box-shadow: 0 0 0 4px color-mix(in srgb, var(--state) 22%, transparent); }
+.stop.here .dot::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--surface); }
+.stop.here .name { background: var(--state); color: var(--surface); font-weight: 600; }
+.stop.here .sub { color: var(--ink); font-weight: 600; }
+.rail { flex: 1 1 24px; min-width: 14px; height: 0; margin-top: 8px; border-top: 2px dashed color-mix(in srgb, var(--muted) 40%, var(--surface)); }
+.rail.done { border-top-style: solid; border-color: var(--go); }
 .pickup .stop { min-width: 58px; }
-.pickup .stop .dot { width: 18px; height: 18px; }
-.pickup .rail { margin-top: 8px; }
 .pickup .stop .name { font-size: 12.5px; }
 
 /* ---------- tables */
@@ -257,12 +253,42 @@ tr:last-child td { border-bottom: 0; }
 .timeline { list-style: none; margin: 0; padding: 0; }
 .day { font-size: 12px; font-weight: 600; color: var(--muted); margin: 10px 0 4px; }
 .day:first-child { margin-top: 0; }
-.ev { display: grid; grid-template-columns: 8px 1fr; gap: 10px; padding: 4px 0; font-size: 13.5px; }
+.ev { display: grid; grid-template-columns: 8px minmax(0, 1fr); gap: 10px; padding: 4px 0; font-size: 13.5px; }
 .ev .pip { width: 8px; height: 8px; border-radius: 50%; background: var(--line); margin-top: 7px; }
 .ev.fail .pip { background: var(--stop); }
 .ev.pass .pip { background: var(--go); }
-.ev .c { font-family: var(--mono); font-weight: 500; font-size: 12.5px; }
-.ev .w { color: var(--muted); }
+.ev .it { display: block; font-weight: 500; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ev a.it:hover { text-decoration: underline; }
+.ev .it .num { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-right: 5px; }
+.ev .w { display: block; color: var(--muted); font-size: 12.5px; }
+
+/* ---------- PR text (ready to ship) */
+.prbox { margin-top: 12px; display: grid; gap: 10px; }
+.prbox > .sub-h { margin: 0; }
+.pr { border: 1px solid var(--line); border-radius: 10px; background: var(--sunk); padding: 10px 12px; display: grid; gap: 10px; min-width: 0; }
+.pr-head { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+.pr-head .rn { font-weight: 600; }
+.pr-head .row { margin-left: auto; }
+.pr-push { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 13px; }
+.pr-push code { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 1px 7px; word-break: break-all; }
+.pr-field { display: grid; gap: 4px; min-width: 0; }
+.pr-field .fh { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.pr-field .fh .sub-h { margin: 0; }
+.pr-title { font-weight: 600; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; overflow-wrap: anywhere; }
+.pr-desc { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; margin: 0; font: 12.5px/1.55 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; max-height: 280px; overflow: auto; }
+a.btn { text-decoration: none; }
+
+/* ---------- remove an item */
+.btn.remove { min-height: 24px; padding: 0 9px; font-size: 12px; color: var(--muted); border-color: transparent; background: transparent; }
+.btn.remove:hover { color: var(--stop); background: var(--stop-soft); }
+.btn.destroy { background: var(--stop); border-color: var(--stop); color: var(--surface); }
+.btn.destroy:hover { background: color-mix(in srgb, var(--stop) 88%, var(--ink)); }
+.btn.destroy:disabled:hover { background: var(--stop); }
+.sheet .confirm { display: grid; gap: 6px; margin-top: 14px; font-size: 13.5px; }
+.sheet .confirm input { font: inherit; font-family: var(--mono); font-size: 14px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); outline: none; width: min(260px, 100%); }
+.sheet .confirm input:focus { border-color: var(--stop); }
+.sheet ul.gone { margin: 6px 0 0; padding-left: 18px; font-size: 13.5px; color: var(--ink); }
+.sheet ul.gone li { margin: 2px 0; }
 
 .empty { background: transparent; border: 1.5px dashed var(--line); border-radius: 12px; padding: 30px 22px; text-align: center; color: var(--muted); }
 .empty h2 { margin: 0 0 6px; font-size: 17px; font-weight: 600; color: var(--ink); }
@@ -415,11 +441,10 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
   .pickup h2 { font-size: 18.5px; }
   .next-line .lbl, .left-off .lbl { min-width: 0; }
   .left-off { flex-direction: column; gap: 0; }
-  .stop, .pickup .stop { min-width: 34px; }
-  .stop .name, .pickup .stop .name { font-size: 11px; }
-  .rail, .pickup .rail { min-width: 6px; }
-  .pickup .stop .dot { width: 14px; height: 14px; }
-  .pickup .rail { margin-top: 6px; }
+  .stop, .pickup .stop { min-width: 30px; }
+  .stop .name, .pickup .stop .name { font-size: 11px; padding: 0 6px; }
+  .rail, .pickup .rail { min-width: 8px; }
+  .pr-head .row { margin-left: 0; }
   .sheet { padding: 16px; }
 }
 /* ---------- embedded in a shell: the shell shows the name and owns the theme */
@@ -531,7 +556,7 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
   }
 
   // UI state that must survive re-rendering: open sections, reply drafts, question picks, focus.
-  var ui = { open: {}, drafts: {}, picks: {}, busy: {}, menu: null, sheet: false };
+  var ui = { open: {}, drafts: {}, picks: {}, busy: {}, menu: null, sheet: false, remove: null };
   function openAttr(key, dflt) {
     var v = ui.open.hasOwnProperty(key) ? ui.open[key] : dflt;
     return ' data-key="' + h(key) + '"' + (v ? " open" : "");
@@ -551,50 +576,47 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
     feature: [["start", "Start"], ["spec", "Spec", "spec"], ["plan", "Plan", "plan"], ["tasks", "Tasks"], ["build", "Build"], ["review", "Review", "review"], ["pr", "PR"]],
     bug: [["start", "Start"], ["bug", "Bug", "bug"], ["build", "Build"], ["review", "Review", "review"], ["pr", "PR"]]
   };
-  function gateClass(it, g) {
-    var v = it.gates ? it.gates[g] : null;
-    if (!v) return "";
-    if (v === "APPROVED" || v === "READY") return "ok";
-    if (v.indexOf("CHANGES") >= 0) return "no";
-    if (v === "DRAFT") return "wait";
-    return "";
+  var CHECK = '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 6.3l2.3 2.3 4.7-5"/></svg>';
+  // What is happening at the current stage, in a word or two, shown under its label.
+  function hereSub(it, key) {
+    if (it.paused) return "Paused";
+    if (it.blocked) return "Blocked";
+    if (LIVE && asking(it)) return "Waiting on you";
+    if (LIVE && (autoIs(it, "running") || isBusy(itemSession(it)))) return "Working";
+    if (it.stage === "ship") return "Ready to open";
+    var n = it.next || {};
+    if (n.needsYou) return key === "review" ? "Pick fixes" : "Approve";
+    if (key === "build" && it.tasks && it.tasks.total) return it.tasks.done + " of " + it.tasks.total + " done";
+    return "Up next";
   }
-  function gateLabel(g, cls) {
-    var name = { spec: "spec.md", plan: "plan.md", bug: "bug.md", review: "review.md" }[g];
-    if (cls === "ok") return name + " approved";
-    if (cls === "wait") return name + " waiting for your approval";
-    if (cls === "no") return "Review found changes needed";
-    return name + " gate, not reached yet";
+  // Tooltip for a stage that is behind the item.
+  function doneTip(it, key) {
+    var g = { spec: "spec", plan: "plan", bug: "bug", review: "review" }[key];
+    var v = g && it.gates ? it.gates[g] : null;
+    if (v === "APPROVED") return key + ".md approved";
+    if (v === "READY") return "Review: READY";
+    if (key === "build" && it.tasks && it.tasks.total) return plural(it.tasks.total, "task") + " done";
+    return "Done";
   }
   function track(it) {
     var stops = STOPS[it.lane] || STOPS.feature;
     var idx = -1;
     for (var i = 0; i < stops.length; i++) if (stops[i][0] === it.stage) idx = i;
-    var shipped = it.stage === "ship";
-    if (shipped) idx = stops.length;
+    if (it.stage === "ship") idx = stops.length - 1; // PR text written: the PR stage is where it waits
     var out = '<div class="track" role="img" aria-label="' + h(trackLabel(it, stops, idx)) + '" style="--state:' + stateVar(it) + '">';
     for (var j = 0; j < stops.length; j++) {
-      var s = stops[j];
+      var key = stops[j][0];
       var cls = j < idx ? "done" : (j === idx ? "here" : "");
-      var sub = "";
-      if (s[0] === "build" && it.tasks && it.tasks.total) sub = it.tasks.done + "/" + it.tasks.total;
-      out += '<div class="stop ' + cls + '"><span class="dot"></span><span class="name">' + s[1] + '</span><span class="sub">' + sub + "</span></div>";
-      if (j < stops.length - 1) {
-        var railDone = j < idx;
-        var gate = "";
-        if (s[2]) {
-          var gc = gateClass(it, s[2]);
-          gate = '<span class="gate ' + gc + '" title="' + h(gateLabel(s[2], gc)) + '"></span>';
-        }
-        out += '<div class="rail' + (railDone ? " done" : "") + '">' + gate + "</div>";
-      }
+      var sub = cls === "here" ? hereSub(it, key) : (cls === "done" && key === "build" && it.tasks && it.tasks.total ? it.tasks.done + "/" + it.tasks.total : "");
+      var tip = cls === "done" ? doneTip(it, key) : cls === "here" ? "Now: " + stops[j][1] + ", " + sub : "Not started";
+      out += '<div class="stop ' + cls + '" title="' + h(tip) + '"><span class="dot">' + (cls === "done" ? CHECK : "") + '</span><span class="name">' + stops[j][1] + '</span><span class="sub">' + h(sub) + "</span></div>";
+      if (j < stops.length - 1) out += '<div class="rail' + (j < idx ? " done" : "") + '"></div>';
     }
     return out + "</div>";
   }
   function trackLabel(it, stops, idx) {
-    if (idx >= stops.length) return "All stages done. Ready to push and open PRs.";
     if (idx < 0) return "Stage unknown";
-    return "At " + stops[idx][1] + ", stage " + (idx + 1) + " of " + stops.length;
+    return "Stage " + (idx + 1) + " of " + stops.length + ": " + stops[idx][1] + ", " + hereSub(it, stops[idx][0]);
   }
 
   // --------------------------------------------------------------- next step
@@ -886,6 +908,74 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
     }).join("") + "</div></div>";
   }
 
+  // ------------------------------------------------------------- PR text (ready to ship)
+  function prHtml(it) {
+    if (!it.pr || !it.pr.length) return "";
+    var cards = it.pr.map(function (p) {
+      var ps = p.push;
+      var link = p.links && p.links.pr;
+      var where = link && /\/_git\//.test(link) ? "ADO" : link && /github\.com\//i.test(link) ? "GitHub" : "";
+      var pushed = ps && ps.remote && !ps.unpushed;
+      var flag = !ps ? ["warn", "Repo not found"] : !ps.local && !ps.remote ? ["bad", "Branch not found"] : !ps.remote ? ["warn", "Not pushed yet"] : ps.unpushed ? ["warn", plural(ps.unpushed, "commit") + " not pushed"] : ["ok", "Pushed"];
+      var head = '<div class="pr-head"><span class="rn">' + h(p.repo) + "</span>" +
+        '<span class="branch">' + h(p.branch || "no branch") + " → " + h(p.target || "main") + "</span>" + flagsHtml([flag]) +
+        '<span class="row">' + (link ? '<a class="btn' + (pushed ? " primary" : "") + '" href="' + h(link) + '" target="_blank" rel="noopener" title="Opens the new pull request page with the branches filled in">Create PR' + (where ? " in " + where : "") + "</a>" : '<span class="dim" style="font-size:13px">No PR link: the repo has no origin remote</span>') + "</span></div>";
+      var push = !pushed && p.pushCmd && ps && ps.local ? '<div class="pr-push"><span class="dim">Push first:</span><code>' + h(p.pushCmd) + "</code>" + copyBtn(p.pushCmd) + "</div>" : "";
+      var title = p.title ? '<div class="pr-field"><div class="fh"><p class="sub-h">Title</p>' + copyBtn(p.title, "Copy title") + '</div><div class="pr-title">' + h(p.title) + "</div></div>"
+        : '<p class="dim" style="margin:0">No title in pr.md for this repo.</p>';
+      var desc = p.description ? '<div class="pr-field"><div class="fh"><p class="sub-h">Description</p>' + copyBtn(p.description, "Copy description") + '</div><pre class="pr-desc">' + h(p.description) + "</pre></div>" : "";
+      return '<div class="pr">' + head + push + title + desc + "</div>";
+    }).join("");
+    var file = it.files && it.files.indexOf("pr.md") >= 0 ? ' <a href="' + fileHref(it.folder, "pr.md") + '" target="_blank" rel="noopener" style="text-transform:none;letter-spacing:0;font-weight:500">pr.md</a>' : "";
+    return '<div class="prbox"><p class="sub-h">Pull requests' + file + "</p>" + cards + "</div>";
+  }
+
+  // ------------------------------------------------------------- remove (live)
+  function removeLabel(it) { return bucketOf(it) === "ship" ? "Remove" : it.kind === "item" ? "Abandon" : "Remove"; }
+  function removeBtn(it) {
+    if (!LIVE) return "";
+    var s = itemSession(it);
+    var why = autoIs(it, "running") ? "Autopilot is running this item. Stop it first." : isBusy(s) ? "The agent is still working. Stop it first." : "";
+    var tip = why || (bucketOf(it) === "ship" ? "PR merged? Delete this item's .work folder" : "Delete this item's .work folder");
+    return '<button type="button" class="btn remove" data-remove="' + h(it.folder) + '" title="' + h(tip) + '"' + (why ? " disabled" : "") + ">" + removeLabel(it) + "</button>";
+  }
+  function removeKey(it) { return it.id ? String(it.id) : it.folder; }
+  function removeSheetHtml() {
+    if (!ui.remove) return "";
+    var it = itemForFolder(ui.remove);
+    if (!it) { ui.remove = null; return ""; }
+    var ship = bucketOf(it) === "ship";
+    var name = it.id ? "#" + it.id + " " + it.title : it.title;
+    var key = removeKey(it);
+    var typed = (ui.drafts["rm:" + it.folder] || "").trim();
+    var out = '<div class="sheet-head"><h3 id="rm-h">' + h((ship ? "Clean up " : it.kind === "item" ? "Abandon " : "Remove ") + name) + '?</h3><button type="button" class="ibtn" data-close-sheet="1" aria-label="Close">' + ICON.x + "</button></div>";
+    out += "<p>This permanently deletes <code>.work/" + h(it.folder) + "</code>" + (it.files && it.files.length ? " (" + h(it.files.join(", ")) + ")" : "") +
+      " and the dashboard's sessions and autopilot state for it. It cannot be undone.</p>";
+    // Work that lives in the repos is not touched, but say so when there is some.
+    var risky = [], cmds = [];
+    (it.repos || []).forEach(function (r) {
+      var g = r.git || {};
+      if (!r.branch) return;
+      var onIt = g.branch === r.branch;
+      if (onIt && g.changed) risky.push(r.folder + ": " + plural(g.changed, "uncommitted file") + " on " + r.branch);
+      if (onIt && (g.ahead || (!g.upstream && g.unpushed))) risky.push(r.folder + ": " + plural(g.ahead || g.unpushed, "commit") + " not pushed");
+      var rf = /\s/.test(r.folder) ? '"' + r.folder + '"' : r.folder;
+      cmds.push("git -C " + rf + " switch " + (g.defaultBranch || "main"));
+      cmds.push("git -C " + rf + " branch -D " + r.branch);
+    });
+    if (risky.length) out += '<div class="ovr"><p><strong>Branches and commits stay in the repos.</strong> Still there after this:</p><ul class="gone">' + risky.map(function (x) { return "<li>" + h(x) + "</li>"; }).join("") + "</ul></div>";
+    else if (cmds.length) out += "<p>Branches and commits stay in the repos.</p>";
+    if (cmds.length && !ship) {
+      out += "<details" + openAttr("rmb:" + it.folder, false) + "><summary>Delete the branches too (run these yourself)</summary>" +
+        '<div class="kit" style="margin-top:6px">' + cmds.map(function (c) { return '<div class="kit-line"><code>' + h(c) + "</code>" + copyBtn(c) + "</div>"; }).join("") + "</div></details>";
+    }
+    out += '<label class="confirm"><span>Type <code>' + h(key) + '</code> to confirm</span><input type="text" autocomplete="off" spellcheck="false" data-draft="rm:' + h(it.folder) + '" value="' + h(typed) + '" aria-label="Type ' + h(key) + ' to confirm"></label>';
+    var ok = typed === key;
+    var foot = '<span class="grow"></span><button type="button" class="btn" data-close-sheet="1">Cancel</button>' +
+      '<button type="button" class="btn destroy" data-remove-go="' + h(it.folder) + '" data-confirm="' + h(key) + '"' + (ok ? "" : " disabled") + ">" + (ship ? "Delete the folder" : it.kind === "item" ? "Abandon and delete" : "Delete the folder") + "</button>";
+    return '<div class="modal" data-sheet="1"><div class="backdrop" data-close-sheet="1"></div><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="rm-h">' + out + "<footer>" + foot + "</footer></div></div>";
+  }
+
   function idLink(it) {
     return it.url ? link(it.url, "#" + it.id, "num") : '<span class="num">#' + h(it.id) + "</span>";
   }
@@ -898,10 +988,11 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
     meta.push('<span class="tag ' + h(it.lane) + '">' + h(it.lane) + (it.laneGuessed ? "?" : "") + "</span>");
     if (it.adoState) meta.push("<span title=\"ADO state when the item was fetched\">ADO: " + h(it.adoState) + "</span>");
     meta.push("<span title=\"" + h(new Date(it.modifiedMs).toLocaleString()) + "\">Touched " + ago(it.modifiedMs) + "</span>");
+    meta.push(removeBtn(it));
     var title = it.url ? link(it.url, it.title) : h(it.title);
     return '<article class="item" id="item-' + h(it.id) + '" style="--state:' + stateVar(it) + '">' +
       '<div class="item-head"><h4 class="t">' + idLink(it) + title + '</h4><div class="meta">' + meta.join("") + "</div></div>" +
-      track(it) + nextHtml(it, false) + (noAgent ? "" : autoHtml(it)) + (noAgent ? agentNote(it) : agentHtml(it)) + leftOffHtml(it) +
+      track(it) + nextHtml(it, false) + (it.stage === "ship" ? prHtml(it) : "") + (noAgent ? "" : autoHtml(it)) + (noAgent ? agentNote(it) : agentHtml(it)) + leftOffHtml(it) +
       "<details" + openAttr("d:" + it.folder, false) + "><summary>Repos, tasks, files" + (LIVE ? "" : ", resume commands") + "</summary><div class=\"detail-body\">" +
       reposTable(it) + tasksHtml(it) + kitHtml(it.resume, it) + filesHtml(it) +
       "</div></details></article>";
@@ -914,7 +1005,7 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
     if (it.summary) body += '<p class="pre" style="margin:6px 0 0">' + md(it.summary) + "</p>";
     if (it.nextText) body += '<div class="next-line"><span class="lbl">Next</span><span>' + md(LIVE ? liveNote(it.nextText) : it.nextText) + "</span>" + runBtn(it, noteCommand(it), false) + "</div>";
     return '<article class="item" id="item-' + h(it.folder) + '" style="--state:' + (LIVE && asking(it) ? "var(--gate)" : "var(--line)") + '"><div class="item-head"><h4 class="t">' + h(it.title) + '</h4><div class="meta"><span class="tag">' + label +
-      "</span><span>Touched " + ago(it.modifiedMs) + "</span></div></div>" + body + agentHtml(it) +
+      "</span><span>Touched " + ago(it.modifiedMs) + "</span>" + removeBtn(it) + "</div></div>" + body + agentHtml(it) +
       (it.files && it.files.length ? "<details" + openAttr("d:" + it.folder, false) + "><summary>Files</summary><div class=\"detail-body\">" + filesHtml(it) + "</div></details>" : "") + "</article>";
   }
 
@@ -966,16 +1057,48 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
       (busy.length ? '<ul class="repo-list">' + li + "</ul>" : '<p class="dim" style="margin:0">Every repo is clean on its default branch.</p>') + cleanTxt + "</section>";
   }
 
+  // One line per item per day: what moved, not every log entry. null: commands that do not move an item.
+  var VERB = {
+    start: "Started", spec: "Wrote the spec", plan: "Planned", approve: "Approved", tasks: "Split into tasks",
+    bug: "Analyzed the bug", review: "Reviewed", pr: "Wrote PR text", pause: "Paused", resume: "Resumed",
+    spike: "Researched", docs: "Wrote docs", tsd: "Drafted the TSD", "check-docs": "Fact-checked", publish: "Published",
+    status: null, standup: null, dashboard: null, memory: null, "onboard-repo": null
+  };
+  var ACTIVITY_ROWS = 8;
   function activityPanel() {
     var a = D.activity || [];
     if (!a.length) return "";
+    var groups = [], byKey = {};
+    a.forEach(function (e) { // newest first
+      var key = (e.date || "").slice(0, 10) + "|" + e.folder;
+      var g = byKey[key];
+      if (!g) { g = byKey[key] = { date: e.date, id: e.id, folder: e.folder, title: e.title, entries: [] }; groups.push(g); }
+      g.entries.push(e);
+    });
     var out = "", lastDay = null;
-    a.forEach(function (e) {
-      var d = dayName(e.date);
+    groups.slice(0, ACTIVITY_ROWS).forEach(function (g) {
+      var words = [], tasks = 0, fail = false, pass = false;
+      g.entries.slice().reverse().forEach(function (e) { // oldest first, so the line reads in order
+        var c = String(e.command || "").replace(/^\//, "").split(/\s+/)[0].toLowerCase();
+        if (/\bFAIL/i.test(e.verify || "")) fail = true; else if (/\bPASS/i.test(e.verify || "")) pass = true;
+        if (c === "do-task") { if (!tasks) words.push("@tasks"); tasks++; return; }
+        var w = VERB.hasOwnProperty(c) ? VERB[c] : "Ran /" + c;
+        if (w && words.indexOf(w) < 0) words.push(w);
+      });
+      var line = words.map(function (w, i) {
+        if (w === "@tasks") w = (i ? "did " : "Did ") + plural(tasks, "task");
+        else if (i) w = w.charAt(0).toLowerCase() + w.slice(1);
+        return w;
+      }).join(", ");
+      if (!line) line = "Checked in";
+      var d = dayName(g.date);
       if (d !== lastDay) { out += '<li class="day">' + h(d) + "</li>"; lastDay = d; }
-      var cls = /\bFAIL/i.test(e.verify || "") ? "fail" : /\bPASS/i.test(e.verify || "") ? "pass" : "";
-      out += '<li class="ev ' + cls + '"><span class="pip" aria-hidden="true"></span><div><span class="c">' + h(e.command) + "</span> " +
-        '<a href="#item-' + h(e.id) + '">#' + h(e.id) + "</a> " + '<span class="w">' + md(e.did || "") + "</span></div></li>";
+      var cls = fail ? "fail" : pass ? "pass" : "";
+      var name = '<span class="num">#' + h(g.id) + "</span>" + h(g.title || g.folder);
+      var live = itemForFolder(g.folder);
+      out += '<li class="ev ' + cls + '"' + (fail ? ' title="A verify step failed"' : "") + '><span class="pip" aria-hidden="true"></span><div style="min-width:0">' +
+        (live ? '<a class="it" href="#item-' + h(g.id) + '">' + name + "</a>" : '<span class="it">' + name + "</span>") +
+        '<span class="w">' + h(line) + "</span></div></li>";
     });
     return '<section class="panel" aria-labelledby="act-h"><h3 id="act-h">Recent activity</h3><ul class="timeline">' + out + "</ul></section>";
   }
@@ -1229,7 +1352,7 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
     ["needs", "Needs you", "Drafts to review and /approve, review findings, blocked tasks" + (LIVE ? ", and agents waiting for an answer." : ".")],
     ["active", "In progress", ""],
     ["paused", "Paused", "Run /resume to pick one up."],
-    ["ship", "Ready to ship", "PR text is written. Push and open the PRs, then delete the .work folder when merged."],
+    ["ship", "Ready to ship", "PR text is written. Push, open the PRs, and once they merge, " + (LIVE ? "click Remove to clean up the .work folder." : "delete the .work folder.")],
     ["notes", "Spikes, docs, and TSDs", ""]
   ];
 
@@ -1277,7 +1400,7 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
     paint(html + overlaysHtml());
   }
 
-  function overlaysHtml() { return themeMenuHtml() + (LIVE ? updSheetHtml() : ""); }
+  function overlaysHtml() { return themeMenuHtml() + (LIVE ? (ui.remove ? removeSheetHtml() : updSheetHtml()) : ""); }
 
   // Replace the page, keeping focus and the caret in whatever the user was typing in.
   function paint(html) {
@@ -1380,8 +1503,24 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
       if (st) { setTheme(st.getAttribute("data-set-theme")); ui.menu = null; render(); return; }
       if (ui.menu && !t.closest(".menu")) { ui.menu = null; render(); }
       if (!LIVE) return;
-      if (t.closest("[data-updates]")) { ui.sheet = true; render(); var c0 = app.querySelector("[data-close-sheet].ibtn"); if (c0) c0.focus(); if (!upd() || !upd().checkedAt) post("api/update-check").catch(function () { }); return; }
-      if (t.closest("[data-close-sheet]")) { ui.sheet = false; render(); return; }
+      if (t.closest("[data-updates]")) { ui.sheet = true; ui.remove = null; render(); var c0 = app.querySelector("[data-close-sheet].ibtn"); if (c0) c0.focus(); if (!upd() || !upd().checkedAt) post("api/update-check").catch(function () { }); return; }
+      if (t.closest("[data-close-sheet]")) { ui.sheet = false; ui.remove = null; render(); return; }
+      var rm = t.closest("[data-remove]");
+      if (rm) {
+        ui.remove = rm.getAttribute("data-remove"); ui.sheet = false; ui.menu = null; render();
+        var box = app.querySelector('.sheet input[data-draft^="rm:"]'); if (box) box.focus();
+        return;
+      }
+      var rg = t.closest("[data-remove-go]");
+      if (rg) {
+        var rmf = rg.getAttribute("data-remove-go");
+        rg.disabled = true;
+        post("api/remove", { folder: rmf, confirm: (ui.drafts["rm:" + rmf] || "").trim() }).then(function () {
+          toast("Deleted .work/" + rmf);
+          ui.remove = null; delete ui.drafts["rm:" + rmf]; render();
+        }, function (e) { rg.disabled = false; toast(e.message, true); });
+        return;
+      }
       if (t.closest("[data-update-check]")) { post("api/update-check").catch(function (e) { toast(e.message, true); }); return; }
       var ub = t.closest("[data-update]");
       if (ub) {
@@ -1436,6 +1575,10 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
     app.addEventListener("input", function (ev) {
       var k = ev.target.getAttribute("data-draft");
       if (k) ui.drafts[k] = ev.target.value;
+      if (k && k.indexOf("rm:") === 0) {
+        var go = app.querySelector("[data-remove-go]");
+        if (go) go.disabled = ev.target.value.trim() !== go.getAttribute("data-confirm");
+      }
     });
     app.addEventListener("change", function (ev) {
       var id = ev.target.getAttribute("data-qpick");
@@ -1448,9 +1591,16 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
     document.addEventListener("keydown", function (ev) {
       if (ev.key !== "Escape") return;
       if (ui.menu) { ui.menu = null; render(); }
-      else if (ui.sheet) { ui.sheet = false; render(); }
+      else if (ui.sheet || ui.remove) { ui.sheet = false; ui.remove = null; render(); }
     });
     app.addEventListener("keydown", function (ev) {
+      var dk = ev.target.getAttribute && ev.target.getAttribute("data-draft");
+      if (ev.key === "Enter" && dk && dk.indexOf("rm:") === 0) {
+        ev.preventDefault();
+        var go = app.querySelector("[data-remove-go]");
+        if (go && !go.disabled) go.click();
+        return;
+      }
       if (ev.key === "Enter" && (ev.ctrlKey || ev.metaKey) && ev.target.getAttribute("data-sid")) {
         ev.preventDefault();
         sendReply(ev.target.getAttribute("data-sid"));

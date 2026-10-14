@@ -12,7 +12,8 @@
 //   - Runs pipeline commands from the page: one opencode session per work item, except
 //     /do-task and /check-docs, which get a fresh session as the pipeline requires.
 //
-// No dependencies beyond Node 18+. Never writes outside .work/_dashboard/. Never calls ADO.
+// No dependencies beyond Node 18+. Writes only to .work/_dashboard/, except when you abandon or
+// clean up an item from the page: then it deletes that item's .work/<folder>. Never calls ADO.
 // Usually started by Start-LiveDashboard.ps1. Run with --help for options.
 
 import http from "node:http";
@@ -1215,6 +1216,52 @@ async function abort({ session }) {
   return { ok: true };
 }
 
+// Abandon an item, or clean one up after its PRs merge: deletes .work/<folder> and the dashboard's
+// links and autopilot state for it. The page asks first; `confirm` must be the item id (or the folder
+// name for spikes, docs, and TSDs) typed by the engineer. Repos, branches, and opencode sessions are
+// left alone.
+async function removeItem({ folder, confirm }) {
+  const it = findItem(folder);
+  if (!it) throw httpError(404, `No work item folder "${folder}". Refresh the page.`);
+  const expected = it.id ? String(it.id) : it.folder;
+  if (String(confirm || "").trim() !== expected) throw httpError(400, `Type ${expected} to confirm.`);
+  if (autoActive(folder)) throw httpError(409, "Autopilot is running this item. Stop it first.");
+  const s = sessions.get(currentSession(folder));
+  if (s && s.status !== "idle") throw httpError(409, "This item's agent is still working. Stop it first.");
+
+  // Only a real folder directly inside .work, never _dashboard or a hidden one, never through a link.
+  if (!/^[^\\/:*?"<>|]+$/.test(folder) || folder.startsWith(".") || folder.startsWith("_") || folder.includes("..")) throw httpError(400, "Bad folder name.");
+  const full = path.join(workRoot, folder);
+  if (!sameDir(path.dirname(full), workRoot)) throw httpError(400, "Bad folder name.");
+  let st;
+  try {
+    st = fs.lstatSync(full);
+  } catch {
+    scheduleRefresh(0);
+    throw httpError(404, `.work/${folder} is already gone.`);
+  }
+  if (st.isSymbolicLink() || !st.isDirectory()) throw httpError(400, `.work/${folder} is not a plain folder. Delete it yourself.`);
+
+  try {
+    fs.rmSync(full, { recursive: true, force: false, maxRetries: 3, retryDelay: 200 });
+  } catch (e) {
+    scheduleRefresh(0);
+    throw httpError(500, `Could not delete .work/${folder}: ${e.code || e.message}. Close any editor or terminal using a file in it, then try again.`);
+  }
+  if (links[folder]) {
+    delete links[folder];
+    saveLinks();
+  }
+  if (autopilot[folder]) {
+    delete autopilot[folder];
+    saveAuto();
+  }
+  log(`removed .work/${folder}`);
+  await refresh();
+  broadcastLive();
+  return { ok: true, removed: folder };
+}
+
 function attachCommand(session) {
   return oc.api ? oc.api.attachCommand(session) : null;
 }
@@ -1739,6 +1786,7 @@ const actions = {
   "/api/permission": answerPermission,
   "/api/question": answerQuestion,
   "/api/abort": abort,
+  "/api/remove": removeItem,
   "/api/terminal": openTerminal,
   "/api/update": runUpdate,
   "/api/update-check": async () => {

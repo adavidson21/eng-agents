@@ -56,7 +56,7 @@
 [CmdletBinding()]
 param(
     [string]$Target = (Join-Path $(if ($env:USERPROFILE) { $env:USERPROFILE } else { $HOME }) ".config/opencode"),
-    [string]$Personal = (Join-Path $PSScriptRoot "personal"),
+    [string]$Personal = "",
     [string]$Company = (Join-Path $(if ($env:USERPROFILE) { $env:USERPROFILE } else { $HOME }) ".config/eng-agents/overlay"),
     [switch]$CoreOnly,
     # all: everything. dashboard: only the dashboard files (scripts/dashboard, commands/dashboard.md).
@@ -66,6 +66,10 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+
+# Windows PowerShell 5.1 can leave $PSScriptRoot empty in param() defaults, so resolve paths here.
+$ScriptDir = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Definition }
+if (-not $Personal) { $Personal = Join-Path $ScriptDir "personal" }
 
 # Windows PowerShell 5.1 wraps some arrays as {"value":[...],"Count":n} in JSON without this.
 if ($PSVersionTable.PSVersion.Major -lt 6) { Remove-TypeData System.Array -ErrorAction SilentlyContinue }
@@ -190,7 +194,7 @@ if ($PSVersionTable.PSEdition -eq "Core" -and -not $IsWindows) {
     }
 }
 
-$coreDir = Join-Path $PSScriptRoot "core"
+$coreDir = Join-Path $ScriptDir "core"
 if (-not (Test-Path $coreDir)) { throw "Core folder not found at $coreDir. Run this script from the eng-agents repo." }
 
 # A layer counts only if it has something to install. A folder holding just TODO.md is skipped.
@@ -226,7 +230,7 @@ $versions = [ordered]@{
 }
 $commit = $null
 if (Get-Command git -ErrorAction SilentlyContinue) {
-    $commit = (& git -C $PSScriptRoot rev-parse HEAD 2>$null)
+    $commit = (& git -C $ScriptDir rev-parse HEAD 2>$null)
     if ($LASTEXITCODE -ne 0) { $commit = $null }
 }
 $dashOnly = $Component -eq "dashboard"
@@ -522,7 +526,7 @@ if (-not $DryRun) {
     Write-Utf8 $manifestPath (ConvertTo-Json -Depth 6 -InputObject ([ordered]@{
                 files = @($newManifest)
                 bashKeys = @($newBashKeys)
-                source = $PSScriptRoot
+                source = $ScriptDir
                 components = $components
                 overrides = $overrides
                 layers = @($layers | ForEach-Object { [ordered]@{ name = $_.Name; path = $_.Path } })

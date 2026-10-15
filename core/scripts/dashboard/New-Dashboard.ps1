@@ -24,7 +24,7 @@
     The LAST line of output is always the path of the dashboard file.
 
     With -AsJson it writes nothing: it prints the data as one line of JSON (ASCII only,
-    other characters escaped) and exits. The live dashboard (live-server.mjs) uses
+    other characters escaped) and exits. The live dashboard (live-server.mjs, server/model.mjs) uses
     this, so the static and live pages share one parser and one set of next-step rules.
 
 .EXAMPLE
@@ -447,13 +447,37 @@ function Get-FileList {
 
 # ------------------------------------------------------- next step (/status)
 
+# Each pipeline command in plain words. The live dashboard and shells (such as the EM Hub) show
+# these instead of the command, so this is the only place to change the wording. Sent to the page
+# as stepWords; /do-task becomes "Task <n>: <title>".
+$script:StepWords = [ordered]@{
+    start = "Set up the repos and branches"; spec = "Write the spec"; plan = "Write the plan"; tasks = "Split the plan into tasks"
+    bug = "Analyze the bug"; review = "Review the changes"; pr = "Write the PR text"; resume = "Resume this item"; approve = "Approve"
+}
+function Get-CommandText {
+    param($I, [string]$Command)
+    if (-not $Command) { return $null }
+    $p = $Command -split '\s+'
+    $name = $p[0].TrimStart('/')
+    if ($name -eq "do-task" -and $p.Count -ge 3) {
+        $n = [int]$p[2]
+        $t = @($I.tasks.list | Where-Object { $_.n -eq $n }) | Select-Object -First 1
+        return "Task $n$(if ($t) { ": $($t.title)" })"
+    }
+    if ($script:StepWords.Contains($name)) { return $script:StepWords[$name] }
+    return $Command
+}
+
 # Mirrors the next-command rules in commands\status.md. First match wins.
+# text: the step in plain words (the action when there is one, else the command's words).
 function Get-NextStep {
     param($I, [string]$Folder)
     $id = $I.id; $lane = $I.lane; $g = $I.gates
     $tasksPath = Join-Path $Folder "tasks.md"
     $reviewPath = Join-Path $Folder "review.md"
-    $step = { param($stage, $command, $action, $note, $needs) [ordered]@{ stage = $stage; command = $command; action = $action; note = $note; needsYou = [bool]$needs } }
+    $step = { param($stage, $command, $action, $note, $needs)
+        $text = $(if ($action) { $action } else { Get-CommandText $I $command })
+        [ordered]@{ stage = $stage; command = $command; action = $action; text = $text; note = $note; needsYou = [bool]$needs } }
 
     if (-not $I.hasRepos) { return (& $step "start" "/start $id $lane" $null $null $false) }
     if ($lane -eq "feature" -and $null -eq $g.spec) { return (& $step "spec" "/spec $id" $null $null $false) }
@@ -733,6 +757,7 @@ $data = [ordered]@{
     gitAvailable = $script:GitOk
     configFound = (Test-Path -LiteralPath $ConfigPath)
     dashboardVersion = $dashboardVersion
+    stepWords = $script:StepWords
     refreshCommand = "/dashboard static"
     refreshShell = "$psExe -NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`" -WorkRoot `"$workRootFull`""
     liveShell = "$psExe -NoProfile -ExecutionPolicy Bypass -File `"$(Join-Path $PSScriptRoot 'Start-LiveDashboard.ps1')`""

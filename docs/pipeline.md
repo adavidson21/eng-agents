@@ -229,7 +229,7 @@ All state lives in the workspace, outside every git repo, and never leaves the w
 | Track | The pipeline stages for the item's lane. Finished stages have a check mark. The current stage is a filled label in the item's color (blue moving, amber needs you, red blocked, gray paused) with what is happening under it, for example "2 of 5 done" or "Approve". Later stages are faint, on a dashed line. Hover a stage for details. |
 | Needs you | Items waiting on you: a `DRAFT` spec, plan, or bug to review and `/approve`, review findings to accept, or a `/do-task` that failed or was blocked. |
 | In progress, Paused, Ready to ship | Every other item, grouped. Each card shows the next command, where you left off (the last `progress.md` entry, or `paused.md` when paused), its repos, tasks, files, and resume commands. |
-| Pull requests | On Ready to ship items: the PR text from `pr.md` for each repo, with Copy title and Copy description, a **Create PR in ADO** button that opens the new PR page with the branches filled in, and a push command to copy when the branch is not pushed yet. |
+| Pull requests | On Ready to ship items: the PR text from `pr.md` for each repo, with Copy title and Copy description, a **Create PR in ADO** button that opens the new PR page with the branches filled in, and, when the branch is not pushed yet, its push command with a **Push** button (live dashboard) and a copy button. |
 | Spikes, docs, and TSDs | `spike-`, `docs-`, and `tsd-` folders with their state and next step (for a TSD: fact-check, fix, or `/publish`). |
 | Repos with work in progress | Repos that are off their default branch or have uncommitted or unpushed work, and which item owns each branch. Clean repos are listed in one line. |
 | Recent activity | One line per item per day, newest first, summing up what moved (for example "Did 3 tasks, reviewed, wrote PR text"). A red dot means a verify step failed that day. |
@@ -290,7 +290,7 @@ How it fits together:
 - Item to session links are kept in `.work\_dashboard\sessions.json`, so after a restart each item opens its old session again.
 - Ctrl+C or closing the window stops the dashboard.
 
-It reads the same files as `/dashboard` (through `New-Dashboard.ps1 -AsJson`) and writes only to `.work\_dashboard\`, except Abandon and Remove, which delete that item's `.work` folder. It never calls ADO and never pushes. Commands run with the same agents and permission rules as in the TUI; a `bash` command that would ask in the TUI asks on the page.
+It reads the same files as `/dashboard` (through `New-Dashboard.ps1 -AsJson`) and writes only to `.work\_dashboard\`, except Abandon and Remove, which delete that item's `.work` folder. It never calls ADO. It pushes only when you click **Push** on a PR card: it runs `git -C <repo> push -u origin <branch>` itself, for the branch named in `pr.md`, and your click is the approval (no prompt). It never pushes `main`, `master`, `develop`, `dev`, or the PR's target branch, and never force pushes. Commands run with the same agents and permission rules as in the TUI; a `bash` command that would ask in the TUI asks on the page.
 
 Options: `-Port <n>` (page), `-OpencodeUrl <url>` (use that opencode server instead of finding one), `-NoOpencode` (do not start opencode), `-NoUpdateCheck` (no update checks), `-NoOpen`, `-Workspace <path>`, `-ShellOrigin <url>` (see below).
 

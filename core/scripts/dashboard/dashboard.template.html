@@ -935,7 +935,9 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
       var head = '<div class="pr-head"><span class="rn">' + h(p.repo) + "</span>" +
         '<span class="branch">' + h(p.branch || "no branch") + " → " + h(p.target || "main") + "</span>" + flagsHtml([flag]) +
         '<span class="row">' + (link ? '<a class="btn' + (pushed ? " primary" : "") + '" href="' + h(link) + '" target="_blank" rel="noopener" title="Opens the new pull request page with the branches filled in">Create PR' + (where ? " in " + where : "") + "</a>" : '<span class="dim" style="font-size:13px">No PR link: the repo has no origin remote</span>') + "</span></div>";
-      var push = !pushed && p.pushCmd && ps && ps.local ? '<div class="pr-push"><span class="dim">Push first:</span><code>' + h(p.pushCmd) + "</code>" + copyBtn(p.pushCmd) + "</div>" : "";
+      var pk = "p:" + it.folder + ":" + p.repo;
+      var pushBtn = LIVE && conn === "on" ? '<button type="button" class="btn primary" data-push="' + h(it.folder) + '" data-repo="' + h(p.repo) + '" title="Runs this command now. Your click is the approval."' + (ui.busy[pk] ? " disabled" : "") + ">" + (ui.busy[pk] ? "Pushing..." : "Push") + "</button>" : "";
+      var push = !pushed && p.pushCmd && ps && ps.local ? '<div class="pr-push"><span class="dim">Push first:</span><code>' + h(p.pushCmd) + "</code>" + pushBtn + copyBtn(p.pushCmd) + "</div>" : "";
       var title = p.title ? '<div class="pr-field"><div class="fh"><p class="sub-h">Title</p>' + copyBtn(p.title, "Copy title") + '</div><div class="pr-title">' + h(p.title) + "</div></div>"
         : '<p class="dim" style="margin:0">No title in pr.md for this repo.</p>';
       var desc = p.description ? '<div class="pr-field"><div class="fh"><p class="sub-h">Description</p>' + copyBtn(p.description, "Copy description") + '</div><pre class="pr-desc">' + h(p.description) + "</pre></div>" : "";
@@ -1555,6 +1557,16 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
         post("api/run", { folder: folder, command: cmd }).then(function () {
           toast("Started " + cmd);
         }, function (e) { toast(e.message, true); }).then(function () { delete ui.busy[folder]; schedule(); });
+        return;
+      }
+      var pb = t.closest("[data-push]");
+      if (pb) {
+        var pf = pb.getAttribute("data-push"), pr = pb.getAttribute("data-repo"), pkey = "p:" + pf + ":" + pr;
+        if (ui.busy[pkey]) return;
+        ui.busy[pkey] = true; schedule();
+        post("api/push", { folder: pf, repo: pr }).then(function (j) {
+          toast(j.message || "Pushed.");
+        }, function (e) { toast(e.message, true); }).then(function () { delete ui.busy[pkey]; schedule(); });
         return;
       }
       var ap = t.closest("[data-auto]");

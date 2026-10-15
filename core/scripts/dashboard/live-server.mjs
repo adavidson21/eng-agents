@@ -1210,6 +1210,75 @@ async function answerQuestion({ id, answers, reject }) {
   return { ok: true };
 }
 
+// Push one branch from the PR panel: `git -C <repo> push -u origin <branch>`, run here, not by the
+// agent. The engineer's click is the approval that the agent's `git push` would ask for. Only the
+// branch named in pr.md for that repo, never the target or default branch, never --force.
+const pushing = new Set();
+function gitRun(cwd, args, timeout) {
+  return new Promise((resolve) => {
+    let out = "";
+    let done = false;
+    const env = { ...process.env, GIT_TERMINAL_PROMPT: "0" }; // fail instead of waiting on a hidden prompt
+    const p = spawn("git", args, { cwd, env, windowsHide: true });
+    const timer = setTimeout(() => {
+      if (done) return;
+      done = true;
+      try { p.kill(); } catch { }
+      resolve({ code: null, out: out + "\nTimed out." });
+    }, timeout);
+    p.stdout.on("data", (d) => (out += d));
+    p.stderr.on("data", (d) => (out += d));
+    p.on("error", (e) => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      resolve({ code: null, out: e.code === "ENOENT" ? "git is not on PATH." : e.message });
+    });
+    p.on("close", (code) => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      resolve({ code, out });
+    });
+  });
+}
+
+async function pushBranch({ folder, repo }) {
+  const it = findItem(folder);
+  if (!it) throw httpError(404, `No work item folder "${folder}". Refresh the page.`);
+  const row = (it.pr || []).find((p) => p.repo === repo);
+  if (!row) throw httpError(404, `pr.md has no section for ${repo}. Refresh the page.`);
+  const branch = row.branch;
+  if (!branch) throw httpError(400, `pr.md names no branch for ${repo}.`);
+  if (!/^[A-Za-z0-9._\/-]+$/.test(branch) || branch.startsWith("-") || branch.includes("..")) throw httpError(400, `"${branch}" is not a branch name the dashboard will push.`);
+  const protectedNames = new Set(["main", "master", "develop", "dev", String(row.target || "").toLowerCase()]);
+  if (protectedNames.has(branch.toLowerCase())) throw httpError(400, `The dashboard does not push ${branch}. Push it yourself if you mean to.`);
+  const ws = path.resolve(opt.workspace);
+  const dir = path.resolve(ws, String(repo || ""));
+  if (!repo || path.isAbsolute(repo) || String(repo).split(/[\\/]/).includes("..") || !dir.startsWith(ws + path.sep)) throw httpError(400, "Bad repo folder.");
+  if (!fs.existsSync(dir)) throw httpError(404, `Repo folder ${repo} not found in the workspace.`);
+
+  const key = `${repo}\n${branch}`;
+  if (pushing.has(key)) throw httpError(409, `Already pushing ${branch} in ${repo}.`);
+  pushing.add(key);
+  try {
+    const ref = await gitRun(dir, ["rev-parse", "--verify", "--quiet", `refs/heads/${branch}`], 15000);
+    if (ref.code !== 0) throw httpError(400, `${repo} has no local branch ${branch}.`);
+    log(`push: git -C ${repo} push -u origin ${branch}`);
+    const r = await gitRun(dir, ["push", "-u", "origin", `refs/heads/${branch}:refs/heads/${branch}`], 180000);
+    const tail = r.out.trim().split(/\r?\n/).filter(Boolean).slice(-4).join(" | ");
+    if (r.code !== 0) {
+      log(`push failed (${repo} ${branch}): ${r.out.trim()}`);
+      throw httpError(502, `Push failed for ${repo}: ${tail || "no output from git"}`);
+    }
+    log(`pushed ${repo} ${branch}`);
+    return { ok: true, message: `Pushed ${branch} in ${repo}.` };
+  } finally {
+    pushing.delete(key);
+    scheduleRefresh(0);
+  }
+}
+
 async function abort({ session }) {
   needOpencode();
   await oc.api.abort(session);
@@ -1787,6 +1856,7 @@ const actions = {
   "/api/question": answerQuestion,
   "/api/abort": abort,
   "/api/remove": removeItem,
+  "/api/push": pushBranch,
   "/api/terminal": openTerminal,
   "/api/update": runUpdate,
   "/api/update-check": async () => {

@@ -15,7 +15,7 @@ Open opencode from your workspace root (for example `C:\src\work`).
 | Technical spec with diagrams | `/tsd <product or repo> [repo ...]` → new session → `/check-docs .work/tsd-<name>/tsd.md` → revise → `/publish tsd-<name>` |
 | Where was I? | `/dashboard` (every item and repo, in your browser) or `/status [id]` |
 | Drive it from the browser | `Start-LiveDashboard.ps1` from a terminal: the dashboard stays live and runs commands in opencode (see [Live dashboard](docs/pipeline.md#live-dashboard-optional)) |
-| Hands-off build after the plan | Live dashboard: **Approve and start autopilot**. It runs tasks, review, and PR text, each step in a new session, and stops only when it needs you (see [Autopilot](docs/pipeline.md#autopilot)) |
+| Hands-off build after the plan | Live dashboard: **Approve and build**. It runs tasks, review, and PR text, each step in a new session, and stops only when it needs you (see [Autopilot](docs/pipeline.md#autopilot)) |
 | Standup update | `/standup [days back]` (default 1, or 3 on a Monday) |
 | Switch to something urgent | `/pause <id> [reason]`, later `/resume <id>` |
 | New repo in the workspace | `/onboard-repo <folder>` |

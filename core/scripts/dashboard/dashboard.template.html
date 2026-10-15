@@ -342,6 +342,11 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
 .menu button { display: flex; align-items: center; gap: 9px; width: 100%; text-align: left; padding: 6px 10px; border-radius: 7px; font-size: 13.5px; min-height: 30px; border: 0; background: transparent; cursor: pointer; }
 .menu button:hover, .menu button:focus-visible { background: var(--hover); outline: none; }
 .menu button.on { font-weight: 600; }
+.menu button.copy { border: 0; background: transparent; color: var(--ink); min-height: 30px; padding: 6px 10px; font-size: 13.5px; font-weight: 400; border-radius: 7px; }
+.menu button.copy:hover { background: var(--hover); }
+.menu button.copy.ok { background: var(--accent-soft); }
+.menu button:disabled { color: var(--muted); cursor: default; }
+.menu button:disabled:hover { background: transparent; }
 .menu .sep { height: 1px; background: var(--line); margin: 4px 3px; }
 .sw { width: 16px; height: 16px; border-radius: 50%; flex: none; border: 1px solid var(--line); position: relative; overflow: hidden; }
 .sw i { position: absolute; right: 0; bottom: 0; width: 50%; height: 50%; border-top-left-radius: 100%; }
@@ -629,25 +634,61 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
   }
 
   // --------------------------------------------------------------- next step
-  function runBtn(it, cmd, big) {
+  // label: the button text (default "Run"). quiet: a secondary button next to a primary one.
+  function runBtn(it, cmd, label, quiet) {
     if (!LIVE || !cmd) return "";
     var s = itemSession(it);
     var fresh = /^\/(do-task|check-docs)\b/.test(cmd);
     var blocked = !ocReady() ? "opencode is not connected" : (autoIs(it, "running") ? "Autopilot is running this item" : (isBusy(s) && !fresh ? "This item's session is still working" : (ui.busy[it.folder] ? "Starting" : "")));
-    var label = "Run " + (big ? cmd : cmd.split(" ")[0]);
     var tip = blocked || ("Runs " + cmd + " in opencode" + (fresh ? " in a new session" : (s ? " in this item's session" : " in a new session for this item")));
-    return '<button type="button" class="btn primary" data-run="' + h(it.folder) + '" data-cmd="' + h(cmd) + '" title="' + h(tip) + '"' + (blocked ? " disabled" : "") + ">" + h(label) + "</button>";
+    return '<button type="button" class="btn' + (quiet ? "" : " primary") + '" data-run="' + h(it.folder) + '" data-cmd="' + h(cmd) + '" title="' + h(tip) + '"' + (blocked ? " disabled" : "") + ">" + h(label || "Run") + "</button>";
   }
 
   // The file to read before approving, for "Review spec.md" style steps.
   function gateFileLink(it) {
-    if (!it.next || !it.next.needsYou) return "";
+    if (it.paused || !it.next || !it.next.needsYou) return "";
     var f = { spec: "spec.md", plan: "plan.md", bug: "bug.md", review: "review.md" }[it.next.stage];
     if (!f || !it.files || it.files.indexOf(f) < 0) return "";
     return '<a href="' + fileHref(it.folder, f) + '" target="_blank" rel="noopener" class="then">Open ' + h(f) + "</a>";
   }
 
+  // Live: the step in plain words and one main button. Commands stay in the button's tooltip.
+  var CMD_WORDS = {
+    start: "Set up the repos and branches", spec: "Write the spec", plan: "Write the plan", tasks: "Split the plan into tasks",
+    bug: "Analyze the bug", review: "Review the changes", pr: "Write the PR text", resume: "Resume this item", approve: "Approve"
+  };
+  function cmdWords(it, cmd) {
+    var p = String(cmd).split(/\s+/), name = p[0].replace(/^\//, "");
+    if (name === "do-task") {
+      var n = +p[2], t = ((it.tasks && it.tasks.list) || []).filter(function (x) { return x.n === n; })[0];
+      return "Task " + n + (t ? ": " + t.title : "");
+    }
+    return CMD_WORDS[name] || cmd;
+  }
+  function liveNextHtml(it, big) {
+    var n = it.next || {};
+    var cmd = it.paused ? "/resume " + it.id : n.command;
+    var act = it.paused ? null : n.action;
+    var running = autoIs(it, "running");
+    var kind = running || autoIs(it, "waiting") ? null : autoStartKind(it);
+    var name = cmd ? cmd.split(/\s+/)[0] : "";
+    var text = act ? md(act) : cmd ? h(cmdWords(it, cmd)) : "";
+    var btns = "";
+    if (!running) {
+      if (kind) btns += autoBtn(it, kind, kind === "approve-start" ? "Approve and build" : "Build with autopilot", "primary", autoTip(it, kind), "");
+      if (cmd) btns += runBtn(it, cmd, name === "/approve" ? (kind ? "Approve only" : "Approve") : name === "/resume" ? "Resume" : kind ? "Run next step only" : "Run", !!kind || autoIs(it, "waiting"));
+    }
+    var note = n.note && !it.paused ? liveNote(n.note) : "";
+    if (big) {
+      return '<div class="do"><span class="act">' + text + "</span>" + gateFileLink(it) +
+        (btns ? '<span class="row" style="margin-left:auto">' + btns + "</span>" : "") + "</div>";
+    }
+    return '<div class="next-line"><span class="lbl">Next</span><span class="act">' + text + "</span>" + gateFileLink(it) + btns +
+      (note ? '<span class="then">' + md(note) + "</span>" : "") + "</div>";
+  }
+
   function nextHtml(it, big) {
+    if (LIVE) return liveNextHtml(it, big);
     var n = it.next || {};
     var cmd = it.paused ? "/resume " + it.id : n.command;
     var act = it.paused ? null : n.action;
@@ -656,28 +697,26 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
       if (act) {
         parts.push('<span class="act">' + md(act) + "</span>");
         if (cmd) parts.push('<span class="then">then <code>' + h(cmd) + "</code></span>");
-        if (LIVE) parts.push(gateFileLink(it));
-        if (cmd) parts.push('<span class="row" style="margin-left:auto">' + runBtn(it, cmd, false) + copyBtn(cmd, "Copy " + h(cmd.split(" ")[0])) + "</span>");
+        if (cmd) parts.push('<span class="row" style="margin-left:auto">' + copyBtn(cmd, "Copy " + h(cmd.split(" ")[0])) + "</span>");
       } else if (cmd) {
         parts.push('<span class="cmd">' + h(cmd) + "</span>");
-        parts.push('<span class="row" style="margin-left:auto">' + runBtn(it, cmd, false) + copyBtn(cmd) + "</span>");
+        parts.push('<span class="row" style="margin-left:auto">' + copyBtn(cmd) + "</span>");
       }
       return '<div class="do">' + parts.join("") + "</div>";
     }
     var out = '<div class="next-line"><span class="lbl">Next</span>';
     if (act) {
       out += '<span class="act">' + md(act) + "</span>";
-      if (cmd) out += '<span class="then">then <code>' + h(cmd) + "</code></span>" + runBtn(it, cmd, false) + copyBtn(cmd);
-      if (LIVE) out += gateFileLink(it);
+      if (cmd) out += '<span class="then">then <code>' + h(cmd) + "</code></span>" + copyBtn(cmd);
     } else if (cmd) {
-      out += '<span class="cmd">' + h(cmd) + "</span>" + runBtn(it, cmd, false) + copyBtn(cmd);
+      out += '<span class="cmd">' + h(cmd) + "</span>" + copyBtn(cmd);
     }
-    if (n.note && !it.paused) out += '<span class="then">' + md(LIVE ? liveNote(n.note) : n.note) + "</span>";
+    if (n.note && !it.paused) out += '<span class="then">' + md(n.note) + "</span>";
     return out + "</div>";
   }
   // The live page opens new sessions by itself, so drop "start a new session" advice.
   function liveNote(note) {
-    return String(note).replace(/\s*Start a new session \(\/new\)( first| before \/do-task)?\.?/gi, "").replace(/Start a new session,? (and run|then) /gi, "Run ").trim();
+    return String(note).replace(/\s*After approval:.*$/i, "").replace(/\s*Start a new session \(\/new\)( first| before \/do-task)?\.?/gi, "").replace(/Start a new session,? (and run|then) /gi, "Run ").trim();
   }
 
   function leftOffHtml(it) {
@@ -753,33 +792,26 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
     var dis = off || (!ocReady() && act !== "stop" && act !== "dismiss" ? "opencode is not connected" : (ui.busy["a:" + it.folder] ? "Working" : ""));
     return '<button type="button" class="btn' + (cls ? " " + cls : "") + '" data-auto="' + h(it.folder) + '" data-act="' + act + '" title="' + h(dis || tip) + '"' + (dis ? " disabled" : "") + ">" + h(label) + "</button>";
   }
+  function autoTip(it, kind) {
+    return (kind === "approve-start" ? "Approves " + (it.lane === "bug" ? "bug.md" : "plan.md") + ", then runs" : "Runs") +
+      " the rest: tasks, each task in a new session, review (fix rounds for Blockers), and PR text. Stops when it needs you. Never pushes.";
+  }
+  // Only while autopilot runs or needs you. Starting it is the main button on the Next line.
   function autoHtml(it) {
     if (!LIVE || !L || it.kind !== "item") return "";
     var a = itemAuto(it);
-    var kind = autoStartKind(it);
-    var tip = (kind === "approve-start" ? "Approves " + (it.lane === "bug" ? "bug.md" : "plan.md") + ", then runs" : "Runs") +
-      " the rest: tasks, each task in a new session, review (fix rounds for Blockers), and PR text. Stops when it needs you. Never pushes.";
-    var log = a && a.log && a.log.length ? "<details" + openAttr("a:" + it.folder, false) + "><summary>Autopilot log</summary>" +
+    if (!a || (a.status !== "running" && a.status !== "waiting")) return "";
+    var log = a.log && a.log.length ? "<details" + openAttr("a:" + it.folder, false) + "><summary>Autopilot log</summary>" +
       '<ul class="hist">' + a.log.slice().reverse().map(function (x) { return "<li>" + h(timeOf(Date.parse(x.at))) + " " + h(x.text) + "</li>"; }).join("") + "</ul></details>" : "";
-    var rounds = a && a.fixRounds ? '<span class="then">fix round ' + a.fixRounds + " of " + a.maxFixRounds + "</span>" : "";
-
-    if (a && a.status === "running") {
+    var rounds = a.fixRounds ? '<span class="then">fix round ' + a.fixRounds + " of " + a.maxFixRounds + "</span>" : "";
+    if (a.status === "running") {
       return '<div class="auto run"><div class="auto-head"><span class="state"><span class="spin" aria-hidden="true"></span>Autopilot</span>' +
-        (a.command ? '<span class="cmdname">' + h(a.command) + "</span>" : "") + rounds +
+        (a.command ? '<span class="then" title="' + h(a.command) + '">' + h(cmdWords(it, a.command.replace(/\s+auto$/, ""))) + "</span>" : "") + rounds +
         '<span class="row">' + autoBtn(it, "stop", "Stop after this step", "", "The current step finishes. Nothing runs after it.") + "</span></div>" + log + "</div>";
     }
-    if (a && a.status === "waiting") {
-      return '<div class="auto wait"><div class="auto-head"><span class="state">Autopilot needs you</span>' + rounds +
-        '<span class="row">' + autoBtn(it, "resume", "Resume", "primary", "Re-reads .work and runs the next step") + autoBtn(it, "stop", "Stop", "", "Turn autopilot off for this item") + "</span></div>" +
-        '<p class="msg">' + md(a.message || "") + "</p>" + log + "</div>";
-    }
-    var head = "";
-    if (a && a.status === "done") head = '<span class="state">Autopilot finished</span><span class="then">' + md(a.message || "") + "</span>";
-    else if (a && a.status === "stopped") head = '<span class="state">Autopilot stopped</span>';
-    if (!kind && !head) return "";
-    var btns = (kind ? autoBtn(it, kind, kind === "approve-start" ? "Approve and start autopilot" : "Start autopilot", "primary", tip, autoIs(it, "running") ? "Running" : "") : "") +
-      (a ? autoBtn(it, "dismiss", "Clear", "", "Hide this autopilot note") : "");
-    return '<div class="auto"><div class="auto-head">' + head + '<span class="row">' + btns + "</span></div>" + log + "</div>";
+    return '<div class="auto wait"><div class="auto-head"><span class="state">Autopilot needs you</span>' + rounds +
+      '<span class="row">' + autoBtn(it, "resume", "Resume", "primary", "Re-reads .work and runs the next step") + autoBtn(it, "stop", "Stop", "", "Turn autopilot off for this item") + "</span></div>" +
+      '<p class="msg">' + md(a.message || "") + "</p>" + log + "</div>";
   }
 
   function agentHtml(it) {
@@ -937,7 +969,7 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
         '<span class="row">' + (link ? '<a class="btn' + (pushed ? " primary" : "") + '" href="' + h(link) + '" target="_blank" rel="noopener" title="Opens the new pull request page with the branches filled in">Create PR' + (where ? " in " + where : "") + "</a>" : '<span class="dim" style="font-size:13px">No PR link: the repo has no origin remote</span>') + "</span></div>";
       var pk = "p:" + it.folder + ":" + p.repo;
       var pushBtn = LIVE && conn === "on" ? '<button type="button" class="btn primary" data-push="' + h(it.folder) + '" data-repo="' + h(p.repo) + '" title="Runs this command now. Your click is the approval."' + (ui.busy[pk] ? " disabled" : "") + ">" + (ui.busy[pk] ? "Pushing..." : "Push") + "</button>" : "";
-      var push = !pushed && p.pushCmd && ps && ps.local ? '<div class="pr-push"><span class="dim">Push first:</span><code>' + h(p.pushCmd) + "</code>" + pushBtn + copyBtn(p.pushCmd) + "</div>" : "";
+      var push = !pushed && p.pushCmd && ps && ps.local ? '<div class="pr-push"><span class="dim">Push first:</span><code>' + h(p.pushCmd) + "</code>" + (pushBtn || copyBtn(p.pushCmd)) + "</div>" : "";
       var title = p.title ? '<div class="pr-field"><div class="fh"><p class="sub-h">Title</p>' + copyBtn(p.title, "Copy title") + '</div><div class="pr-title">' + h(p.title) + "</div></div>"
         : '<p class="dim" style="margin:0">No title in pr.md for this repo.</p>';
       var desc = p.description ? '<div class="pr-field"><div class="fh"><p class="sub-h">Description</p>' + copyBtn(p.description, "Copy description") + '</div><pre class="pr-desc">' + h(p.description) + "</pre></div>" : "";
@@ -1020,7 +1052,7 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
     var body = "";
     if (it.state) body += '<p style="margin:6px 0 0"><strong>' + h(it.state) + "</strong></p>";
     if (it.summary) body += '<p class="pre" style="margin:6px 0 0">' + md(it.summary) + "</p>";
-    if (it.nextText) body += '<div class="next-line"><span class="lbl">Next</span><span>' + md(LIVE ? liveNote(it.nextText) : it.nextText) + "</span>" + runBtn(it, noteCommand(it), false) + "</div>";
+    if (it.nextText) body += '<div class="next-line"><span class="lbl">Next</span><span>' + md(LIVE ? liveNote(it.nextText) : it.nextText) + "</span>" + runBtn(it, noteCommand(it)) + "</div>";
     return '<article class="item" id="item-' + h(it.folder) + '" style="--state:' + (LIVE && asking(it) ? "var(--gate)" : "var(--line)") + '"><div class="item-head"><h4 class="t">' + h(it.title) + '</h4><div class="meta"><span class="tag">' + label +
       "</span><span>Touched " + ago(it.modifiedMs) + "</span>" + removeBtn(it) + "</div></div>" + body + agentHtml(it) +
       (it.files && it.files.length ? "<details" + openAttr("d:" + it.folder, false) + "><summary>Files</summary><div class=\"detail-body\">" + filesHtml(it) + "</div></details>" : "") + "</article>";
@@ -1123,6 +1155,7 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
   // ---------------------------------------------------------------- header
   var ICON = {
     theme: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="6.5"/><path d="M10 3.5a6.5 6.5 0 0 0 0 13z" fill="currentColor"/></svg>',
+    more: '<svg viewBox="0 0 20 20" fill="currentColor"><circle cx="4.5" cy="10" r="1.6"/><circle cx="10" cy="10" r="1.6"/><circle cx="15.5" cy="10" r="1.6"/></svg>',
     x: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg>'
   };
   var THEMES = /*theme-menu*/[["system","System"],["slate","Slate"],["graphite","Graphite"],["ivory","Ivory"],["rose","Ros\u00e9"],["solarized","Solarized Light"],["nord","Nord"],["dracula","Dracula"]]/*/theme-menu*/;
@@ -1133,8 +1166,25 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
     else document.documentElement.setAttribute("data-theme", t);
     try { localStorage.setItem("eng-dashboard.theme", t); } catch (e) { }
   }
-  function themeMenuHtml() {
+  function menuHtml() {
     if (!ui.menu) return "";
+    return ui.menu.kind === "more" ? moreMenuHtml() : themeMenuHtml();
+  }
+  function moreMenuHtml() {
+    var o = (L && L.opencode) || {};
+    var items = '<button type="button" role="menuitem" data-refresh="1" title="Re-read .work and git now">Refresh now</button>';
+    if (canNotify) {
+      var perm = Notification.permission;
+      items += perm === "granted" ? '<button type="button" role="menuitem" disabled title="You get a notification when an agent waits for you or finishes, while this page is in the background">Alerts are on</button>'
+        : perm === "denied" ? '<button type="button" role="menuitem" disabled title="Notifications are blocked for this page in your browser settings">Alerts are blocked</button>'
+        : '<button type="button" role="menuitem" data-alerts="1" title="Get a notification when an agent waits for you or finishes">Turn on alerts</button>';
+    }
+    if (L && L.canOpenTerminal && o.connected) items += '<button type="button" role="menuitem" data-term="">Open the opencode TUI</button>';
+    if (o.attach) items += copyBtn(o.attach, "Copy terminal command");
+    items += '<div class="sep"></div><button type="button" role="menuitem" data-updates="1">Check for updates</button>';
+    return '<div class="menu" role="menu" style="top:' + ui.menu.top + "px;right:" + ui.menu.right + 'px">' + items + "</div>";
+  }
+  function themeMenuHtml() {
     return '<div class="menu" role="menu" style="top:' + ui.menu.top + "px;right:" + ui.menu.right + 'px">' + THEMES.map(function (t) {
       var sw = SWATCH[t[0]];
       var dot = sw ? '<span class="sw" style="background:' + sw[0] + '"><i style="background:' + sw[1] + '"></i></span>'
@@ -1185,29 +1235,21 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
         "</span><span>Refresh: <code>" + h(D.refreshCommand) + "</code> " + copyBtn(D.refreshCommand) + " " + copyBtn(D.refreshShell, "Copy shell command") + "</span>" +
         (D.liveShell ? "<span>Live version: " + copyBtn(D.liveShell, "Copy launch command") + "</span>" : "") + themeBtn + "</span></header>";
     }
+    // One status pill: green only when the page and opencode are both connected.
     var o = (L && L.opencode) || {};
-    var page = conn === "on" ? ["on", "Live, updated " + timeOf(D.generatedMs)] : conn === "off" ? ["off", "Dashboard server not reachable"] : ["", "Connecting"];
-    var ocp = o.connected ? ["on", "opencode " + (o.version || "") + " connected"] : ["off", "opencode not connected"];
+    var st = conn === "off" ? ["off", "Dashboard server not reachable"] : conn !== "on" ? ["", "Connecting"]
+      : !o.connected ? ["off", "opencode not connected"] : ["on", "Live"];
+    var tip = conn === "on" ? "Updated " + timeOf(D.generatedMs) + ". opencode " + (o.connected ? (o.version || "") + " at " + (o.url || "") : "not connected") : "";
     return html + '<span class="fresh">' +
-      '<span class="pill ' + page[0] + '"><span class="led"></span>' + h(page[1]) + "</span>" +
-      '<span class="pill ' + ocp[0] + '" title="' + h(o.url || "") + '"><span class="led"></span>' + h(ocp[1]) + "</span>" +
-      alertsHtml() +
-      (L && L.canOpenTerminal && o.connected ? '<button type="button" class="btn" data-term="">Open TUI</button>' : "") +
-      (o.attach ? copyBtn(o.attach, "Copy terminal command") : "") +
-      '<button type="button" class="btn" data-refresh="1" title="Re-read .work and git now">Refresh</button>' +
-      updatePillHtml() + themeBtn +
-      "</span></header>";
+      '<span class="pill ' + st[0] + '" title="' + h(tip) + '"><span class="led"></span>' + h(st[1]) + "</span>" +
+      updatePillHtml() +
+      '<button type="button" class="ibtn" data-more-menu="1" aria-label="More" title="More" aria-haspopup="menu">' + ICON.more + "</button>" +
+      themeBtn + "</span></header>";
   }
 
   // ---------------------------------------------------------------- alerts (live)
   // Browser notifications when an agent starts waiting for you, or finishes, while this page is in the background.
   var canNotify = LIVE && typeof window.Notification === "function";
-  function alertsHtml() {
-    if (!canNotify) return "";
-    if (Notification.permission === "granted") return '<span class="pill on" title="You get a notification when an agent waits for you or finishes, while this page is in the background"><span class="led"></span>Alerts on</span>';
-    if (Notification.permission === "denied") return '<span class="pill" title="Notifications are blocked for this page in your browser settings"><span class="led"></span>Alerts blocked</span>';
-    return '<button type="button" class="btn" data-alerts="1" title="Get a notification when an agent waits for you or finishes">Turn on alerts</button>';
-  }
   function itemForFolder(folder) {
     return (D.items || []).filter(function (x) { return x.folder === folder; })[0] || null;
   }
@@ -1284,7 +1326,7 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
     if (u.updating) return '<button type="button" class="pill new" data-updates="1"><span class="spin"></span>Updating</button>';
     if (restartNeeded()) return '<button type="button" class="pill new" data-updates="1" title="Dashboard ' + h(u.installed) + ' is installed. Restart to use it."><span class="led"></span>Restart to update</button>';
     if (updWanted().length) return '<button type="button" class="pill new" data-updates="1" title="See what is new"><span class="led"></span>Update available</button>';
-    return '<button type="button" class="btn ghost" data-updates="1" title="Check for updates">Updates</button>';
+    return ""; // nothing new: "Check for updates" is in the More menu
   }
   var COMP = { core: "Core", dashboard: "Dashboard" };
   function diffHtml(text) {
@@ -1400,7 +1442,7 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
     html += '<div class="grid"><main>' + waitingHtml();
     if (pick) html += pickupHtml(pick);
 
-    html += '<ul class="counts" aria-label="Jump to a group">' + groups.map(function (g) {
+    if (items.length > 8) html += '<ul class="counts" aria-label="Jump to a group">' + groups.map(function (g) {
       var n = (by[g[0]] || []).length;
       return '<li><a href="#g-' + g[0] + '" data-b="' + g[0] + '" class="' + (n ? "" : "zero") + '">' + h(g[1]) + " <b>" + n + "</b></a></li>";
     }).join("") + "</ul>";
@@ -1417,7 +1459,7 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
     paint(html + overlaysHtml());
   }
 
-  function overlaysHtml() { return themeMenuHtml() + (LIVE ? (ui.remove ? removeSheetHtml() : updSheetHtml()) : ""); }
+  function overlaysHtml() { return menuHtml() + (LIVE ? (ui.remove ? removeSheetHtml() : updSheetHtml()) : ""); }
 
   // Replace the page, keeping focus and the caret in whatever the user was typing in.
   function paint(html) {
@@ -1510,15 +1552,17 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
       if (!t) return;
       var b = t.closest("button.copy");
       if (b) { copy(b); return; }
-      var tb = t.closest("[data-theme-menu]");
+      var tb = t.closest("[data-theme-menu], [data-more-menu]");
       if (tb) {
+        var kind = tb.hasAttribute("data-more-menu") ? "more" : "theme";
         var r = tb.getBoundingClientRect();
-        ui.menu = ui.menu ? null : { top: Math.round(r.bottom + 6), right: Math.max(8, Math.round(window.innerWidth - r.right)) };
+        ui.menu = ui.menu && ui.menu.kind === kind ? null : { kind: kind, top: Math.round(r.bottom + 6), right: Math.max(8, Math.round(window.innerWidth - r.right)) };
         render(); return;
       }
       var st = t.closest("[data-set-theme]");
       if (st) { setTheme(st.getAttribute("data-set-theme")); ui.menu = null; render(); return; }
       if (ui.menu && !t.closest(".menu")) { ui.menu = null; render(); }
+      else if (ui.menu && t.closest(".menu button:not(.copy)")) { ui.menu = null; schedule(); } // the action below still runs
       if (!LIVE) return;
       if (t.closest("[data-updates]")) { ui.sheet = true; ui.remove = null; render(); var c0 = app.querySelector("[data-close-sheet].ibtn"); if (c0) c0.focus(); if (!upd() || !upd().checkedAt) post("api/update-check").catch(function () { }); return; }
       if (t.closest("[data-close-sheet]")) { ui.sheet = false; ui.remove = null; render(); return; }

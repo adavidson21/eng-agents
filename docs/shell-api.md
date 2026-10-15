@@ -9,7 +9,7 @@ Current version: **`api: 1`** (Dashboard 1.6.0).
 Off by default. The live dashboard answers a shell only when its origin is listed:
 
 ```json
-"dashboard": { "shellOrigins": ["https://em.alexisdavidson.org"] }
+"dashboard": { "shellOrigins": ["https://adavidson21.github.io"] }
 ```
 
 in `~/.config/eng-agents/config.json`, or with `--shell-origin <url>` (repeatable). Origins must be `https://`, or `http://localhost` / `http://127.0.0.1` for testing. Restart the live dashboard after a change.

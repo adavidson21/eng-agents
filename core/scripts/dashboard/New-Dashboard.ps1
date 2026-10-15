@@ -447,7 +447,7 @@ function Get-FileList {
 
 # ------------------------------------------------------- next step (/status)
 
-# Each pipeline command in plain words. The live dashboard and shells (such as the EM Hub) show
+# Each pipeline command in plain words. The live dashboard and shells (such as Workshop) show
 # these instead of the command, so this is the only place to change the wording. Sent to the page
 # as stepWords; /do-task becomes "Task <n>: <title>".
 $script:StepWords = [ordered]@{

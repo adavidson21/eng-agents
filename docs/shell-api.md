@@ -1,8 +1,8 @@
 # Shell API
 
-A *shell* is another web page that shows the live dashboard and work item stages, such as the [EM Hub](https://github.com/adavidson21/prioritizer). This is the contract between the live dashboard and a shell. The live dashboard owns it; a change that breaks it bumps `api` and gets a Dashboard changelog entry.
+A *shell* is another web page that shows the live dashboard and work item stages, such as [Workshop](https://github.com/adavidson21/workshop). This is the contract between the live dashboard and a shell. The live dashboard owns it; a change that breaks it bumps `api` and gets a Dashboard changelog entry.
 
-Current version: **`api: 1`** (Dashboard 1.6.0).
+Current version: **`api: 1`** (Dashboard 1.6.0 and later).
 
 ## Allowing a shell
 

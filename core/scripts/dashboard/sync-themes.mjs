@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Copies the shared themes from the EM Hub (prioritizer repo, shared/themes.css, the styling source of truth) into
+// Copies the shared themes from Workshop (workshop repo, shared/themes.css, the styling source of truth) into
 // dashboard.template.html: the CSS block, the theme menu and its swatches, and the list the page
 // checks before first paint. Run it when the hub's themes change, and bump the dashboard version.
 //
@@ -15,7 +15,7 @@ import { fileURLToPath } from "node:url";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const TEMPLATE = path.join(HERE, "dashboard.template.html");
-const DEFAULT_FROM = "https://raw.githubusercontent.com/adavidson21/prioritizer/main/shared/themes.css";
+const DEFAULT_FROM = "https://raw.githubusercontent.com/adavidson21/workshop/main/shared/themes.css";
 
 const args = process.argv.slice(2);
 let from = DEFAULT_FROM;
@@ -66,7 +66,7 @@ const body = css.replace(/^\s*\/\*[\s\S]*?\*\/\s*/, "").trim();
 
 const ascii = (s) => s.replace(/[^\x20-\x7e]/g, (c) => "\\u" + c.charCodeAt(0).toString(16).padStart(4, "0"));
 const blocks = {
-  css: `/* themes:begin  Copied from shared/themes.css in the EM Hub (prioritizer repo) by sync-themes.mjs.
+  css: `/* themes:begin  Copied from shared/themes.css in Workshop (workshop repo) by sync-themes.mjs.
    Do not edit here: change it there, then run node sync-themes.mjs. */
 ${body}
 /* themes:end */`,

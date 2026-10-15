@@ -4,6 +4,10 @@ Core and the dashboard have their own versions (`core/VERSION`, `core/scripts/da
 
 Format: one `## Core <version> (<date>)` or `## Dashboard <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Dashboard 1.3.0 (2026-10-15)
+
+- Push button on PR cards in the live dashboard: runs `git -C <repo> push -u origin <branch>` for the branch named in `pr.md`. The click is the approval, so there is no separate prompt. It never pushes `main`, `master`, `develop`, `dev`, or the PR's target branch, and never force pushes. Git errors (for example, a sign-in failure) show in the toast and the server log.
+
 ## Dashboard 1.2.1 (2026-10-14)
 
 - The item in Pick up here is no longer shown again as a full card in its group. The group shows a one-line pointer to it instead.

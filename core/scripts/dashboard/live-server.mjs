@@ -12,8 +12,9 @@
 //   - Runs pipeline commands from the page: one opencode session per work item, except
 //     /do-task and /check-docs, which get a fresh session as the pipeline requires.
 //
-// No dependencies beyond Node 18+. Writes only to .work/_dashboard/, except when you abandon or
-// clean up an item from the page: then it deletes that item's .work/<folder>. Never calls ADO.
+// No dependencies beyond Node 18+. Writes to .work/_dashboard/ and keeps .work/dashboard.html (the
+// static page) current. Deletes an item's .work/<folder> only when you abandon or remove it from the
+// page. Never calls ADO.
 // Usually started by Start-LiveDashboard.ps1. Run with --help for options.
 
 import http from "node:http";
@@ -207,6 +208,7 @@ async function refresh() {
       model = r.data;
       modelError = null;
       linkSessionsFromModel();
+      writeSnapshot();
     }
     broadcast("model", pageData());
   } finally {
@@ -218,6 +220,26 @@ async function refresh() {
   }
 }
 
+// Keeps .work/dashboard.html (the static page) current while this runs, so after a reboot that file
+// shows where everything stood, with a link back here. Written only when something changed.
+let lastSnapshot = null;
+function writeSnapshot() {
+  try {
+    const { generated, generatedMs, ...rest } = model;
+    const key = JSON.stringify(rest);
+    if (key === lastSnapshot) return;
+    const data = { ...model, liveUrl: `http://127.0.0.1:${opt.port}/` };
+    const json = JSON.stringify(data).replace(/</g, "\\u003c").replace(/>/g, "\\u003e").replace(/&/g, "\\u0026");
+    const html = fs.readFileSync(templatePath, "utf8").replace("__ENG_DATA__", () => json);
+    const out = path.join(workRoot, "dashboard.html");
+    fs.writeFileSync(out + ".tmp", html);
+    fs.renameSync(out + ".tmp", out);
+    lastSnapshot = key;
+  } catch (e) {
+    log("could not write .work/dashboard.html:", e.message);
+  }
+}
+
 let debounce = null;
 function scheduleRefresh(ms = 400) {
   clearTimeout(debounce);
@@ -225,7 +247,7 @@ function scheduleRefresh(ms = 400) {
 }
 
 function watchWork() {
-  const ignore = (f) => !f || /^_dashboard([\\/]|$)/.test(f) || /dashboard\.html$/i.test(f);
+  const ignore = (f) => !f || /^_dashboard([\\/]|$)/.test(f) || /dashboard\.html(\.tmp)?$/i.test(f);
   try {
     fs.watch(workRoot, { recursive: true }, (_e, f) => {
       if (!ignore(String(f || ""))) scheduleRefresh();

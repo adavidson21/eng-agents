@@ -34,8 +34,14 @@
 
     Needs Node 18 or newer (node on PATH).
 
+    -Detach starts it in its own minimized window and returns as soon as it is up, or just opens
+    it if it is already running. /dashboard in opencode uses this.
+
 .EXAMPLE
     .\Start-LiveDashboard.ps1
+
+.EXAMPLE
+    .\Start-LiveDashboard.ps1 -Detach
 
 .EXAMPLE
     .\Start-LiveDashboard.ps1 -Workspace C:\src\work -Port 4310
@@ -66,7 +72,11 @@ param(
 
     # Sites allowed to embed the dashboard and read item stages (a shell such as Prioritizer).
     # Usually set once in config.json instead: "dashboard": { "shellOrigins": ["https://..."] }.
-    [string[]]$ShellOrigin
+    [string[]]$ShellOrigin,
+
+    # Start it in its own minimized window and return once it answers. If it is already running
+    # for this workspace, just open it.
+    [switch]$Detach
 )
 
 $ErrorActionPreference = "Stop"
@@ -88,6 +98,62 @@ if ([int]($ver.Split('.')[0]) -lt 18) { throw "Node $ver is too old. The live da
 
 # Run New-Dashboard.ps1 with the same PowerShell that is running this script.
 $ps = [System.Diagnostics.Process]::GetCurrentProcess().MainModule.FileName
+
+if ($Detach) {
+    $url = "http://127.0.0.1:$Port/"
+    function Get-Ping {
+        try { return Invoke-RestMethod -Uri "${url}api/ping" -TimeoutSec 2 -ErrorAction Stop } catch { return $null }
+    }
+    function Open-Page {
+        if ($NoOpen) { return }
+        try {
+            if ($PSVersionTable.PSVersion.Major -lt 6 -or $IsWindows) { Start-Process $url }
+            elseif ($IsMacOS) { & open $url }
+            elseif (Get-Command xdg-open -ErrorAction SilentlyContinue) { & xdg-open $url 2>$null | Out-Null }
+        }
+        catch { }
+    }
+    $same = { param($p) $p -and $p.app -eq "eng-agents-dashboard" -and ([string]$p.workspace).TrimEnd('\', '/') -eq $ws.TrimEnd('\', '/') }
+    $ping = Get-Ping
+    if ($ping) {
+        if (-not (& $same $ping)) { throw "Port $Port is in use$(if ($ping.workspace) { " by the dashboard for $($ping.workspace)" }). Pass -Port <n>." }
+        Open-Page
+        Write-Output "Already running: $url"
+        exit 0
+    }
+
+    # The same command without -Detach, in its own window. Closing that window stops the dashboard.
+    $q = { param($v) "`"$($v -replace '"', '\"')`"" }
+    $argList = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", (& $q $PSCommandPath), "-Workspace", (& $q $ws), "-Port", $Port, "-ConfigPath", (& $q $ConfigPath))
+    if ($OpencodeUrl) { $argList += @("-OpencodeUrl", (& $q $OpencodeUrl)) }
+    if ($NoOpen) { $argList += "-NoOpen" }
+    if ($NoOpencode) { $argList += "-NoOpencode" }
+    if ($NoUpdateCheck) { $argList += "-NoUpdateCheck" }
+    foreach ($o in @($ShellOrigin | Where-Object { $_ })) { $argList += @("-ShellOrigin", (& $q $o)) }
+    $logFile = Join-Path $ws ".work/_dashboard/live.log"
+    if ($PSVersionTable.PSVersion.Major -lt 6 -or $IsWindows) {
+        Start-Process -FilePath $ps -ArgumentList $argList -WorkingDirectory $ws -WindowStyle Minimized | Out-Null
+    }
+    else {
+        # macOS and Linux: no window to put it in, so it runs in the background and logs to a file.
+        # nohup and a shell redirect keep it running after this script and its terminal exit.
+        New-Item -ItemType Directory -Force -Path (Split-Path $logFile) | Out-Null
+        $sq = { param($v) "'" + ([string]$v -replace "'", "'\''") + "'" }
+        $plain = @($argList | ForEach-Object { ([string]$_).Trim('"') })
+        $line = "cd " + (& $sq $ws) + " && nohup " + ((@($ps) + $plain | ForEach-Object { & $sq $_ }) -join " ") + " > " + (& $sq $logFile) + " 2>&1 &"
+        & /bin/sh -c $line
+    }
+    for ($i = 0; $i -lt 60; $i++) {
+        Start-Sleep -Milliseconds 500
+        $ping = Get-Ping
+        if (& $same $ping) {
+            Write-Output "Live dashboard: $url"
+            Write-Output $(if ($PSVersionTable.PSVersion.Major -lt 6 -or $IsWindows) { "It runs in its own minimized window. Close that window to stop it." } else { "It runs in the background. Log: $logFile" })
+            exit 0
+        }
+    }
+    throw "The live dashboard did not start within 30 seconds. $(if ($PSVersionTable.PSVersion.Major -lt 6 -or $IsWindows) { 'Look at its window for the error.' } else { "See $logFile" })"
+}
 
 $nodeArgs = @($server, "--workspace", $ws, "--port", $Port, "--ps", $ps, "--config", $ConfigPath)
 if ($OpencodeUrl) { $nodeArgs += @("--opencode", $OpencodeUrl) }

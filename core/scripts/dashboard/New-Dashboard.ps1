@@ -733,7 +733,7 @@ $data = [ordered]@{
     gitAvailable = $script:GitOk
     configFound = (Test-Path -LiteralPath $ConfigPath)
     dashboardVersion = $dashboardVersion
-    refreshCommand = "/dashboard"
+    refreshCommand = "/dashboard static"
     refreshShell = "$psExe -NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`" -WorkRoot `"$workRootFull`""
     liveShell = "$psExe -NoProfile -ExecutionPolicy Bypass -File `"$(Join-Path $PSScriptRoot 'Start-LiveDashboard.ps1')`""
     items = @($items | Sort-Object -Property @{ Expression = { $_.modifiedMs }; Descending = $true })

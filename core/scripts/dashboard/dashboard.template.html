@@ -19,8 +19,8 @@
     follows the server's event stream and can run commands in opencode.
 -->
 <style>
-/* themes:begin  Copied from Prioritizer's themes.css by sync-themes.mjs. Do not edit here: change
-   themes.css in Prioritizer, then run node sync-themes.mjs. */
+/* themes:begin  Copied from shared/themes.css in the EM Hub (prioritizer repo) by sync-themes.mjs.
+   Do not edit here: change it there, then run node sync-themes.mjs. */
 :root,
 :root[data-theme=slate]    {--bg:#F7F7F8;--surface:#FFFFFF;--ink:#1C1D21;--muted:#5C5F66;--accent:#4F46E5;--on-accent:#FFFFFF;--danger:#B42318;--warn:#94570A;color-scheme:light}
 :root[data-theme=graphite] {--bg:#141518;--surface:#1C1E22;--ink:#E8E9EC;--muted:#A0A4AB;--accent:#8C88FF;--on-accent:#141518;--danger:#F97066;--warn:#E3A64A;color-scheme:dark}
@@ -492,7 +492,7 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
   var LIVE = !!D.liveMode;
   var L = LIVE ? D.liveMode.live : null;   // opencode state: sessions, prompts, item links
   var conn = LIVE ? "connecting" : null;  // page <-> live server
-  // Embedded: framed by a shell site the server allows (Prioritizer), opened as /?embed=1. Live only.
+  // Embedded: framed by a shell site the server allows (the EM Hub), opened as /?embed=1. Live only.
   var embedOrigins = LIVE ? (D.liveMode.embedOrigins || []) : [];
   var EMBED = LIVE && /[?&]embed=1(&|$)/.test(location.search) && window.parent !== window && embedOrigins.length > 0;
   if (EMBED) document.documentElement.classList.add("embed");
@@ -656,17 +656,14 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
   }
 
   // Live: the step in plain words and one main button. Commands stay in the button's tooltip.
-  var CMD_WORDS = {
-    start: "Set up the repos and branches", spec: "Write the spec", plan: "Write the plan", tasks: "Split the plan into tasks",
-    bug: "Analyze the bug", review: "Review the changes", pr: "Write the PR text", resume: "Resume this item", approve: "Approve"
-  };
+  // The words come from New-Dashboard.ps1 (stepWords), the one place that defines them.
   function cmdWords(it, cmd) {
     var p = String(cmd).split(/\s+/), name = p[0].replace(/^\//, "");
     if (name === "do-task") {
       var n = +p[2], t = ((it.tasks && it.tasks.list) || []).filter(function (x) { return x.n === n; })[0];
       return "Task " + n + (t ? ": " + t.title : "");
     }
-    return CMD_WORDS[name] || cmd;
+    return (D.stepWords || {})[name] || cmd;
   }
   function liveNextHtml(it, big) {
     var n = it.next || {};

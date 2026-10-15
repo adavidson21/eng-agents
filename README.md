@@ -48,3 +48,4 @@ Something went wrong? See [Recovering from problems](docs/pipeline.md#recovering
 | [Changelog](CHANGELOG.md) | What is new in each Core and dashboard version |
 | [Customization](docs/customization.md) | Files to review, how layers combine, agents, permissions, templates, changing Core |
 | [Pipeline](docs/pipeline.md) | How each phase works, gates, lanes, work files, the dashboard, repo guides and memory, pausing, recovery, tuning |
+| [Shell API](docs/shell-api.md) | Showing the live dashboard and item stages inside another web app (such as the EM Hub) |

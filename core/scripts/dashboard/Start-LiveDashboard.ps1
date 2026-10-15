@@ -19,7 +19,7 @@
       - Checks for eng-agents updates every few hours (update.ps1 -Check) and shows "Update
         available" in the header. Updating from the page restarts the dashboard in this window.
       - Optional shell: a site listed in config.json ("dashboard": { "shellOrigins": [...] }) can show
-        this dashboard inside its own page and read where each work item stands. Prioritizer does this.
+        this dashboard inside its own page and read where each work item stands. The EM Hub does this.
       - Autopilot: after you approve the plan (or bug analysis), runs tasks, each task in a new
         session, review, and PR text, and stops only when it needs you. Never pushes.
 
@@ -70,7 +70,7 @@ param(
     # Do not check for eng-agents updates.
     [switch]$NoUpdateCheck,
 
-    # Sites allowed to embed the dashboard and read item stages (a shell such as Prioritizer).
+    # Sites allowed to embed the dashboard and read item stages (a shell such as the EM Hub).
     # Usually set once in config.json instead: "dashboard": { "shellOrigins": ["https://..."] }.
     [string[]]$ShellOrigin,
 

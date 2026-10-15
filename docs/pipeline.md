@@ -299,27 +299,27 @@ Start it with `Start-LiveDashboard.ps1`, not `node live-server.mjs` directly: th
 
 #### Showing it inside another app (optional)
 
-Another web app, a "shell", can show the live dashboard as one of its own views and badge its tasks with each work item's stage. [Prioritizer](https://github.com/adavidson21/prioritizer) does this: its **Dashboard** view is this page, and ADO tasks show their stage and get a **Start** button. Off by default; turn it on by listing the shell's address in `config.json`:
+Another web app, a "shell", can show the live dashboard as one of its own pages and badge its tasks with each work item's stage. The [EM Hub](https://github.com/adavidson21/prioritizer) does this: its **Dashboard** page is this page, and Prioritizer's ADO tasks show their stage and get a **Start** button. Off by default; turn it on by listing the shell's address in `config.json`:
 
 ```json
 {
-  "dashboard": { "shellOrigins": ["https://prioritizer.example.com"] }
+  "dashboard": { "shellOrigins": ["https://em.example.com"] }
 }
 ```
 
 Restart the dashboard after changing it. Only listed sites get in:
 
 - **Embedding.** The page sends `frame-ancestors 'self'` plus the listed sites, so no other site can put it in a frame. Opened as `/?embed=1` inside a listed site, the page drops its own name and theme button and follows the shell's theme.
-- **Shell API.** `GET /api/shell/status` (item stages and next steps) and `POST /api/shell/start` (`{ "id": "41207", "lane": "feature" }`, runs `/start` in a new session). Requests must come from a listed site; anything else gets 403.
+- **Shell API.** `GET /api/shell/status` (item stages and next steps) and `POST /api/shell/start` (`{ "id": "41207", "lane": "feature" }`, runs `/start` in a new session). Requests must come from a listed site; anything else gets 403. The full contract, including the frame messages, is in [Shell API](shell-api.md).
 - Every other route still answers only this page, as before.
 
 ### Shared themes
 
-Prioritizer's `themes.css` is the source of truth for the dashboard's colors and theme list. The dashboard keeps a copy in `dashboard.template.html` between `themes:begin` and `themes:end` (plus the theme menu, its swatches, and the first-paint list). To pick up a change:
+The EM Hub's `shared/themes.css` (in the prioritizer repo) is the source of truth for the dashboard's colors and theme list. The dashboard keeps a copy in `dashboard.template.html` between `themes:begin` and `themes:end` (plus the theme menu, its swatches, and the first-paint list). To pick up a change:
 
 ```powershell
-node core\scripts\dashboard\sync-themes.mjs            # from Prioritizer's main branch on GitHub
-node core\scripts\dashboard\sync-themes.mjs --from ..\prioritizer\themes.css
+node core\scripts\dashboard\sync-themes.mjs            # from the hub's main branch on GitHub
+node core\scripts\dashboard\sync-themes.mjs --from ..\prioritizer\shared\themes.css
 node core\scripts\dashboard\sync-themes.mjs --check    # exit 1 if the copy drifted
 ```
 

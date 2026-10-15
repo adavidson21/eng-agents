@@ -4,6 +4,13 @@ Core and the dashboard have their own versions (`core/VERSION`, `core/scripts/da
 
 Format: one `## Core <version> (<date>)` or `## Dashboard <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Dashboard 1.6.0 (2026-10-15)
+
+- The live dashboard server is split into modules in `core/scripts/dashboard/server/` (one per concern); `live-server.mjs` is now just the HTTP server and startup. Same behavior. Restart the live dashboard after updating.
+- Step wording ("Task 3: Add test", "Write the spec") is defined once, in `New-Dashboard.ps1`. Each next step carries `text`, and the page data carries `stepWords`.
+- The shell API reports its contract version (`api: 1`). The contract is documented in [docs/shell-api.md](docs/shell-api.md).
+- Themes now come from the EM Hub's `shared/themes.css` (the prioritizer repo, reorganized as the EM Hub). `sync-themes.mjs` reads the new path.
+
 ## Dashboard 1.5.1 (2026-10-15)
 
 - The shell API (`/api/shell/status`) also sends each item's next step in plain words (`next.text`) and whether autopilot is running or needs you (`autopilot`), so Prioritizer can show them.

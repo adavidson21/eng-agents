@@ -13,8 +13,8 @@ Open opencode from your workspace root (for example `C:\src\work`).
 | Question, no code changes | `/spike <id or topic>` |
 | Docs | `/docs <target>`, new session, `/check-docs <doc path>` |
 | Technical spec with diagrams | `/tsd <product or repo> [repo ...]` → new session → `/check-docs .work/tsd-<name>/tsd.md` → revise → `/publish tsd-<name>` |
-| Where was I? | `/dashboard` (every item and repo, in your browser) or `/status [id]` |
-| Drive it from the browser | `Start-LiveDashboard.ps1` from a terminal: the dashboard stays live and runs commands in opencode (see [Live dashboard](docs/pipeline.md#live-dashboard-optional)) |
+| Where was I? | `/dashboard` (opens the live dashboard, starting it if needed) or `/status [id]` |
+| Drive it from the browser | `/dashboard`: the live dashboard runs commands in opencode (see [Live dashboard](docs/pipeline.md#live-dashboard-optional)) |
 | Hands-off build after the plan | Live dashboard: **Approve and build**. It runs tasks, review, and PR text, each step in a new session, and stops only when it needs you (see [Autopilot](docs/pipeline.md#autopilot)) |
 | Standup update | `/standup [days back]` (default 1, or 3 on a Monday) |
 | Switch to something urgent | `/pause <id> [reason]`, later `/resume <id>` |
@@ -29,7 +29,7 @@ Open opencode from your workspace root (for example `C:\src\work`).
 - **Review findings** you accept become new tasks. Run `/do-task` for each, then `/review` again.
 - **You approve every push** and open the PR. No agent can merge or deploy.
 - Every command ends with the next command to run. If lost, run `/dashboard` or `/status <id>`.
-- **After a restart**, you don't need opencode to see where you were. Open `.work\dashboard.html`, or rebuild it from any terminal (see [Dashboard](docs/pipeline.md#dashboard)).
+- **After a restart**, open `.work\dashboard.html` (bookmark it) to see where you were, then `/dashboard` in opencode to bring the live dashboard back (see [Dashboard](docs/pipeline.md#dashboard)).
 
 Something went wrong? See [Recovering from problems](docs/pipeline.md#recovering-from-problems).
 

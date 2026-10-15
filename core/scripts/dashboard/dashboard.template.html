@@ -334,6 +334,9 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
 @keyframes pulse { from { opacity: .35; } to { opacity: 1; } }
 .banner { border: 1px solid color-mix(in srgb, var(--stop) 40%, var(--surface)); background: var(--stop-soft); color: var(--ink); border-radius: 10px; padding: 10px 14px; margin: 0 0 18px; font-size: 14px; }
 .banner code { word-break: break-all; }
+.livebar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 10px 14px; margin: 0 0 18px; font-size: 14px; }
+.livebar.up { border-color: color-mix(in srgb, var(--go) 45%, var(--line)); background: var(--go-soft); }
+.livebar > span:first-child { flex: 1 1 320px; }
 
 .menu {
   position: fixed; z-index: 40; background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
@@ -1232,8 +1235,7 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
       var stale = (now - D.generatedMs) > 3 * 3600e3;
       return html + '<span class="fresh"><span title="' + h(new Date(D.generatedMs).toLocaleString()) + '">Built ' + h(timeOf(D.generatedMs)) +
         (stale ? ' <span class="stale">(' + ago(D.generatedMs) + ", may be out of date)</span>" : " (" + ago(D.generatedMs) + ")") +
-        "</span><span>Refresh: <code>" + h(D.refreshCommand) + "</code> " + copyBtn(D.refreshCommand) + " " + copyBtn(D.refreshShell, "Copy shell command") + "</span>" +
-        (D.liveShell ? "<span>Live version: " + copyBtn(D.liveShell, "Copy launch command") + "</span>" : "") + themeBtn + "</span></header>";
+        "</span>" + themeBtn + "</span></header>";
     }
     // One status pill: green only when the page and opencode are both connected.
     var o = (L && L.opencode) || {};
@@ -1397,8 +1399,24 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
     alertUser("eng-agents update available", what, "update-" + key, null);
   }
 
+  // Static page: is the live dashboard running? A page opened from a file can still reach 127.0.0.1;
+  // any answer (even a refusal) means it is up. Checked on load and every 15 seconds.
+  var liveUp = null;
+  var LIVE_URL = D.liveUrl || "http://127.0.0.1:4300/";
+  function checkLive() {
+    if (LIVE || !window.fetch) return;
+    fetch(LIVE_URL + "api/ping", { mode: "no-cors", cache: "no-store" }).then(function () { return true; }, function () { return false; })
+      .then(function (up) { if (up !== liveUp) { liveUp = up; schedule(); } });
+  }
+  function staticBannerHtml() {
+    if (liveUp) return '<div class="livebar up"><span><strong>The live dashboard is running.</strong> It has the newest state and the buttons.</span><a class="btn primary" href="' + h(LIVE_URL) + '">Open live dashboard</a></div>';
+    if (liveUp === false) return '<div class="livebar"><span><strong>The live dashboard is off.</strong> Start it with <code>/dashboard</code> in opencode, or from a terminal:</span>' +
+      (D.liveShell ? copyBtn(D.liveShell, "Copy launch command") : "") + '<span class="dim">Rebuild this page: <code>' + h(D.refreshCommand) + "</code> " + copyBtn(D.refreshShell, "Copy shell command") + "</span></div>";
+    return "";
+  }
+
   function bannersHtml() {
-    if (!LIVE) return "";
+    if (!LIVE) return staticBannerHtml();
     var out = "";
     if (conn === "off") out += '<div class="banner">The live dashboard server stopped or restarted. This page reconnects by itself. If it does not, start it again: <code>Start-LiveDashboard.ps1</code></div>';
     else if (L && L.opencode && !L.opencode.connected && L.opencode.error) out += '<div class="banner">' + md(L.opencode.error) + "</div>";
@@ -1722,6 +1740,9 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
   if (LIVE) {
     connect();
     setInterval(schedule, 30000); // keep "x min ago" fresh
+  } else {
+    checkLive();
+    setInterval(checkLive, 15000);
   }
 })();
 </script>

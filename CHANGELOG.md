@@ -4,6 +4,16 @@ Core and the dashboard have their own versions (`core/VERSION`, `core/scripts/da
 
 Format: one `## Core <version> (<date>)` or `## Dashboard <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Dashboard 1.5.0 (2026-10-15)
+
+- `Start-LiveDashboard.ps1 -Detach`: starts the live dashboard in its own minimized window and returns once it answers, or opens it if it is already running.
+- The live dashboard keeps `.work/dashboard.html` current, so after a restart that file shows where everything stood.
+- The static page shows whether the live dashboard is running, with **Open live dashboard** or how to start it.
+
+## Core 2.1.0 (2026-10-15)
+
+- `/dashboard` opens the live dashboard, starting it if needed, and falls back to the static page. `/dashboard static` builds the static page.
+
 ## Dashboard 1.4.0 (2026-10-15)
 
 - One main button per step. The Next line says the step in plain words ("Task 3: Update invoice totals") and offers **Approve and build** or **Build with autopilot** when autopilot can take over, otherwise **Run**, **Approve**, or **Resume**. The command is in the tooltip.

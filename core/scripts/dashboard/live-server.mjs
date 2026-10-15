@@ -1147,6 +1147,26 @@ async function startItem({ id, lane }) {
   return { session: sid };
 }
 
+// The next step in plain words, the way the dashboard page says it ("Task 3: Update invoice totals").
+const STEP_WORDS = {
+  start: "Set up the repos and branches", spec: "Write the spec", plan: "Write the plan", tasks: "Split the plan into tasks",
+  bug: "Analyze the bug", review: "Review the changes", pr: "Write the PR text", resume: "Resume this item", approve: "Approve",
+};
+function stepText(it) {
+  const n = it.next || {};
+  if (it.paused) return "Resume this item";
+  if (n.action) return n.action;
+  if (!n.command) return null;
+  const p = String(n.command).split(/\s+/);
+  const name = p[0].replace(/^\//, "");
+  if (name === "do-task") {
+    const k = +p[2];
+    const t = ((it.tasks && it.tasks.list) || []).find((x) => x.n === k);
+    return `Task ${k}${t ? ": " + t.title : ""}`;
+  }
+  return STEP_WORDS[name] || n.command;
+}
+
 // What a shell needs to badge its tasks: one row per numbered work item, plus /start in progress.
 function shellData() {
   const items = [];
@@ -1160,12 +1180,14 @@ function shellData() {
       lane: it.lane,
       stage: it.stage,
       bucket: it.bucket,
-      next: it.next ? { command: it.next.command || null, action: it.next.action || null, needsYou: !!it.next.needsYou } : null,
+      next: it.next ? { command: it.next.command || null, action: it.next.action || null, text: stepText(it), needsYou: !!it.next.needsYou } : null,
       tasks: it.tasks ? { done: it.tasks.done || 0, total: it.tasks.total || 0 } : null,
       paused: !!it.paused,
       blocked: !!it.blocked,
       agent: s ? s.status : null,
       waiting: !!s && ([...permissions.values()].some((p) => p.sessionID === sid) || [...questions.values()].some((q) => q.sessionID === sid)),
+      autopilot: autopilot[it.folder] && ["running", "waiting"].includes(autopilot[it.folder].status)
+        ? { status: autopilot[it.folder].status, message: autopilot[it.folder].message || null } : null,
     });
   }
   // Started from the shell, folder not there yet: /start is running, waiting on the engineer (it asks

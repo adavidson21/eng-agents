@@ -19,7 +19,7 @@
     follows the server's event stream and can run commands in opencode.
 -->
 <style>
-/* themes:begin  Copied from shared/themes.css in the EM Hub (prioritizer repo) by sync-themes.mjs.
+/* themes:begin  Copied from shared/themes.css in Workshop (workshop repo) by sync-themes.mjs.
    Do not edit here: change it there, then run node sync-themes.mjs. */
 :root,
 :root[data-theme=slate]    {--bg:#F7F7F8;--surface:#FFFFFF;--ink:#1C1D21;--muted:#5C5F66;--accent:#4F46E5;--on-accent:#FFFFFF;--danger:#B42318;--warn:#94570A;color-scheme:light}
@@ -492,7 +492,7 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
   var LIVE = !!D.liveMode;
   var L = LIVE ? D.liveMode.live : null;   // opencode state: sessions, prompts, item links
   var conn = LIVE ? "connecting" : null;  // page <-> live server
-  // Embedded: framed by a shell site the server allows (the EM Hub), opened as /?embed=1. Live only.
+  // Embedded: framed by a shell site the server allows (Workshop), opened as /?embed=1. Live only.
   var embedOrigins = LIVE ? (D.liveMode.embedOrigins || []) : [];
   var EMBED = LIVE && /[?&]embed=1(&|$)/.test(location.search) && window.parent !== window && embedOrigins.length > 0;
   if (EMBED) document.documentElement.classList.add("embed");

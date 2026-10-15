@@ -299,7 +299,7 @@ Start it with `Start-LiveDashboard.ps1`, not `node live-server.mjs` directly: th
 
 #### Showing it inside another app (optional)
 
-Another web app, a "shell", can show the live dashboard as one of its own pages and badge its tasks with each work item's stage. The [EM Hub](https://github.com/adavidson21/prioritizer) does this: its **Dashboard** page is this page, and Prioritizer's ADO tasks show their stage and get a **Start** button. Off by default; turn it on by listing the shell's address in `config.json`:
+Another web app, a "shell", can show the live dashboard as one of its own pages and badge its tasks with each work item's stage. The [Workshop](https://github.com/adavidson21/workshop) does this: its **Dashboard** page is this page, and Prioritizer's ADO tasks show their stage and get a **Start** button. Off by default; turn it on by listing the shell's address in `config.json`:
 
 ```json
 {
@@ -315,11 +315,11 @@ Restart the dashboard after changing it. Only listed sites get in:
 
 ### Shared themes
 
-The EM Hub's `shared/themes.css` (in the prioritizer repo) is the source of truth for the dashboard's colors and theme list. The dashboard keeps a copy in `dashboard.template.html` between `themes:begin` and `themes:end` (plus the theme menu, its swatches, and the first-paint list). To pick up a change:
+Workshop's `shared/themes.css` (in the workshop repo) is the source of truth for the dashboard's colors and theme list. The dashboard keeps a copy in `dashboard.template.html` between `themes:begin` and `themes:end` (plus the theme menu, its swatches, and the first-paint list). To pick up a change:
 
 ```powershell
 node core\scripts\dashboard\sync-themes.mjs            # from the hub's main branch on GitHub
-node core\scripts\dashboard\sync-themes.mjs --from ..\prioritizer\shared\themes.css
+node core\scripts\dashboard\sync-themes.mjs --from ..\workshop\shared\themes.css
 node core\scripts\dashboard\sync-themes.mjs --check    # exit 1 if the copy drifted
 ```
 

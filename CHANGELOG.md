@@ -4,6 +4,11 @@ Core and the dashboard have their own versions (`core/VERSION`, `core/scripts/da
 
 Format: one `## Core <version> (<date>)` or `## Dashboard <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Dashboard 1.2.1 (2026-10-14)
+
+- The item in Pick up here is no longer shown again as a full card in its group. The group shows a one-line pointer to it instead.
+- Pick up here has its own Abandon button.
+
 ## Dashboard 1.2.0 (2026-10-14)
 
 - Abandon or remove an item from the live dashboard: type the item id to confirm, and its `.work` folder, sessions, and autopilot state are deleted. Repos and branches are left alone; the dialog lists work still in them and the commands to delete the branches.

@@ -268,14 +268,15 @@ It needs Node 18 or newer. The static page's header has a "Copy launch command" 
 What changes compared to `/dashboard`:
 
 - **Live.** The page updates when `.work` changes and re-reads git every 20 seconds. No refresh command.
-- **Run buttons.** Next to each next command. The command runs in opencode, in that item's session. `/do-task` and `/check-docs` get a fresh session, as the pipeline requires, so you never need `/new`.
+- **One button per step.** Each item's Next line says the step in plain words (for example "Task 3: Update invoice totals") with one main button: **Approve and build** or **Build with autopilot** when autopilot can take over, otherwise **Run**, **Approve**, or **Resume**. A quieter second button runs just the next step. The command it sends is in the button's tooltip. Commands run in opencode, in that item's session; `/do-task` and `/check-docs` get a fresh session, as the pipeline requires, so you never need `/new`. The static page keeps the commands and Copy buttons for the terminal.
 - **Agent panel** on each item with a session: working or done, the current step (for example `bash: dotnet test ...`), the agent's last reply, a reply box, and Stop.
 - **Prompts.** Permission prompts (Allow once, Always allow, Reject) and agent questions show on the item and turn it amber. Prompts from sessions not tied to an item show under "Waiting for you".
-- **Open in terminal** opens the opencode TUI on that item's session (Windows and macOS). "Copy terminal command" gives the same command to paste.
+- **Header.** One status pill (green **Live** when the page and opencode are both connected; hover for details), **Update available** only when there is one, the **More** menu (`...`), and the theme button. More holds Refresh now, Turn on alerts, Open the opencode TUI, Copy terminal command, and Check for updates.
+- **Open in terminal** on an item's agent panel opens the opencode TUI on that item's session (Windows and macOS). "Copy terminal command" gives the same command to paste.
 - **Themes.** The theme button in the header picks Slate, Graphite, Ivory, Rosé, Solarized Light, Nord, or Dracula, or follows your system setting. The static page has it too. The choice is remembered in that browser. The themes come from Prioritizer (see [Shared themes](#shared-themes)).
 - **Updates.** The header shows **Update available** when there is a new dashboard or Core version. The Updates panel lists what is new, warns about files you override, and updates and restarts the dashboard for you (see [Updating](onboarding-company.md#updating)). Updating is the one action that writes outside `.work\_dashboard\`: it runs `update.ps1`, the same as from a terminal.
 - **Abandon and Remove.** Each card has an **Abandon** button (**Remove** on Ready to ship items, spikes, docs, and TSDs). It asks you to type the item id, then deletes the item's `.work` folder and its sessions and autopilot state. It never touches the repos: the dialog lists unpushed or uncommitted work that stays behind, and gives the commands to delete the branches yourself. It is not available while the item's agent or autopilot is working.
-- **Alerts.** Click "Turn on alerts" in the header once. While the page is in the background, you get a browser notification when an agent starts waiting for you or finishes. The tab title shows how many prompts are waiting, for example `(1) Work dashboard`.
+- **Alerts.** Click **More**, then "Turn on alerts", once. While the page is in the background, you get a browser notification when an agent starts waiting for you or finishes. The tab title shows how many prompts are waiting, for example `(1) Work dashboard`.
 
 How it fits together:
 
@@ -330,8 +331,8 @@ Autopilot runs the build half of an item for you, so your only stops are approvi
 
 | Button | Shows when | What it does |
 |---|---|---|
-| **Approve and start autopilot** | `plan.md` or `bug.md` is waiting for approval | Runs `/approve <id> plan` (or `bug`), then everything below. Clicking it is your approval. |
-| **Start autopilot** | The plan or bug analysis is already approved | Runs everything below from wherever the item is. |
+| **Approve and build** | `plan.md` or `bug.md` is waiting for approval | Runs `/approve <id> plan` (or `bug`), then everything below. Clicking it is your approval. |
+| **Build with autopilot** | The plan or bug analysis is already approved | Runs everything below from wherever the item is. |
 | **Stop after this step** | Autopilot is running | The current step finishes. Nothing runs after it. |
 | **Resume** | Autopilot is waiting for you | Re-reads `.work` and runs the next step. |
 

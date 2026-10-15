@@ -27,8 +27,10 @@
       opencode 2.x  just run opencode (it uses the same background service)
       opencode 1.x  opencode attach http://127.0.0.1:4096 instead of plain opencode
 
-    Read-only apart from .work\_dashboard\ (session links and the opencode log). It never calls
-    ADO and never pushes. Commands it runs follow the same permission rules as in the TUI.
+    Writes only to .work\_dashboard\ (session links, autopilot state, the opencode log), except
+    Abandon and Remove, which delete that item's .work folder after you confirm. It never calls
+    ADO. It pushes only when you click Push on a PR card. Commands it runs follow the same
+    permission rules as in the TUI.
 
     Needs Node 18 or newer (node on PATH).
 

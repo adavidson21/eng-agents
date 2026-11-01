@@ -144,3 +144,14 @@ export async function fileAt(dir, sha, filePath) {
   if (buf.subarray(0, 8000).includes(0)) return { kind: "binary", size };
   return { kind: "text", text: buf.toString("utf8") };
 }
+
+// Whether commit a is an ancestor of (or equal to) commit b: true, false, or null if git cannot tell.
+export async function isAncestor(dir, a, b) {
+  if (!SHA_RE.test(a) || !SHA_RE.test(b)) throw new Error("isAncestor needs two full commit shas.");
+  try {
+    await git(dir, ["merge-base", "--is-ancestor", a, b]);
+    return true;
+  } catch (e) {
+    return e.gitCode === 1 ? false : null;
+  }
+}

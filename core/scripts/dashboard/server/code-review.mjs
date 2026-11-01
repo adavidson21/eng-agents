@@ -136,8 +136,9 @@ export function parseResponses(text) {
 //   findItem    (workItemId) => the work item from New-Dashboard.ps1 -AsJson, or null
 //   canRevise   optional () => null, or a plain-words reason a revision cannot start right now
 //               (checked before request changes is saved, so a verdict never strands an item)
+//   runInfo     optional (folder, repo) => the revision run's { status, message, session, revision }, or null
 //   now         () => Date (tests)
-export function createCodeReview({ workspace, workRoot, findItem, canRevise = () => null, now = () => new Date() }) {
+export function createCodeReview({ workspace, workRoot, findItem, canRevise = () => null, runInfo = () => null, now = () => new Date() }) {
   const events = new EventEmitter();
   const submitting = new Set();
 
@@ -216,6 +217,7 @@ export function createCodeReview({ workspace, workRoot, findItem, canRevise = ()
     let since = null;
     const prevSha = state.revision > 1 ? state.lastReviewedHeadSha : null;
     if (prevSha && (await resolveSha(dir, prevSha))) since = await changedFiles(dir, prevSha, shas.headSha);
+    const run = runInfo(item.folder, repo);
     return {
       workItemId: wid,
       repo,
@@ -229,6 +231,7 @@ export function createCodeReview({ workspace, workRoot, findItem, canRevise = ()
       ...(prev && { previousFeedback: prev }),
       ...(responses && { previousResponses: responses }),
       ...(since && { sinceLastReview: since }),
+      ...(run && { revisionRun: run }),
     };
   }
 

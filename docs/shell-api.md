@@ -96,6 +96,14 @@ type ReviewSession = {
   previousFeedback?: ReviewFeedback;   // revision 2 and later
   previousResponses?: ReviewResponse[]; // the agent's answers to previousFeedback, when it wrote them
   sinceLastReview?: ChangedFile[];      // files changed from previousFeedback.headSha to headSha
+  revisionRun?: RevisionRun;            // the latest revision the agent ran for this review
+};
+
+type RevisionRun = {
+  status: 'running' | 'failed' | 'done';
+  message: string | null;    // plain words; for 'failed', what the engineer should do
+  session: string | null;    // the opencode session, for opening it in the dashboard
+  revision: number;          // the revision whose feedback it is addressing
 };
 
 type ReviewResponse = {
@@ -183,5 +191,16 @@ Per work item and repo, in `.work/<folder>/code-review/<repo>/`:
 | `state.json` | `{ revision, status, lastReviewedHeadSha }`. Missing means revision 1, awaiting review. |
 | `rev-<n>.json` | The `ReviewFeedback` submitted for revision `n`. |
 | `rev-<n>-response.json` | The agent's `ReviewResponse[]` for revision `n`. |
+| `run.json` | The latest revision run: `{ revision, branch, session, status, message, startedAt, updatedAt }`. |
 
-Inside the server, a request changes verdict emits `changes-requested` (and approve emits `approved`) on the code review module's `events`, with `{ workItemId, folder, repo, repoDir, branch, revision, feedback }`. The revision runner listens for it.
+Inside the server, a request changes verdict emits `changes-requested` (and approve emits `approved`) on the code review module's `events`, with `{ workItemId, folder, repo, repoDir, branch, revision, feedback }`.
+
+### Revision runner
+
+`server/revision-runner.mjs` handles `changes-requested`:
+
+1. Builds the revision prompt (the template in the spec, plus the repo folder) and sends it through the same opencode launcher the page uses: the item's current session when it is idle, so the agent keeps its context, else a new session linked to the item.
+2. When that session's turn ends, it checks that `rev-<n>-response.json` exists and is valid, and that the branch still contains the reviewed commit (no rewritten history).
+3. If both hold, it sets revision `n+1`, status `awaiting_review`, and emits `revision-ready`. If not, the review stays `revising` and `revisionRun` is `failed` with the reason. Replying to the agent in that session runs the checks again when its turn ends.
+
+Unfinished runs are picked up again after a restart.

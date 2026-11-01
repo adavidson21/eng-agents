@@ -44,8 +44,12 @@ import { autopilotAction } from "./server/autopilot.mjs";
 import { UPDATE_EVERY_MS, checkUpdates, restartAction, runUpdate } from "./server/updates.mjs";
 import { clients, pageData } from "./server/live.mjs";
 import { createCodeReview, handleCodeReview, matchCodeReviewRoute } from "./server/code-review.mjs";
-import { folderForToken } from "./server/links.mjs";
+import { createRevisionRunner } from "./server/revision-runner.mjs";
+import { currentSession, folderForToken, linkSession } from "./server/links.mjs";
 import { model } from "./server/model.mjs";
+import { oc, sessionEvents, sessions, upsertSession } from "./server/opencode-state.mjs";
+import { autoActive } from "./server/autopilot.mjs";
+import { broadcastLive } from "./server/live.mjs";
 
 // ------------------------------------------------------------------ HTTP server
 
@@ -121,7 +125,8 @@ const shellActions = {
 };
 
 // The code review API for Dispatch (docs/shell-api.md). Same origin allowlist and CORS as the rest of
-// the shell API. Package B listens on codeReview.events for "changes-requested".
+// the shell API. The revision runner picks up "changes-requested" and sends the feedback to the agent.
+let revisionRunner = null;
 const codeReview = createCodeReview({
   workspace: opt.workspace,
   workRoot,
@@ -129,7 +134,36 @@ const codeReview = createCodeReview({
     const folder = folderForToken(wid);
     return folder ? ((model && model.items) || []).find((i) => i.folder === folder) || null : null;
   },
+  canRevise: () => (oc.connected && oc.api ? null : oc.error || "opencode is not connected."),
+  runInfo: (folder, repo) => (revisionRunner ? revisionRunner.runData(folder, repo) : null),
 });
+
+// Sends a revision prompt the way a reply from the page is sent: in the item's current session when
+// it is idle (the agent keeps its context), else in a new session linked to the item.
+async function startRevision({ folder, title, prompt }) {
+  if (!oc.connected || !oc.api) throw new Error(oc.error || "opencode is not connected.");
+  let sid = currentSession(folder);
+  const s = sid ? sessions.get(sid) : null;
+  if (!s || s.status !== "idle" || autoActive(folder)) {
+    const created = await oc.api.createSession(title);
+    sid = created.id;
+    upsertSession(sid, { title: created.title });
+  }
+  linkSession(folder, sid, title);
+  upsertSession(sid, { status: "busy", busySince: Date.now(), activity: "Starting the code review revision", error: null, text: null, command: title });
+  broadcastLive();
+  try {
+    await oc.api.prompt(sid, prompt);
+  } catch (e) {
+    upsertSession(sid, { status: "idle", activity: null, error: e.message });
+    broadcastLive();
+    throw e;
+  }
+  return sid;
+}
+
+revisionRunner = createRevisionRunner({ codeReview, workspace: opt.workspace, workRoot, launcher: { start: startRevision }, sessionEvents, log });
+revisionRunner.load();
 
 function sendShell(res, origin, status, body) {
   res.writeHead(status, {

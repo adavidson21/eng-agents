@@ -1,6 +1,7 @@
 // eng-agents live dashboard: Live opencode state shared by both server APIs (sessions, prompts, replies) and HTTP helpers.
 
 import { spawn } from "node:child_process";
+import { EventEmitter } from "node:events";
 import { isWin, log, opt } from "./context.mjs";
 import { starting } from "./actions.mjs";
 import { autoOnBusy, autoOnIdle } from "./autopilot.mjs";
@@ -19,6 +20,9 @@ export const oc = {
 export const sessions = new Map(); // id -> { id, title, status, activity, text, textAt, busySince, error, command }
 export const permissions = new Map(); // id -> normalized request
 export const questions = new Map(); // id -> normalized request
+// "busy" (sessionId) and "idle" (sessionId, error) when a session's turn starts or ends. The revision
+// runner listens; autopilot keeps its direct hooks below.
+export const sessionEvents = new EventEmitter();
 
 export function upsertSession(id, patch) {
   if (!id) return {};
@@ -33,12 +37,14 @@ export function setBusy(sid) {
   const starting = !prev || prev.status === "idle";
   upsertSession(sid, { status: "busy", ...(starting ? { error: null, busySince: Date.now() } : {}) });
   autoOnBusy(sid);
+  sessionEvents.emit("busy", sid);
 }
 
 export function setIdle(sid, error) {
   upsertSession(sid, { status: "idle", activity: null, ...(error !== undefined ? { error } : {}) });
   oc.api.lastText(sid).then(broadcastLive, () => {});
   autoOnIdle(sid);
+  sessionEvents.emit("idle", sid, error || null);
 }
 
 const turnText = new Map(); // text block key -> text so far

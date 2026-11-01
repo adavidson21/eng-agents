@@ -93,7 +93,15 @@ type ReviewSession = {
   headSha: string;
   status: 'awaiting_review' | 'revising' | 'approved';
   files: ChangedFile[];
-  previousFeedback?: ReviewFeedback; // revision 2 and later
+  previousFeedback?: ReviewFeedback;   // revision 2 and later
+  previousResponses?: ReviewResponse[]; // the agent's answers to previousFeedback, when it wrote them
+  sinceLastReview?: ChangedFile[];      // files changed from previousFeedback.headSha to headSha
+};
+
+type ReviewResponse = {
+  commentId: string;
+  status: 'fixed' | 'declined' | 'answered';
+  note: string;
 };
 
 type ChangedFile = {
@@ -142,9 +150,11 @@ Returns the `ReviewSession`. A review is available once the item reaches the `pr
 - 409 `{ "error", "status": "not_ready", "stage" }`: the item is not at the `pr` stage yet, or `pr.md` has no section for `repo`.
 - 409 `{ "error" }`: the branch, target, or merge-base cannot be found.
 
-### `GET /api/shell/code-review/<id>/file?repo=<repo>&path=<path>&side=old|new`
+### `GET /api/shell/code-review/<id>/file?repo=<repo>&path=<path>&side=old|new|prev`
 
-Returns `FileContent`. `old` reads the file at `baseSha`, `new` at `headSha`. For a renamed file, pass `oldPath` with `side=old`. Monaco computes the diff in the browser.
+Returns `FileContent`. `old` reads the file at `baseSha`, `new` at `headSha`, and `prev` at the last reviewed head (`previousFeedback.headSha`, revision 2 and later; 400 on revision 1). For a renamed file, pass `oldPath` with `side=old`. Monaco computes the diff in the browser.
+
+"Changes since last review" diffs `prev` against `new` for the files in `sinceLastReview`. Comments made in that view go on the `new` side, since `ReviewComment.side` only names `baseSha` or `headSha`.
 
 - `absent`: the file does not exist on that side (the old side of an added file, the new side of a deleted one).
 - `binary` or `too_large` (over 1 MB): no `text`, just `size`.
@@ -155,6 +165,7 @@ Body: `ReviewFeedback`. Returns `{ "ok": true, "status", "revision", "submittedA
 
 - `approve`: saves the verdict and sets the status to `approved`. Nothing is pushed.
 - `request_changes`: saves the feedback, sets the status to `revising`, and starts the revision. Needs at least one comment or a summary.
+- 503: request changes while the agent cannot start a revision (opencode not connected). Nothing is saved.
 
 Errors:
 
@@ -171,5 +182,6 @@ Per work item and repo, in `.work/<folder>/code-review/<repo>/`:
 | --- | --- |
 | `state.json` | `{ revision, status, lastReviewedHeadSha }`. Missing means revision 1, awaiting review. |
 | `rev-<n>.json` | The `ReviewFeedback` submitted for revision `n`. |
+| `rev-<n>-response.json` | The agent's `ReviewResponse[]` for revision `n`. |
 
 Inside the server, a request changes verdict emits `changes-requested` (and approve emits `approved`) on the code review module's `events`, with `{ workItemId, folder, repo, repoDir, branch, revision, feedback }`. The revision runner listens for it.

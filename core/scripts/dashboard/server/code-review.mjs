@@ -8,6 +8,7 @@
 // Storage, per work item and repo:
 //   .work/<folder>/code-review/<repo>/state.json    { revision, status, lastReviewedHeadSha }
 //   .work/<folder>/code-review/<repo>/rev-<n>.json  the ReviewFeedback submitted for revision n
+//   .work/<folder>/code-review/<repo>/rev-<n>-response.json  the agent's answers (revision-runner.mjs)
 //
 // Kept free of context.mjs: live-server.mjs passes in what it needs, so tests can run it alone.
 
@@ -19,6 +20,7 @@ import { branchHead, changedFiles, fileAt, isSafeBranch, isSafePath, mergeBase, 
 export const READY_STAGE = "pr"; // the stage right before Push PR
 const STATUSES = new Set(["awaiting_review", "revising", "approved"]);
 const COMMENT_TYPES = new Set(["must_fix", "suggestion", "question"]);
+const RESPONSE_STATUSES = new Set(["fixed", "declined", "answered"]);
 const MAX_COMMENTS = 500;
 const MAX_TEXT = 100_000; // per text field
 
@@ -110,12 +112,32 @@ function cleanFeedback(fb, submittedAt) {
   };
 }
 
+// A response file the agent wrote: [{ commentId, status: fixed|declined|answered, note }].
+// Returns the list, or a plain-words problem.
+export function parseResponses(text) {
+  let list;
+  try {
+    list = JSON.parse(text);
+  } catch (e) {
+    return { problem: `It is not valid JSON (${e.message}).` };
+  }
+  if (!Array.isArray(list)) return { problem: "It must be a JSON list." };
+  for (const [i, r] of list.entries()) {
+    if (!r || typeof r !== "object" || !isStr(r.commentId, 128) || !r.commentId) return { problem: `Entry ${i + 1} needs a commentId.` };
+    if (!RESPONSE_STATUSES.has(r.status)) return { problem: `Entry ${i + 1}: status must be fixed, declined, or answered.` };
+    if (r.note !== undefined && !isStr(r.note)) return { problem: `Entry ${i + 1}: note must be text.` };
+  }
+  return { list: list.map((r) => ({ commentId: r.commentId, status: r.status, note: r.note || "" })) };
+}
+
 // deps:
 //   workspace   absolute workspace root (repos are folders directly inside it)
 //   workRoot    absolute path of .work
 //   findItem    (workItemId) => the work item from New-Dashboard.ps1 -AsJson, or null
+//   canRevise   optional () => null, or a plain-words reason a revision cannot start right now
+//               (checked before request changes is saved, so a verdict never strands an item)
 //   now         () => Date (tests)
-export function createCodeReview({ workspace, workRoot, findItem, now = () => new Date() }) {
+export function createCodeReview({ workspace, workRoot, findItem, canRevise = () => null, now = () => new Date() }) {
   const events = new EventEmitter();
   const submitting = new Set();
 
@@ -181,7 +203,19 @@ export function createCodeReview({ workspace, workRoot, findItem, now = () => ne
     if (!row || (!state.saved && item.stage !== READY_STAGE)) notReady(item, repo, row);
     const shas = await resolveShas(row, dir, repo);
     const files = await changedFiles(dir, shas.baseSha, shas.headSha);
-    const prev = state.revision > 1 ? readJson(path.join(stateDir(item.folder, repo), `rev-${state.revision - 1}.json`)) : null;
+    const dirOf = stateDir(item.folder, repo);
+    const prev = state.revision > 1 ? readJson(path.join(dirOf, `rev-${state.revision - 1}.json`)) : null;
+    let responses = null;
+    if (prev) {
+      try {
+        const r = parseResponses(fs.readFileSync(path.join(dirOf, `rev-${state.revision - 1}-response.json`), "utf8"));
+        if (r.list) responses = r.list;
+      } catch {} // no response file: nothing to show
+    }
+    // Changes since the last reviewed head, when that commit is still in the repo.
+    let since = null;
+    const prevSha = state.revision > 1 ? state.lastReviewedHeadSha : null;
+    if (prevSha && (await resolveSha(dir, prevSha))) since = await changedFiles(dir, prevSha, shas.headSha);
     return {
       workItemId: wid,
       repo,
@@ -193,19 +227,28 @@ export function createCodeReview({ workspace, workRoot, findItem, now = () => ne
       status: state.status,
       files,
       ...(prev && { previousFeedback: prev }),
+      ...(responses && { previousResponses: responses }),
+      ...(since && { sinceLastReview: since }),
     };
   }
 
   // GET /api/shell/code-review/:workItemId/file?repo=&path=&side=
-  // side=old reads the path at baseSha (pass oldPath for renames); side=new reads it at headSha.
+  // side=old reads the path at baseSha (pass oldPath for renames); side=new reads it at headSha;
+  // side=prev reads it at the last reviewed head (revision 2 and later).
   async function getFile(workItemId, repo, filePath, side) {
     const { item, row, dir } = locate(workItemId, repo);
-    if (side !== "old" && side !== "new") throw httpError(400, 'side must be "old" or "new".');
+    if (side !== "old" && side !== "new" && side !== "prev") throw httpError(400, 'side must be "old", "new", or "prev".');
     if (!isSafePath(filePath)) throw httpError(400, "Bad file path.");
     const state = readState(item.folder, repo);
     if (!row || (!state.saved && item.stage !== READY_STAGE)) notReady(item, repo, row);
     const shas = await resolveShas(row, dir, repo);
-    const r = await fileAt(dir, side === "old" ? shas.baseSha : shas.headSha, filePath);
+    let sha = side === "old" ? shas.baseSha : shas.headSha;
+    if (side === "prev") {
+      if (state.revision < 2 || !state.lastReviewedHeadSha) throw httpError(400, "side=prev is only for revision 2 and later.");
+      if (!(await resolveSha(dir, state.lastReviewedHeadSha))) throw httpError(409, "The last reviewed commit is no longer in the repo.");
+      sha = state.lastReviewedHeadSha;
+    }
+    const r = await fileAt(dir, sha, filePath);
     return r.kind === "missing" ? { kind: "absent" } : r;
   }
 
@@ -230,6 +273,10 @@ export function createCodeReview({ workspace, workRoot, findItem, now = () => ne
         throw httpError(409, `${shas.branch} changed since this review was loaded. Reload to see the new code.`, { status: state.status, headSha: shas.headSha });
       }
 
+      if (body.verdict === "request_changes") {
+        const why = canRevise();
+        if (why) throw httpError(503, `The agent cannot start a revision right now: ${why}`, { status: state.status });
+      }
       const feedback = cleanFeedback(body, now().toISOString());
       const revFile = path.join(stateDir(item.folder, repo), `rev-${state.revision}.json`);
       if (fs.existsSync(revFile)) throw httpError(409, `Revision ${state.revision} already has a verdict.`, { status: state.status });

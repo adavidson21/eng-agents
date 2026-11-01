@@ -268,3 +268,56 @@ describe("feedbackProblem", () => {
     assert.match(feedbackProblem(feedback({ comments: [c, c] })), /repeats id/);
   });
 });
+
+describe("revision 2 extras", () => {
+  async function toRevision2() {
+    await api.submit("12", REPO, feedback());
+    write("src/app.ts", "one\ntwo\nTHREE\n");
+    write("src/later.ts", "export const later = 1;\n");
+    git("add", "-A");
+    git("commit", "-q", "-m", "Address review");
+    api.writeState(FOLDER, REPO, { revision: 2, status: "awaiting_review", lastReviewedHeadSha: headSha });
+  }
+
+  test("sinceLastReview lists only the agent's new changes", async () => {
+    await toRevision2();
+    const s = await api.getSession("12", REPO);
+    assert.deepEqual(s.sinceLastReview.map((f) => f.path).sort(), ["src/app.ts", "src/later.ts"]);
+    assert.equal(s.files.length, 4, "the full view still covers base to head");
+  });
+
+  test("previousResponses comes from the agent's response file when it is valid", async () => {
+    await toRevision2();
+    const dir = path.join(workRoot, FOLDER, "code-review", REPO);
+    fs.writeFileSync(path.join(dir, "rev-1-response.json"), JSON.stringify([{ commentId: "c1", status: "fixed", note: "Renamed." }]));
+    assert.deepEqual((await api.getSession("12", REPO)).previousResponses, [{ commentId: "c1", status: "fixed", note: "Renamed." }]);
+    fs.writeFileSync(path.join(dir, "rev-1-response.json"), "not json");
+    assert.equal((await api.getSession("12", REPO)).previousResponses, undefined);
+  });
+
+  test("side=prev reads the last reviewed head", async () => {
+    await toRevision2();
+    assert.deepEqual(await api.getFile("12", REPO, "src/app.ts", "prev"), { kind: "text", text: "one\ntwo\nthree\n" });
+    assert.deepEqual(await api.getFile("12", REPO, "src/later.ts", "prev"), { kind: "absent" });
+  });
+
+  test("side=prev is refused on revision 1", async () => {
+    await assert.rejects(api.getFile("12", REPO, "src/app.ts", "prev"), (e) => e.status === 400);
+  });
+
+  test("request changes is refused before saving when a revision cannot start", async () => {
+    const blocked = createCodeReview({ workspace: ws, workRoot, findItem: () => item, canRevise: () => "opencode is not connected." });
+    await assert.rejects(blocked.submit("12", REPO, feedback()), (e) => e.status === 503 && /opencode is not connected/.test(e.message));
+    assert.equal(fs.existsSync(path.join(workRoot, FOLDER, "code-review")), false);
+    const ok = await blocked.submit("12", REPO, feedback({ verdict: "approve", comments: [], summary: undefined }));
+    assert.equal(ok.status, "approved", "approve does not need the agent");
+  });
+});
+
+describe("parseResponses", () => {
+  test("accepts the template shape and rejects the rest", async () => {
+    const { parseResponses } = await import("../server/code-review.mjs");
+    assert.deepEqual(parseResponses('[{"commentId":"c1","status":"answered"}]').list, [{ commentId: "c1", status: "answered", note: "" }]);
+    for (const bad of ["{}", "[{}]", '[{"commentId":"c1","status":"done"}]', "nope"]) assert.ok(parseResponses(bad).problem, bad);
+  });
+});

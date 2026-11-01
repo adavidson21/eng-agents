@@ -28,6 +28,7 @@
 //   autopilot.mjs         hands-off build after the plan
 //   updates.mjs           update checks and updates through update.ps1
 //   live.mjs              page data and the event stream to open pages
+//   code-review.mjs       the code review API for Dispatch      review-git.mjs   its git helpers
 // Only context.mjs is used while modules load; everything else is called at run time, so the
 // modules can import each other freely.
 
@@ -42,6 +43,9 @@ import { abort, answerPermission, answerQuestion, attachCommand, openTerminal, p
 import { autopilotAction } from "./server/autopilot.mjs";
 import { UPDATE_EVERY_MS, checkUpdates, restartAction, runUpdate } from "./server/updates.mjs";
 import { clients, pageData } from "./server/live.mjs";
+import { createCodeReview, handleCodeReview, matchCodeReviewRoute } from "./server/code-review.mjs";
+import { folderForToken } from "./server/links.mjs";
+import { model } from "./server/model.mjs";
 
 // ------------------------------------------------------------------ HTTP server
 
@@ -116,6 +120,17 @@ const shellActions = {
   "POST /api/shell/start": (body) => startItem(body),
 };
 
+// The code review API for Dispatch (docs/shell-api.md). Same origin allowlist and CORS as the rest of
+// the shell API. Package B listens on codeReview.events for "changes-requested".
+const codeReview = createCodeReview({
+  workspace: opt.workspace,
+  workRoot,
+  findItem: (wid) => {
+    const folder = folderForToken(wid);
+    return folder ? ((model && model.items) || []).find((i) => i.folder === folder) || null : null;
+  },
+});
+
 function sendShell(res, origin, status, body) {
   res.writeHead(status, {
     "content-type": "application/json; charset=utf-8",
@@ -150,14 +165,15 @@ const server = http.createServer(async (req, res) => {
       });
       return res.end();
     }
-    const fn = shellActions[`${req.method} ${url.pathname}`];
+    const review = matchCodeReviewRoute(req.method, url.pathname);
+    const fn = review ? (body) => handleCodeReview(codeReview, review, url, body) : shellActions[`${req.method} ${url.pathname}`];
     if (!fn) return sendShell(res, origin, 404, { error: "Not found." });
     try {
       const body = req.method === "POST" ? await readBody(req) : {};
       return sendShell(res, origin, 200, await fn(body));
     } catch (e) {
       if (!e.status) log("error:", e.stack || e.message);
-      return sendShell(res, origin, e.status || 500, { error: e.message });
+      return sendShell(res, origin, e.status || 500, e.body || { error: e.message });
     }
   }
 

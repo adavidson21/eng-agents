@@ -4,6 +4,10 @@ Core and the dashboard have their own versions (`core/VERSION`, `core/scripts/da
 
 Format: one `## Core <version> (<date>)` or `## Dashboard <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Dashboard 1.8.0 (2026-11-01)
+
+- Code review API for Dispatch's review screen, on the shell API: `GET /api/shell/code-review/<id>?repo=`, `GET .../file`, `POST .../submit`. One review per work item and repo, served from git in the workspace. Approve only records the verdict; nothing is pushed. Request changes saves the feedback, sets the review to `revising`, and signals the revision runner. Reviews are stored in `.work/<folder>/code-review/<repo>/`. See [docs/shell-api.md](docs/shell-api.md#code-review). Restart the live dashboard after updating.
+
 ## Core 2.3.0 (2026-11-01)
 
 - Repos whose main line is not `main` work: `/start` finds each repo's base (`origin/HEAD`, else `origin/main` or `origin/master`; for a repo with no remote, its local `main` or `master`) and records it in a new **Base** column in `repos.md`. `/review`, `/pr` and `/resume` compare against it (items started before this use `origin/main`). PR text targets the base, and says there is nothing to push for a repo with no remote.

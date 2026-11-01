@@ -563,15 +563,14 @@ if (Test-Path $cfg) {
         elseif ($topAuth -ne "windows") { $envVars += $topPat }
         foreach ($v in @($envVars | Select-Object -Unique)) {
             if ([Environment]::GetEnvironmentVariable($v)) { Write-Host "  [ok]   $v is set" }
-            else { Write-Host "  [todo] $v is not set. /start will use offline mode for connections that need it." }
+            else { Write-Host "  [todo] $v is not set. /start <number> asks you for the work item's details until it is." }
         }
     }
     catch { Write-Host "  [todo] Could not read $cfg ($($_.Exception.Message))" }
 }
 else {
-    Write-Host "  [todo] ADO config missing: $cfg (copy core\scripts\ado\config.example.json). /start will use offline mode until then."
-    if ($env:ADO_PAT) { Write-Host "  [ok]   ADO_PAT is set" }
-    else { Write-Host "  [todo] ADO_PAT is not set. /start will use offline mode until then." }
+    # ADO is optional: without it, work is described in Dispatch (Start work) or with /start new.
+    Write-Host "  [info] Azure DevOps is not set up (optional). To start from ADO work items, see docs/onboarding-company.md."
 }
 
 $mem = Join-Path $engConfig "memory.md"

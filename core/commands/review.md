@@ -25,8 +25,9 @@ If the mode above is `auto`, autopilot is running this review and nobody is watc
 
 ## Step 4: Read the diff
 
-- For each repo, run `git -C <repo> diff --stat origin/main...HEAD`, then `git -C <repo> diff origin/main...HEAD`.
-- If the diff is large, read it one file at a time with `git -C <repo> diff origin/main...HEAD -- <file>`.
+- For each repo, take its base from the **Base** column in `repos.md` (`origin/main` if there is no Base column, from an older item).
+- For each repo, run `git -C <repo> diff --stat <base>...HEAD`, then `git -C <repo> diff <base>...HEAD`.
+- If the diff is large, read it one file at a time with `git -C <repo> diff <base>...HEAD -- <file>`.
 
 ## Step 5: Pass 1, spec compliance
 

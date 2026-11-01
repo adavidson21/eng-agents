@@ -1,12 +1,12 @@
 # PR text: <id>
 
-One section per repo. Copy each section into ADO when you open the PR.
+One section per repo. Copy each section into your git host (Azure DevOps, GitHub, ...) when you open the PR.
 
 ---
 
 ## <repo-folder>
 
-Branch: `<branch>` -> `main`
+Branch: `<branch>` -> `<target: the base from repos.md without origin/>`
 
 **Title:** <short summary, under 70 characters>
 

@@ -13,12 +13,13 @@ Draft the pull request text for work item **$1**.
 ## Step 2: Read
 
 - Read `repos.md`, `spec.md` (or `bug.md`), and `progress.md`.
-- For each repo, run `git -C <repo> log --oneline origin/main..HEAD` and `git -C <repo> diff --stat origin/main...HEAD`.
+- For each repo, take its base from the **Base** column in `repos.md` (`origin/main` if there is no Base column, from an older item).
+- For each repo, run `git -C <repo> log --oneline <base>..HEAD` and `git -C <repo> diff --stat <base>...HEAD`.
 
 ## Step 3: Write pr.md
 
 - Start from `{{ENG_HOME}}/templates/pr.md`. Write it to the work folder as `pr.md`.
-- One section per repo that has commits.
+- One section per repo that has commits. In its `Branch:` line, the target is the base without `origin/` (base `origin/develop` gives `-> develop`).
 - Title: a short plain summary, under 70 characters.
 - Description: one or two sentences, then at most 4 bullets, then one testing line, then `Work item: #$1`.
 - **Keep it short.** No headings inside the description. No restating the spec. No list of every file.
@@ -26,4 +27,5 @@ Draft the pull request text for work item **$1**.
 ## Step 4: Hand off
 
 - Add a `progress.md` entry for `/pr`.
-- Tell the engineer: "PR text is in `pr.md`. Push each branch with `git -C <repo> push -u origin <branch>` (or tell me to), then open the PR in ADO targeting `main`." If they ask you to push, run that command for each repo; each push asks for approval.
+- Tell the engineer: "PR text is in `pr.md`. Push each branch with `git -C <repo> push -u origin <branch>` (or tell me to, or use Push in Dispatch), then open the PR on your git host (Azure DevOps, GitHub, or another) targeting `<target>`." Name each repo's target. If they ask you to push, run that command for each repo; each push asks for approval.
+- For a repo whose base has no `origin/` (no remote), say there is nothing to push: the work is on `<branch>`, ready to merge into `<base>` locally.

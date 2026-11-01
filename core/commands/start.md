@@ -92,8 +92,12 @@ For each repo in `repos.md`, in order:
 
 1. Run `git -C <repo> status --porcelain`. If there is any output, the repo has uncommitted changes. Skip this repo and tell the engineer.
 2. Run `git -C <repo> branch --show-current`. If the repo is on any `dev/` branch, it belongs to another work item, even if there are no uncommitted changes. **Do not switch it.** Ask the engineer first: "`<repo>` is on `<branch>` for another work item. Switch it to `<new branch>` anyway, skip this repo, or use a git worktree?" Wait for the answer and do what they choose.
-3. Run `git -C <repo> fetch origin main`.
-4. Run `git -C <repo> checkout -b <branch> origin/main`.
+3. Find the base branch (the repo's main line, which is not always called `main`):
+   - Run `git -C <repo> remote`.
+   - **If it prints `origin`:** run `git -C <repo> fetch origin`, then `git -C <repo> rev-parse --abbrev-ref origin/HEAD`. If that prints `origin/<name>`, the base is exactly what it printed. If it fails, run `git -C <repo> remote set-head origin --auto` and try once more. If it still fails, the base is `origin/main` if `git -C <repo> rev-parse --verify --quiet origin/main` prints a hash, else `origin/master` if that prints one, else ask the engineer which branch to start from.
+   - **If it prints nothing** (a repo with no remote): the base is `main` if `git -C <repo> rev-parse --verify --quiet main` prints a hash, else `master` if that prints one, else the current branch if it does not start with `dev/`, else ask the engineer.
+   - Write the base in the repo's **Base** column in `repos.md`.
+4. Run `git -C <repo> checkout -b <branch> <base>`.
 
 ## Step 8: Start the log
 

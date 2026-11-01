@@ -7,7 +7,7 @@ Run a spike on: **$ARGUMENTS**
 
 ## Step 1: Pick the folder
 
-- If `$1` is a number and a folder in `.work/` starts with `$1-`, use that folder.
+- If `$1` is a work item id (a number, or a local id like `L12`) and a folder in `.work/` starts with `$1-`, use that folder.
 - Otherwise create a new folder `.work/spike-<short-name>/`, where `<short-name>` is 3 to 5 lowercase words from the topic joined with hyphens.
 
 ## Step 2: Frame the question

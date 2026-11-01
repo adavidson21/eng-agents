@@ -1,6 +1,6 @@
 # eng-agents
 
-opencode agents that take an Azure DevOps work item to a ready-to-open pull request in small steps you approve. Built for slower models that need explicit, step-by-step procedures.
+opencode agents (Tandem) that take a piece of work to a ready-to-open pull request in small steps you approve. The work can be an Azure DevOps work item or something you just describe (no tracker needed). Built for slower models that need explicit, step-by-step procedures.
 
 ## Daily use
 
@@ -9,6 +9,7 @@ Open opencode from your workspace root (for example `C:\src\work`).
 | Work | Run |
 |---|---|
 | Feature | `/start <id> feature` → `/spec <id>` → `/approve <id>` → `/plan <id>` → `/approve <id>` → `/tasks <id>` → `/do-task <id> <n>` (repeat) → `/review <id>` → `/pr <id>` |
+| Work with no tracker item | `/start new <feature or bug>`: describe it in chat. It gets a local id like `L3`; use that id in the commands above. |
 | Bug | `/start <id> bug` → `/bug <id>` → `/approve <id>` → `/do-task <id> <n>` (repeat) → `/review <id>` → `/pr <id>` |
 | Question, no code changes | `/spike <id or topic>` |
 | Docs | `/docs <target>`, new session, `/check-docs <doc path>` |

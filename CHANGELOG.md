@@ -4,6 +4,16 @@ Core and the dashboard have their own versions (`core/VERSION`, `core/scripts/da
 
 Format: one `## Core <version> (<date>)` or `## Dashboard <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 2.2.0 (2026-10-31)
+
+- Work without a tracker item: `/start new <feature|bug>` asks you to describe the work and creates `.work/L<number>-<name>/` with a local id (`scripts/work/New-LocalWorkItem.ps1`). `/start L<number> <lane>` continues a local item created elsewhere (Workshop's Dispatch creates the folder, then runs it). Every other command takes the local id like a work item number.
+- `/start` stops early with a clear message when the workspace has no repos, uses the only repo when there is one, and works without a repo map.
+- `/start <number>` without ADO set up asks for the work item's details in chat and fills in `workitem.md` itself, instead of asking you to edit the file.
+
+## Dashboard 1.7.0 (2026-10-31)
+
+- Local work items (`L<number>-<name>` folders) show as work items, with no ADO link unless `workitem.md` has a `Link:` line.
+
 ## Dashboard 1.6.1 (2026-10-15)
 
 - The shell app is now called Workshop (repo `adavidson21/workshop`). `sync-themes.mjs` reads its themes from there; docs updated.

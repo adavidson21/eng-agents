@@ -1,24 +1,46 @@
 ---
-description: "Start a work item: fetch it, create its .work folder, pick repos, create branches. Usage: /start <id> <feature|bug> [repo folder or ADO connection]"
+description: "Start a work item: fetch or describe it, create its .work folder, pick repos, create branches. Usage: /start <id|new> <feature|bug> [repo folder or ADO connection]"
 agent: planner
 ---
 
 Start work item **$1** in lane **$2**. Optional third argument (where to fetch it from): **$3**
 
-Follow these steps in order. Do not skip any step.
+Follow these steps in order. Do not skip any step, except the ones marked "only when" that do not apply.
 
 ## Step 1: Check the arguments
 
-- `$1` must be a number. `$2` must be `feature` or `bug`.
-- If either is wrong, stop and reply: `Usage: /start <id> <feature|bug> [repo folder or ADO connection]`.
-- `$3` is optional. It is a repo folder in the workspace or an ADO connection name. It tells the script which ADO server or collection holds the work item. If the third argument above is empty, there is none.
+- `$1` is one of:
+  - a number: a work item in ADO.
+  - a local id, `L` and a number (for example `L12`): work with no tracker item, already described. Dispatch creates its folder before it runs `/start`.
+  - `new`: work with no tracker item that is not described yet.
+- `$2` must be `feature` or `bug`.
+- If either is wrong, stop and reply: `Usage: /start <id|new> <feature|bug> [repo folder or ADO connection]`.
+- `$3` is optional and only for a number. It is a repo folder in the workspace or an ADO connection name. It tells the script which ADO server or collection holds the work item. If the third argument above is empty, there is none.
 
 ## Step 2: Check for existing work
 
-- List the `.work/` folder. If `.work/` does not exist, that is fine: Step 3 creates it.
-- If a folder starting with `$1-` already exists, stop. Tell the engineer it exists and suggest `/status $1`.
+- List the `.work/` folder. If `.work/` does not exist, that is fine: Step 3a or 3b creates it.
+- If `$1` is a local id: find the folder starting with `$1-`.
+  - If there is none, stop and say: "There is no `.work/$1-*` folder. Use `/start new $2` to describe the work."
+  - If it has a `repos.md`, it is already started: stop and suggest `/status $1`.
+  - Otherwise use that folder, skip Steps 3a and 3b, and go to Step 4.
+- If `$1` is a number and a folder starting with `$1-` already exists, stop. Tell the engineer it exists and suggest `/status $1`.
 
-## Step 3: Get the work item
+## Step 3a: Describe new local work (only when `$1` is `new`)
+
+- Ask the engineer, in one message: "What is the work? Give a short title, then describe it: what should change and why. For a bug, also the steps to reproduce it." Wait for the answer.
+- Pick a title of at most 10 words from the answer. The type is `Bug` if `$2` is `bug`, otherwise `Feature`.
+- Run exactly this command, with the title in place of `<title>`:
+
+```
+{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/work/New-LocalWorkItem.ps1" -WorkRoot ".work" -Title "<title>" -Type <Feature or Bug>
+```
+
+- The last line of output is the new folder path. Its name starts with the new local id (for example `L3-`). Use that id in place of `$1` from here on.
+- Open `workitem.md` in the new folder and replace `<describe the work here>` with the engineer's description in their words. For a bug, put their repro steps under "Repro steps". Do not add requirements they did not give.
+- Go to Step 4.
+
+## Step 3b: Get the work item (only when `$1` is a number)
 
 If there is no third argument, run exactly this command:
 
@@ -34,13 +56,13 @@ If there is a third argument, run exactly this command instead:
 
 - If it succeeds, the last line of output is the new folder path. Remember it.
 - If the error contains `AMBIGUOUS:` or `UNKNOWN:`, the script could not tell which ADO connection to use. Show the engineer the connection names from the error and ask: "Which ADO connection (or which repo folder) is work item $1 in?" Run the second command above, with `$3` replaced by their answer.
-- If it fails for any other reason, show the engineer the error in one line, then ask: "Paste the work item title." When they answer, run:
+- If it fails for any other reason (for example ADO is not set up), show the engineer the error in one line, then ask in one message: "Paste the work item's title, description, and acceptance criteria (and repro steps for a bug) here." Wait. When they answer, run:
 
 ```
 {{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/ado/Get-WorkItem.ps1" -Id $1 -WorkRoot ".work" -Title "<the title they pasted>"
 ```
 
-  This creates the folder with an empty `workitem.md`. Ask the engineer to paste the description, acceptance criteria, and repro steps into that file and reply "done". Wait.
+  This creates the folder with an empty `workitem.md`. Fill it in yourself from their answer: replace each `<...>` placeholder with what they gave, in their words, or `None provided`. Do not add requirements they did not give. Do not ask them to edit the file.
 
 ## Step 4: Read the work item
 
@@ -49,7 +71,10 @@ If there is a third argument, run exactly this command instead:
 
 ## Step 5: Choose repos
 
-- Read the repo map (the workspace root `AGENTS.md`).
+- List the repo folders in the workspace root (folders with a `.git` folder).
+- If there are none, stop and tell the engineer: "There are no repos in this workspace yet. Add one (Dispatch: Add a repo, or `git clone <url>` in the workspace folder), then run `/start $1 $2` again." The work item folder stays, so nothing is lost.
+- If there is exactly one repo, use it. Skip the rest of this step's matching, but still show it and ask in the last bullet.
+- Read the repo map (the workspace root `AGENTS.md`). If there is none, choose from the folder names and the work item, and say the repo map is missing.
 - Match words in the work item against the repo map's **Products** and **Glossary** tables. Pick the product first, then use that product's repo table and change order.
 - If no product matches, use the "Which repos for which kind of work" table. If that does not settle it, ask the engineer. Do not guess.
 - Decide which repos this work item needs. Shared repos go first.

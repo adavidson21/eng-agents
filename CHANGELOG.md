@@ -4,6 +4,12 @@ Core and the dashboard have their own versions (`core/VERSION`, `core/scripts/da
 
 Format: one `## Core <version> (<date>)` or `## Dashboard <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Dashboard 1.8.1 (2026-11-02)
+
+- A published TSD (`Status: PUBLISHED to <path> on <date>`, written by `/publish`) shows as Published. Before, that line read as UNKNOWN and the TSD showed as a draft.
+- `sync-themes.mjs` is removed. The static dashboard keeps its own themes; Workshop's Dispatch is the live front end.
+- The repo now has an MIT `LICENSE`, like Workshop.
+
 ## Core 2.5.0 (2026-11-02)
 
 - Manual validation checklist: every passing `/do-task` ends with 3 to 5 physical steps (exact URL, exact click or command, exact result), saved in `progress.md` and printed last.

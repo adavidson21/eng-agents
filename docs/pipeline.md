@@ -357,17 +357,9 @@ Restart the dashboard after changing it. Only listed sites get in:
 - **Shell API.** `GET /api/shell/status` (item stages and next steps) and `POST /api/shell/start` (`{ "id": "41207", "lane": "feature" }`, runs `/start` in a new session). Requests must come from a listed site; anything else gets 403. The full contract, including the frame messages, is in [Shell API](shell-api.md).
 - Every other route still answers only this page, as before.
 
-### Shared themes
+### Themes
 
-Workshop's `shared/themes.css` (in the workshop repo) is the source of truth for the dashboard's colors and theme list. The dashboard keeps a copy in `dashboard.template.html` between `themes:begin` and `themes:end` (plus the theme menu, its swatches, and the first-paint list). To pick up a change:
-
-```powershell
-node core\scripts\dashboard\sync-themes.mjs            # from the hub's main branch on GitHub
-node core\scripts\dashboard\sync-themes.mjs --from ..\workshop\shared\themes.css
-node core\scripts\dashboard\sync-themes.mjs --check    # exit 1 if the copy drifted
-```
-
-Bump the dashboard version with it. Do not edit the copied block by hand.
+The static dashboard keeps its own copy of the themes in `dashboard.template.html` (between `themes:begin` and `themes:end`). It used to be synced from Workshop with `sync-themes.mjs`; that script is gone now that Workshop's Dispatch is the live front end and Workshop has its own look. Edit the block by hand if you change it, and bump the dashboard version.
 
 ### Autopilot
 

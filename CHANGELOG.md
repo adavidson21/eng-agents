@@ -4,6 +4,16 @@ Core and the dashboard have their own versions (`core/VERSION`, `core/scripts/da
 
 Format: one `## Core <version> (<date>)` or `## Dashboard <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Dashboard 1.10.1 (2026-11-02)
+
+- `brief.md` (written by `/start`, Core 2.7.0) is listed right after `workitem.md` in an item's files.
+
+## Core 2.7.0 (2026-11-02)
+
+- Warm start: `/start` ends by writing `.work/<id>-<name>/brief.md` from the new `templates/brief.md`, and prints it. It has the goal, the acceptance criteria as a checklist, where the item fits (parent Feature and Epic), the last 5 comments, the repos and branch, up to 10 likely files, and the first tiny step. Likely files are guesses from file names and commit messages only; no file is opened. `/start <id> <lane> --cold` skips it.
+- `Get-WorkItem.ps1 -Parents` adds a "Parents" section to `workitem.md`: id, type and title of each parent up the hierarchy. If a parent cannot be fetched, the section says "Parents unknown" and the script still succeeds. Without the switch, `workitem.md` is unchanged. `/start` passes `-Parents` and `-IncludeComments`.
+- `/resume` prints the brief (if there is one) and the last `progress.md` entry before it restores the repos.
+
 ## Core 2.6.0 (2026-11-02)
 
 - First-pass PR reviews for your team's pull requests: `/pr-review <PR link or number>` (new **pr-reviewer** agent) checks the PR against its linked work items' acceptance criteria, then for real problems, and writes numbered draft comments (file, line, severity, why, the comment itself) to `.work/pr-<id>/review.md`. It never posts, votes, or approves; you post the ones you agree with.

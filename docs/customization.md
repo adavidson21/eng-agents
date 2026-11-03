@@ -175,6 +175,7 @@ To change one: copy the Core file into your layer, edit it, re-run `install.ps1`
 | `bug.md` | Symptom, code path, root cause, fix tasks | `Status: DRAFT` line; root cause; tasks |
 | `tasks.md` | Numbered tasks and coverage check | `## [ ] Task N:` headings; each task's repo, files, and verify command |
 | `review.md` | Findings and verdict | A verdict line that can say `READY`; each criterion marked `Met` or not |
+| `brief.md` | The context brief `/start` writes | Nothing. `/resume` prints it as it is. |
 | `paused.md` | Where a paused item stands | `Status: PAUSED` line, the Repos table, "To resume" |
 | `pr.md` | PR title and description per repo | Nothing |
 | `tsd.md` | Technical spec sections | `Status: DRAFT` line; `<Diagram: ...>` placeholders, the table under each diagram, "Open questions" |

@@ -11,6 +11,7 @@
     What it reads:
       .work\<id>-<name>\    workitem.md, repos.md, spec.md, plan.md, bug.md, tasks.md,
                             review.md, pr.md, paused.md, progress.md
+                            (brief.md is only listed, first after workitem.md)
       .work\spike-<name>\   findings.md
       .work\docs-<name>\    sources.md, check.md
       .work\tsd-<name>\     tsd.md, check.md
@@ -512,7 +513,7 @@ function Get-LastModified {
 
 function Get-FileList {
     param([string]$Folder)
-    $order = @("workitem.md", "repos.md", "spec.md", "bug.md", "plan.md", "tasks.md", "review.md", "pr.md", "paused.md", "progress.md", "findings.md", "tsd.md", "inventory.md", "sources.md", "check.md")
+    $order = @("workitem.md", "brief.md", "repos.md", "spec.md", "bug.md", "plan.md", "tasks.md", "review.md", "pr.md", "paused.md", "progress.md", "findings.md", "tsd.md", "inventory.md", "sources.md", "check.md")
     $names = @(Get-ChildItem -LiteralPath $Folder -File -Filter *.md -ErrorAction SilentlyContinue | ForEach-Object { $_.Name })
     $known = @($order | Where-Object { $names -contains $_ })
     $other = @($names | Where-Object { $order -notcontains $_ } | Sort-Object)

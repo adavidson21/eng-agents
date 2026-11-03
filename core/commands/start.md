@@ -1,9 +1,11 @@
 ---
-description: "Start a work item: fetch or describe it, create its .work folder, pick repos, create branches. Usage: /start <id|new> <feature|bug> [repo folder or ADO connection]"
+description: "Start a work item: fetch or describe it, create its .work folder, pick repos, create branches, write a brief. Usage: /start <id|new> <feature|bug> [repo folder or ADO connection] [--cold]"
 agent: planner
 ---
 
 Start work item **$1** in lane **$2**. Optional third argument (where to fetch it from): **$3**
+
+All arguments: **$ARGUMENTS**
 
 Follow these steps in order. Do not skip any step, except the ones marked "only when" that do not apply.
 
@@ -14,7 +16,8 @@ Follow these steps in order. Do not skip any step, except the ones marked "only 
   - a local id, `L` and a number (for example `L12`): work with no tracker item, already described. Dispatch creates its folder before it runs `/start`.
   - `new`: work with no tracker item that is not described yet.
 - `$2` must be `feature` or `bug`.
-- If either is wrong, stop and reply: `Usage: /start <id|new> <feature|bug> [repo folder or ADO connection]`.
+- If either is wrong, stop and reply: `Usage: /start <id|new> <feature|bug> [repo folder or ADO connection] [--cold]`.
+- `--cold` is optional and can come anywhere after the lane. If any argument is `--cold`, remember it: Step 8b is skipped. `--cold` is never the third argument, so if `$3` is `--cold`, there is no third argument.
 - `$3` is optional and only for a number. It is a repo folder in the workspace or an ADO connection name. It tells the script which ADO server or collection holds the work item. If the third argument above is empty, there is none.
 
 ## Step 2: Check for existing work
@@ -45,14 +48,16 @@ Follow these steps in order. Do not skip any step, except the ones marked "only 
 If there is no third argument, run exactly this command:
 
 ```
-{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/ado/Get-WorkItem.ps1" -Id $1 -WorkRoot ".work"
+{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/ado/Get-WorkItem.ps1" -Id $1 -WorkRoot ".work" -Parents -IncludeComments
 ```
 
 If there is a third argument, run exactly this command instead:
 
 ```
-{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/ado/Get-WorkItem.ps1" -Id $1 -WorkRoot ".work" -From "$3"
+{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/ado/Get-WorkItem.ps1" -Id $1 -WorkRoot ".work" -From "$3" -Parents -IncludeComments
 ```
+
+- `-Parents` adds the parent Feature and Epic to `workitem.md`. `-IncludeComments` adds the comments. If either cannot be fetched, the script still succeeds and says so in `workitem.md`. That is fine: the brief says "unknown".
 
 - If it succeeds, the last line of output is the new folder path. Remember it.
 - If the error contains `AMBIGUOUS:` or `UNKNOWN:`, the script could not tell which ADO connection to use. Show the engineer the connection names from the error and ask: "Which ADO connection (or which repo folder) is work item $1 in?" Run the second command above, with `$3` replaced by their answer.
@@ -103,9 +108,29 @@ For each repo in `repos.md`, in order:
 
 - Copy `{{ENG_HOME}}/templates/progress.md` into the work folder as `progress.md`. Fill in the header and add the first entry for `/start`.
 
+## Step 8b: Write the brief (skip with `--cold`)
+
+Skip this step if `--cold` was given. Otherwise write a short brief, so the engineer does not start from a blank screen. Keep it light: this step reads no file contents in any repo.
+
+- Copy `{{ENG_HOME}}/templates/brief.md` into the work folder as `brief.md`.
+- Fill it in from `workitem.md` and `repos.md` only:
+  - **Goal:** one sentence from the title and description.
+  - **Done means:** each acceptance criterion as a `- [ ]` line, in the work item's words. If there are none, write "None provided".
+  - **Where it fits:** the Feature and Epic from the "Parents" section of `workitem.md`. In this team Epics are versions, Features are the smallest usable deliverable, and Stories build Features. If there is no "Parents" section, or it says the parents could not be fetched, write "Parents unknown". For local work, write "None".
+  - **Recent talk:** the last 5 comments from the "Comments" section, one line each. If there are none, write "No comments".
+  - **Repos and branch:** the repo, branch and base of each row in `repos.md`.
+- **Likely files:** pick 2 to 4 keywords from the title (skip filler words). For each repo in `repos.md`, run only these two commands, once per keyword:
+  1. `git -C <repo> ls-files "*<keyword>*"` (file names only).
+  2. `git -C <repo> log --oneline -n 20 -i --grep "<keyword>" --name-only` (recent commit messages and the files they touched).
+  List at most 10 paths, most matches first, each with why it matched. Do not open or read any of these files. They are guesses, and the brief says so. If nothing matches, write "No matches".
+- **First tiny step:** usually "Run `/spec $1`" (or "Run `/bug $1`" for a bug). If the work item leaves something important open (no acceptance criteria, or a contradiction), write the one concrete question to answer first instead.
+- Do not add requirements the work item does not give.
+- If this step fails, say so in one line and go on. The brief is a help, not a gate.
+
 ## Step 9: Tell the engineer what is next
 
 Reply with:
 - The folder path.
 - The repos and branches created, and any that were skipped.
+- The brief: print `brief.md` as it is (or say it was skipped with `--cold`).
 - The next command: `/spec $1` for a feature, or `/bug $1` for a bug.

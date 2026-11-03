@@ -12,6 +12,13 @@ Do not change any code. The only files you write are `paused.md` and `progress.m
 - Find the folder in `.work/` that starts with `$1-`. If none, stop and say so.
 - Read `paused.md`. If it does not exist or does not contain `Status: PAUSED`, tell the engineer the item is not paused and suggest `/status $1`. Stop.
 
+## Step 1b: Show the brief and the last breadcrumb
+
+Before you touch any repo, print these for the engineer, so coming back gets the same help as starting:
+
+- `brief.md`, as it is, if the work folder has one. If it does not, skip it without comment.
+- The last entry of `progress.md`: its heading line and its `Did`, `Notes` and `Next` lines.
+
 ## Step 2: Restore each repo
 
 For each repo in the Repos table of `paused.md`:
@@ -40,6 +47,7 @@ For each repo in the Repos table of `paused.md`:
 
 Reply with:
 - Where it stands: phase, tasks done, task in progress.
+- One line pointing back to the brief printed in Step 1b, if there was one ("The brief is above.").
 - The "Work in progress" and "Waiting on" sections from `paused.md`, in a few lines.
 - The state of each repo, and any repo where its base has moved.
 - The next command. If it is `/do-task`, say to start a new session first.

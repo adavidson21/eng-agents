@@ -248,6 +248,15 @@ Running it again after the author pushes refreshes `context.md` and `threads.md`
 
 The PAT needs **Code (Read)** and **Work Items (Read)**. The repo must be cloned in the workspace; if it is not, the command names the repo and its clone URL.
 
+## Prepping a 1:1
+
+`/one-on-one <path to packet.md>` (agent: **people-prep**) drafts talking points for a 1:1 with someone on your team. You normally run it from Workshop's 1:1s app (**Draft talking points**), which writes the packet and reads the draft back.
+
+1. The 1:1s app gathers what Docket, Receipts and Queue know about the person since your last 1:1 and saves it as `packet.md` in Workshop's own folder (`~/.workshop/data/_connectors/opencode/oneonones/<person>-<date>/`). It leaves out the person's name, and Receipts concerns unless you ask for them on that run. Nothing goes in the workspace or `.work`.
+2. The agent reads only that file and writes `draft.md` next to it from `templates/one-on-one.md`: wins to recognize, follow-ups from last time, blockers to ask about, growth topics, and 3 questions to ask.
+
+**It drafts only.** It never rates, ranks or judges the person, and it never adds facts that are not in the packet. It can edit nothing but that `draft.md`, runs no shell commands except listing the packet's folder, and makes no web requests.
+
 ## Shared repos
 
 - Consumers reference shared code by relative path, so one flat clone in the workspace satisfies all of them. Duplicate clones drift apart.

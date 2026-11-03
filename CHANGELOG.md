@@ -4,6 +4,11 @@ Core and the dashboard have their own versions (`core/VERSION`, `core/scripts/da
 
 Format: one `## Core <version> (<date>)` or `## Dashboard <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 2.8.0 (2026-11-03)
+
+- 1:1 prep: `/one-on-one <path to packet.md>` (new **people-prep** agent) reads a prep packet from Workshop's 1:1s app and writes `draft.md` next to it: wins to recognize, follow-ups from last time, blockers to ask about, growth topics, and 3 questions to ask (new `templates/one-on-one.md`). It drafts only: it never rates, ranks or judges the person, and uses only facts in the packet.
+- The packet lives in Workshop's own folder, not the workspace. people-prep may edit only that `draft.md`, may run no shell command except listing that folder, and cannot fetch web pages.
+
 ## Dashboard 1.10.1 (2026-11-02)
 
 - `brief.md` (written by `/start`, Core 2.7.0) is listed right after `workitem.md` in an item's files.

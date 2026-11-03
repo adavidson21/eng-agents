@@ -173,6 +173,10 @@ Better input gives better diagrams: fill in "External systems" and "Business pro
 - If ADO is unreachable, offline mode creates the folder from a title you paste; then you paste the details into `workitem.md`.
 - Proposes repos from the repo map and asks you to confirm.
 - Never switches a repo with uncommitted changes (skips it). Asks before switching a repo that is on another item's `dev/` branch.
+- Ends with a warm start: it writes `brief.md`, a two-minute read with the goal, the acceptance criteria as a checklist, the parent Feature and Epic, the last 5 comments, the repos and branch, up to 10 likely files, and the first tiny step. It prints the brief before the next command.
+- The likely files are guesses from file names and commit messages that match words in the title. `/start` opens no files to find them, so it stays fast.
+- `-Parents` on `Get-WorkItem.ps1` adds the parent Feature and Epic to `workitem.md`. If they cannot be fetched, the brief says "Parents unknown".
+- `/start <id> <lane> --cold` skips the brief.
 
 **/spec**
 - Questions come one at a time with options and a recommendation, so you can reply "A" or "yes".
@@ -209,7 +213,7 @@ All state lives in the workspace, outside every git repo, and never leaves the w
 
 ```
 .work/<id>-<short-name>/
-  workitem.md   repos.md   spec.md   plan.md   tasks.md
+  workitem.md   brief.md   repos.md  spec.md   plan.md       tasks.md
   progress.md   review.md  pr.md     bug.md    findings.md   paused.md
 
 .work/scope-<short-name>/                scoping: epics.md, stories.md, milestones.md, progress.md,
@@ -276,7 +280,7 @@ Next morning, `/status` with no id starts with the runway.
 - For uncommitted changes it asks one question: commit as `WIP <id>: ...` (frees the repo) or leave them. Nothing is stashed or discarded.
 - While paused, agents refuse other pipeline commands on the item except `/status` and `/resume`.
 
-`/resume <id>` switches each repo back to the item's branch (asking first if a repo is on another item's branch), warns if `main` has moved, marks `paused.md` as `RESUMED`, and gives the next command. A half-done task continues from the "Work in progress" notes. Squash WIP commits when merging if your team prefers clean history.
+`/resume <id>` first prints the brief (if the item has one) and the last `progress.md` entry. Then it switches each repo back to the item's branch (asking first if a repo is on another item's branch), warns if `main` has moved, marks `paused.md` as `RESUMED`, and gives the next command. A half-done task continues from the "Work in progress" notes. Squash WIP commits when merging if your team prefers clean history.
 
 ## Dashboard
 

@@ -48,6 +48,7 @@ Each work item has a folder `.work/<id>-<name>/`. Find it by listing `.work/` an
 | File | Purpose |
 |---|---|
 | `workitem.md` | The work item text. Source of the requirement. |
+| `brief.md` | A short context brief for the engineer, written by `/start` (not with `--cold`). A help to read, not pipeline state. |
 | `repos.md` | Lane, repos involved, branch per repo, order. |
 | `spec.md` | What to build. Has a `Status:` line. |
 | `plan.md` | How to build it. Has a `Status:` line. |

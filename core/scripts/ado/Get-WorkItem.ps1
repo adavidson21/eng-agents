@@ -36,6 +36,10 @@
     .\Get-WorkItem.ps1 -Id 12345 -WorkRoot .work -From orders-api
 
 .EXAMPLE
+    .\Get-WorkItem.ps1 -Id 12345 -WorkRoot .work -Parents
+    Also writes a "Parents" section: the parent Feature, its Epic, and so on up.
+
+.EXAMPLE
     .\Get-WorkItem.ps1 -Id 0 -From orders-api -ShowConnection
 #>
 [CmdletBinding()]
@@ -52,6 +56,10 @@ param(
 
     # Also fetch comments. Uses a preview API that some ADO Server versions lack.
     [switch]$IncludeComments,
+
+    # Also fetch the parents up the hierarchy (Story, then Feature, then Epic): id, type and title.
+    # A failure is written into workitem.md; the script still succeeds.
+    [switch]$Parents,
 
     # A connection name from config.json, or a repo folder whose path or git remote
     # identifies the connection.
@@ -176,6 +184,42 @@ if ($item.relations) {
 }
 $relatedText = if ($related.Count -gt 0) { $related -join "`n" } else { "None" }
 
+function Get-ParentId {
+    # The id of an item's parent (the Hierarchy-Reverse link), or $null.
+    param($WorkItem)
+    foreach ($r in @($WorkItem.relations)) {
+        if ($r -and $r.rel -eq "System.LinkTypes.Hierarchy-Reverse" -and $r.url -match "/workItems/(\d+)$") { return [int]$Matches[1] }
+    }
+    return $null
+}
+
+$parentsText = $null
+if ($Parents) {
+    # Walk up one parent at a time. Stop at the top, at 5 levels, or at a loop.
+    $chain = @()
+    $seen = @($Id)
+    $parentId = Get-ParentId $item
+    try {
+        while ($parentId -and $chain.Count -lt 5 -and ($seen -notcontains $parentId)) {
+            $seen += $parentId
+            $p = $request.Clone()
+            $p.Uri = "$base/_apis/wit/workitems/$($parentId)?`$expand=relations&api-version=$($conn.ApiVersion)"
+            $parent = Invoke-RestMethod @p
+            $pType = Get-Field $parent.fields "System.WorkItemType"
+            $pTitle = Get-Field $parent.fields "System.Title"
+            $chain += "- ${pType}: #$parentId $pTitle"
+            $parentId = Get-ParentId $parent
+        }
+        $parentsText = if ($chain.Count -gt 0) { $chain -join "`n" } else { "None (this item has no parent)" }
+    }
+    catch {
+        $got = if ($chain.Count -gt 0) { ($chain -join "`n") + "`n" } else { "" }
+        $parentsText = $got + "Parents unknown: could not fetch work item #$parentId. $($_.Exception.Message)"
+    }
+}
+# Empty without -Parents, so workitem.md is unchanged.
+$parentsBlock = if ($null -ne $parentsText) { "`n`n## Parents`n`nNearest first.`n`n$parentsText" } else { "" }
+
 $commentsText = "Not fetched (use -IncludeComments)"
 if ($IncludeComments -and -not $conn.Project) {
     $commentsText = "Not fetched: connection '$($conn.Name)' has no 'project' in config.json"
@@ -227,7 +271,7 @@ $repro
 
 ## Related work items
 
-$relatedText
+$relatedText$parentsBlock
 
 ## Comments
 

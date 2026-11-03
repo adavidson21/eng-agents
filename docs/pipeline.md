@@ -215,6 +215,7 @@ All state lives in the workspace, outside every git repo, and never leaves the w
 .work/scope-<short-name>/                scoping: epics.md, stories.md, milestones.md, progress.md,
                                          backlog.csv or published.md
 .work/spike-<short-name>/findings.md     spike without a work item
+.work/pr-<pr id>/                        first-pass PR review: context.md, threads.md, review.md (drafts), history/
 .work/docs-<short-name>/sources.md       docs lane: claims and their source files
 .work/docs-<short-name>/check.md         docs lane: fact-check results
 .work/tsd-<short-name>/                  TSD draft: inventory.md (facts), tsd.md, sources.md, check.md,
@@ -228,6 +229,20 @@ All state lives in the workspace, outside every git repo, and never leaves the w
 ```
 
 `<short-name>` is the first 5 words of the work item title, lowercase, filler words dropped, at most 40 characters.
+
+## Reviewing teammates' PRs
+
+`/pr-review <PR link>` (agent: **pr-reviewer**) does a first pass on someone else's Azure DevOps pull request, so your own review starts from a short list instead of a blank diff. Dispatch has the same thing under **PR reviews**, with your review queue next to it.
+
+1. `scripts/ado/Get-PullRequest.ps1` reads the PR, its linked work items, and its comment threads (GET calls only), finds the repo among your workspace folders, and fetches the PR's branches into private refs (`refs/eng-agents/pr/<id>/source` and `/target`). Nothing is checked out: your working tree and branches stay as they are. A PR from a fork is read from ADO's merge ref.
+2. The agent reads the diff and, where it needs more, whole files at the PR's commit with `git show`, plus your repo guide. Pass 1 checks the linked acceptance criteria; pass 2 looks for real problems (correctness, security, contracts, error handling, data, patterns, tests, build, leftovers). It skips anything already raised on the PR.
+3. It writes `.work/pr-<id>/review.md`: a recommendation, a risk level, and numbered draft comments (file, line, severity `blocking` / `should-fix` / `optional`, why, and the comment as you would post it).
+
+**It never posts.** No comments, votes, approvals, or rejections. The agent cannot check out, fetch, push, or make web requests. You read the drafts, edit them, and post the ones you agree with.
+
+Running it again after the author pushes refreshes `context.md` and `threads.md` and moves the old review to `history/`. On the same commit it stops and says so; add `again` to review it anyway.
+
+The PAT needs **Code (Read)** and **Work Items (Read)**. The repo must be cloned in the workspace; if it is not, the command names the repo and its clone URL.
 
 ## Shared repos
 

@@ -127,6 +127,7 @@ Override an agent by copying its file from `core/agents/` into your layer. Keep 
 | `planner` | `/start`, `/spec`, `/plan`, `/tasks`, `/approve`, `/status`, `/standup`, `/pause`, `/resume`, `/shutdown` | `.work/` only | Can commit (WIP commits from `/pause`) |
 | `implementer` | `/do-task` | Code and tests. Repo guides, `CLAUDE.md`, and opencode config ask. | Can commit |
 | `reviewer` | `/review`, `/check-docs` | `.work/` only | Cannot `git add` or `git commit` |
+| `pr-reviewer` | `/pr-review` | `.work/` only | Cannot check out, switch, fetch, stash, `git add`, commit, or push; no web requests. It reads the PR only through `git show` and `git diff` at the PR's commit. |
 | `investigator` | `/bug`, `/spike`, `/onboard-repo` | `.work/`. A repo guide and `.git/info/exclude` ask. | Cannot `git add` or `git commit` |
 | `product-manager` | `/scope` | `.work/scope-*/` only | Only `git log` |
 | `milestone-architect` | `/slice`, `/backlog` | `milestones.md` and `progress.md` in `.work/scope-*/` | Only `git log` and `Export-Backlog.ps1` (pushing to ADO asks) |

@@ -1048,12 +1048,12 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
   }
 
   function noteCard(it) {
-    var label = { spike: "Spike", docs: "Docs", tsd: "TSD", scope: "Scope" }[it.kind] || "Folder";
+    var label = { spike: "Spike", docs: "Docs", tsd: "TSD", scope: "Scope", pr: "PR review" }[it.kind] || "Folder";
     var body = "";
     if (it.state) body += '<p style="margin:6px 0 0"><strong>' + h(it.state) + "</strong></p>";
     if (it.summary) body += '<p class="pre" style="margin:6px 0 0">' + md(it.summary) + "</p>";
     if (it.nextText) body += '<div class="next-line"><span class="lbl">Next</span><span>' + md(LIVE ? liveNote(it.nextText) : it.nextText) + "</span>" + runBtn(it, noteCommand(it)) + "</div>";
-    return '<article class="item" id="item-' + h(it.folder) + '" style="--state:' + (LIVE && asking(it) ? "var(--gate)" : "var(--line)") + '"><div class="item-head"><h4 class="t">' + h(it.title) + '</h4><div class="meta"><span class="tag">' + label +
+    return '<article class="item" id="item-' + h(it.folder) + '" style="--state:' + (LIVE && asking(it) ? "var(--gate)" : "var(--line)") + '"><div class="item-head"><h4 class="t">' + (it.pr && it.pr.url ? link(it.pr.url, it.title) : h(it.title)) + '</h4><div class="meta"><span class="tag">' + label +
       "</span><span>Touched " + ago(it.modifiedMs) + "</span>" + removeBtn(it) + "</div></div>" + body + agentHtml(it) +
       (it.files && it.files.length ? "<details" + openAttr("d:" + it.folder, false) + "><summary>Files</summary><div class=\"detail-body\">" + filesHtml(it) + "</div></details>" : "") + "</article>";
   }

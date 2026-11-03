@@ -634,11 +634,11 @@ foreach ($dir in @(Get-ChildItem -LiteralPath $workRootFull -Directory | Where-O
         }
         elseif ($kind -eq "pr") {
             $base.title = "Pull request $($Matches[2])"
-            $base.pr = Get-PrReview $folder $Matches[2]
-            if ($base.pr.title) { $base.title = $base.pr.title }
-            $base.state = $base.pr.state
-            $base.summary = $base.pr.summary
-            $base.nextText = $base.pr.nextText
+            $base.prReview = Get-PrReview $folder $Matches[2]
+            if ($base.prReview.title) { $base.title = $base.prReview.title }
+            $base.state = $base.prReview.state
+            $base.summary = $base.prReview.summary
+            $base.nextText = $base.prReview.nextText
         }
         elseif ($kind -eq "scope") {
             $e = Read-Text (Join-Path $folder "epics.md")

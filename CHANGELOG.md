@@ -12,7 +12,7 @@ Format: one `## Core <version> (<date>)` or `## Dashboard <version> (<date>)` he
 
 ## Dashboard 1.10.0 (2026-11-02)
 
-- `pr-<id>` folders show as PR review cards: the recommendation and comment count, a link to the PR, and a Run button when the review is unfinished or out of date. `-AsJson` carries the parsed review (`items[].pr`: recommendation, risk, comments, questions) for Workshop's Dispatch.
+- `pr-<id>` folders show as PR review cards: the recommendation and comment count, a link to the PR, and a Run button when the review is unfinished or out of date. `-AsJson` carries the parsed review (`items[].prReview`: recommendation, risk, comments, questions) for Workshop's Dispatch.
 
 ## Dashboard 1.9.0 (2026-11-02)
 

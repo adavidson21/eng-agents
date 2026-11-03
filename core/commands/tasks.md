@@ -27,6 +27,7 @@ Rules for every task:
 - Exactly one verify command, copied from the repo `AGENTS.md` and narrowed to the relevant tests with a filter when possible.
 - A "Done when" line that anyone could check.
 - A "Pattern to follow" file from the plan.
+- A "Human interface" line: the page, button, endpoint, command, or log line a person uses to see this change. Use only routes and names you have seen in the code.
 - Order: shared repos first, then the order in `repos.md`. Inside a repo: domain and application code first, then infrastructure, then API, then UI, then Playwright.
 
 ## Step 4: Check coverage

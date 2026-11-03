@@ -48,7 +48,7 @@ Do task **$2** of work item **$1**. Do only this task.
 ## Step 6: Record
 
 - In `tasks.md`, change `## [ ] Task $2` to `## [x] Task $2`. Only if it passed.
-- Add a `progress.md` entry using the template format. Paste the real last lines of the verify output. For .NET, include both the failing and the passing run. If blocked, write what you tried and what failed.
+- Add a `progress.md` entry using the template format. Paste the real last lines of the verify output. For .NET, include both the failing and the passing run. If it passed, include the Manual Validation Checklist (see your agent instructions), built from the task's "Human interface" line. If blocked, write what you tried and what failed, and skip the checklist.
 
 ## Step 7: Commit
 
@@ -61,3 +61,5 @@ Tell the engineer, in 3 lines or fewer:
 - What changed.
 - Verify result.
 - Next: "Start a new session, then run `/do-task $1 <next number>`." If this was the last task, say "Run `/review $1`."
+
+Then, if the task passed, print the Manual Validation Checklist as your final output, in the exact format from your agent instructions.

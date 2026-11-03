@@ -40,6 +40,7 @@ Investigate bug **$1**.
 - **Task 1 is always a test that reproduces the bug.** Its "Done when" line is: "the new test FAILS, showing the bug." Combine it with the fix in one task only if the test and fix are each in a single file.
 - The next task fixes the bug. Its "Done when" is: "the test from Task 1 now passes and no other tests fail."
 - Use verify commands from the repo `AGENTS.md`.
+- Every task has a "Human interface" line: where a person sees the bug (the page, button, endpoint, or command), using only routes and names you have seen in the code.
 
 ## Step 7: Log and hand off
 

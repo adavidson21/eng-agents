@@ -185,11 +185,13 @@ Better input gives better diagrams: fill in "External systems" and "Business pro
 **/tasks**
 - Each task touches one repo and at most 3 files (or your configured cap). Split big-looking tasks by hand before starting.
 - A coverage table proves every acceptance criterion has a task.
+- Every task has a "Human interface" line (page, button, endpoint, or command) so the implementer knows how a person meets the code.
 
 **/do-task**
 - Always in a new session. Checks the gate, the branch, and that the repo has no unrelated changes.
 - .NET is strict TDD: both the failing and the passing run go in `progress.md`. If the "failing" run passed, the test does not test the change.
 - Stages only the task's files and commits with a short summary. You approve the commit.
+- Ends with a Manual Validation Checklist: exact URL, exact click or command, exact result. It is saved in `progress.md`, and `/review` blocks on a missing or vague one and collects them all into `review.md`.
 
 **/review**
 - Runs every repo's unit tests, then reads the diff against `origin/main`.

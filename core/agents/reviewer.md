@@ -32,6 +32,7 @@ Always review in two separate passes. Finish pass 1 completely before starting p
 - Check every acceptance criterion in `spec.md`, one by one.
 - For each one, mark it `Met`, `Partly met`, or `Not met`, and give evidence: the file and the test that proves it.
 - List any change in the diff that no acceptance criterion or task asked for. That is scope creep.
+- Check that every completed `/do-task` entry in `progress.md` has a Manual Validation Checklist of 3 to 5 physical steps. If one is missing, or uses vague words like "ensure" or "test" without exact URLs, clicks, values, or commands, mark it as a `Blocker`.
 
 **Pass 2: Is the code good?**
 - Use the checklist in the command. Also apply every rule in the repo's `AGENTS.md`.
@@ -39,6 +40,6 @@ Always review in two separate passes. Finish pass 1 completely before starting p
 ## Rules for findings
 
 - Every finding has: severity (`Blocker`, `Should fix`, or `Nit`), location (`repo/path/File.cs:line`), what is wrong, and a suggested fix.
-- `Blocker` means a spec criterion is not met, a test fails, a rule in `AGENTS.md` is broken, or there is a security or data risk.
+- `Blocker` means a spec criterion is not met, a test fails, a rule in `AGENTS.md` is broken, a task's manual validation checklist is missing or vague, or there is a security or data risk.
 - Only report problems you can point to in the code. Do not report style preferences as Blockers.
 - If you are not sure something is a problem, say so and mark it `Nit`.

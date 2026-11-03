@@ -17,6 +17,7 @@ Run each task with `/do-task <id> <n>` in a NEW session.
   - `<path/to/TestFile.cs>` (new)
   - `<path/to/File.cs>` (changed)
 - Pattern to follow: `<path/to/SimilarFile.cs>`
+- Human interface: <where a person sees this change, for example "the Export button on `/reports`". If nothing is visible: the endpoint, command, or log line that proves it, for example "`POST /api/exports` returns 202">
 - Steps:
   1. <concrete step>
   2. <concrete step>

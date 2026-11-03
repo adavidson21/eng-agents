@@ -33,6 +33,7 @@ If the mode above is `auto`, autopilot is running this review and nobody is watc
 
 - For each acceptance criterion, mark `Met`, `Partly met`, or `Not met`. Give the test and file that prove it.
 - List changes that no criterion or task asked for.
+- For each checked task, find its `/do-task` entry in `progress.md`. If the Manual Validation Checklist is missing or vague (no exact URL, click, value, or command), add a `Blocker` finding for that task.
 
 ## Step 6: Pass 2, code quality
 
@@ -51,6 +52,7 @@ Check every changed file against this list and the repo `AGENTS.md`:
 ## Step 7: Write review.md
 
 - Start from `{{ENG_HOME}}/templates/review.md`. Write it to the work folder as `review.md`.
+- Copy every task's Manual Validation Checklist into the "Manual validation" section, in task order, so the engineer has one list to walk through.
 - Verdict is `READY` only if all tests pass, every criterion is `Met`, and there are no Blockers.
 
 ## Step 8: Hand off

@@ -32,7 +32,7 @@ Always review in two separate passes. Finish pass 1 completely before starting p
 - Check every acceptance criterion in `spec.md`, one by one.
 - For each one, mark it `Met`, `Partly met`, or `Not met`, and give evidence: the file and the test that proves it.
 - List any change in the diff that no acceptance criterion or task asked for. That is scope creep.
-- Check that every completed `/do-task` entry in `progress.md` has a Manual Validation Checklist of 3 to 5 physical steps. If one is missing, or uses vague words like "ensure" or "test" without exact URLs, clicks, values, or commands, mark it as a `Blocker`.
+- Check that every completed task has a Manual Validation Checklist of 3 to 5 physical steps in `progress.md`, either in its `/do-task` entry or in a later entry for that task. If one is missing, or uses vague words like "ensure" or "test" without exact URLs, clicks, values, or commands, mark it as a `Blocker`.
 
 **Pass 2: Is the code good?**
 - Use the checklist in the command. Also apply every rule in the repo's `AGENTS.md`.

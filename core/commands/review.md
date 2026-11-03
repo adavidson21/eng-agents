@@ -33,7 +33,7 @@ If the mode above is `auto`, autopilot is running this review and nobody is watc
 
 - For each acceptance criterion, mark `Met`, `Partly met`, or `Not met`. Give the test and file that prove it.
 - List changes that no criterion or task asked for.
-- For each checked task, find its `/do-task` entry in `progress.md`. If the Manual Validation Checklist is missing or vague (no exact URL, click, value, or command), add a `Blocker` finding for that task.
+- For each checked task, find its Manual Validation Checklist in `progress.md`: in its `/do-task` entry, or in a later entry for that task. If it is missing or vague (no exact URL, click, value, or command), add a `Blocker` finding for that task.
 
 ## Step 6: Pass 2, code quality
 
@@ -59,6 +59,7 @@ Check every changed file against this list and the repo `AGENTS.md`:
 
 - Add a `progress.md` entry for `/review`.
 - Summarize for the engineer: verdict, number of findings by severity, and the Blockers in one line each.
-- `auto`: if the verdict is not READY, append one fix task for each `Blocker` finding to the end of `tasks.md`, numbered after the last task, in the normal task format (one repo, at most 3 files, one verify command from the repo `AGENTS.md`). Do not add tasks for `Should fix` or `Nit`. Name the added tasks in the `progress.md` entry. Do not ask anything, and stop.
-- Not `auto`: if there are findings, ask: "Which findings should become fix tasks?" When they answer, append those tasks to the end of `tasks.md`, numbered after the last task, in the normal task format. Then tell them to run `/do-task $1 <n>` for each in a new session, then `/review $1` again.
+- `auto`: if the verdict is not READY, append one fix task for each `Blocker` finding to the end of `tasks.md`, numbered after the last task, in the normal task format (one repo, at most 3 files, one verify command from the repo `AGENTS.md`). Do not add tasks for `Should fix` or `Nit`. Do not add tasks for checklist Blockers either: they change no code. Name those tasks in the `progress.md` entry so the engineer can add the checklists. Name the added tasks in the `progress.md` entry. Do not ask anything, and stop.
+- If there are checklist Blockers, list the tasks that need one and tell the engineer to add each checklist as a new `progress.md` entry for that task (by hand, or by asking the implementer), then run `/review $1` again. These never become fix tasks.
+- Not `auto`: if there are other findings, ask: "Which findings should become fix tasks?" When they answer, append those tasks to the end of `tasks.md`, numbered after the last task, in the normal task format. Then tell them to run `/do-task $1 <n>` for each in a new session, then `/review $1` again.
 - If the verdict is READY, tell them to run `/pr $1`.

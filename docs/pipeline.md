@@ -219,6 +219,7 @@ All state lives in the workspace, outside every git repo, and never leaves the w
                                          render/ (one SVG per diagram). /publish copies tsd.md out.
 .work/_onboard/<repo>-AGENTS.md          onboard draft when the repo already has a repo guide
                                          (<repo>-AGENTS.local.md when the team committed its own AGENTS.md)
+.work/runway.md                          end-of-day note from /shutdown; overwritten daily
 .work/dashboard.html                     the static dashboard; kept current by the live dashboard; never edit
 .work/_dashboard/                        live dashboard: sessions.json (item to session links), autopilot.json, and,
                                          on opencode 1.x, opencode.log; safe to delete when it is not running
@@ -238,6 +239,17 @@ All state lives in the workspace, outside every git repo, and never leaves the w
   git -C C:\src\work\<shared-repo> worktree add ..\<shared-repo>-12345 dev/feature/12345-short-name
   git -C C:\src\work\<shared-repo> worktree remove ..\<shared-repo>-12345
   ```
+
+## End of day
+
+`/shutdown` (planner) offloads your head before you log off.
+
+- Reads `git status` and `git diff` in every repo and the last `progress.md` entry of every item, without narrating.
+- Asks one question: the first thing tomorrow, and anything else lingering.
+- Writes `.work/runway.md` (overwritten daily): **Current State** (two sentences), **Tomorrow's Ignition** (the smallest first step, usually an exact command), **Open Loops** (your brain dump, plus loops from yesterday you did not drop, plus any blocked task), and a snapshot of repos and items.
+- Commits, stashes, and pushes nothing. If a repo has uncommitted work it says so and points to `/pause <id>` for a WIP commit.
+
+Next morning, `/status` with no id starts with the runway.
 
 ## Pausing and resuming
 

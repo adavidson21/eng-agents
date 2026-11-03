@@ -76,7 +76,7 @@ Embedded, the page hides its own theme menu.
 
 ## Code review
 
-Dispatch's review screen reads a branch's diff and sends the reviewer's verdict back. Same origin allowlist and CORS as the rest of the shell API. Added in Dashboard 1.8.0; additive, so `api` stays `1`.
+Dispatch's review screen reads a branch's diff and sends the reviewer's verdict back. Same origin allowlist and CORS as the rest of the shell API. Added in Dashboard 1.9.0; additive, so `api` stays `1`.
 
 There is one review per work item and repo, matching Push PR. `repo` is the repo folder name from the item's `pr.md` (the same value `/api/push` takes). A shell shows a repo switcher when an item has more than one. `<id>` is the work item number, or `L<number>` for a local item.
 

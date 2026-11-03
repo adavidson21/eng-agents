@@ -27,6 +27,7 @@ Next: <exact command>
 
 ## If no id was given
 
+- If `.work/runway.md` exists (written by `/shutdown`), start the reply with its date, its "Tomorrow's Ignition" line, and its "Open Loops", under the heading `Runway`. Then the table below.
 - List every folder in `.work/` except `_onboard`.
 - For each, work out the phase and next command using the table below.
 - Reply with one table: folder, lane, phase (`paused` if `paused.md` says PAUSED), next command.

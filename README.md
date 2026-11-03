@@ -10,6 +10,7 @@ Open opencode from your workspace root (for example `C:\src\work`).
 |---|---|
 | Feature | `/start <id> feature` → `/spec <id>` → `/approve <id>` → `/plan <id>` → `/approve <id>` → `/tasks <id>` → `/do-task <id> <n>` (repeat) → `/review <id>` → `/pr <id>` |
 | Work with no tracker item | `/start new <feature or bug>`: describe it in chat. It gets a local id like `L3`; use that id in the commands above. |
+| Define the work first | `/scope <idea>` → `/approve scope-<name>` → `/slice scope-<name>` → `/approve scope-<name> milestones` → `/backlog scope-<name> [csv\|ado\|local]` → `/start <story id> feature` |
 | Bug | `/start <id> bug` → `/bug <id>` → `/approve <id>` → `/do-task <id> <n>` (repeat) → `/review <id>` → `/pr <id>` |
 | Question, no code changes | `/spike <id or topic>` |
 | Docs | `/docs <target>`, new session, `/check-docs <doc path>` |
@@ -17,6 +18,7 @@ Open opencode from your workspace root (for example `C:\src\work`).
 | Where was I? | `/dashboard` (opens the live dashboard, starting it if needed) or `/status [id]` |
 | Drive it from the browser | `/dashboard`: the live dashboard runs commands in opencode (see [Live dashboard](docs/pipeline.md#live-dashboard-optional)) |
 | Hands-off build after the plan | Live dashboard: **Approve and build**. It runs tasks, review, and PR text, each step in a new session, and stops only when it needs you (see [Autopilot](docs/pipeline.md#autopilot)) |
+| End of day | `/shutdown`: writes `.work/runway.md` with where you left off, tomorrow's first step, and open loops. Next morning, `/status` shows it first. |
 | Standup update | `/standup [days back]` (default 1, or 3 on a Monday) |
 | Switch to something urgent | `/pause <id> [reason]`, later `/resume <id>` |
 | New repo in the workspace | `/onboard-repo <folder>` |

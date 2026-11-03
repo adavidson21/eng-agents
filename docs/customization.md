@@ -124,13 +124,15 @@ Override an agent by copying its file from `core/agents/` into your layer. Keep 
 
 | Agent | Runs | Can edit | Shell, beyond `guards` |
 |---|---|---|---|
-| `planner` | `/start`, `/spec`, `/plan`, `/tasks`, `/approve`, `/status`, `/standup`, `/pause`, `/resume` | `.work/` only | Can commit (WIP commits from `/pause`) |
+| `planner` | `/start`, `/spec`, `/plan`, `/tasks`, `/approve`, `/status`, `/standup`, `/pause`, `/resume`, `/shutdown` | `.work/` only | Can commit (WIP commits from `/pause`) |
 | `implementer` | `/do-task` | Code and tests. Repo guides, `CLAUDE.md`, and opencode config ask. | Can commit |
 | `reviewer` | `/review`, `/check-docs` | `.work/` only | Cannot `git add` or `git commit` |
 | `investigator` | `/bug`, `/spike`, `/onboard-repo` | `.work/`. A repo guide and `.git/info/exclude` ask. | Cannot `git add` or `git commit` |
+| `product-manager` | `/scope` | `.work/scope-*/` only | Only `git log` |
+| `milestone-architect` | `/slice`, `/backlog` | `milestones.md` and `progress.md` in `.work/scope-*/` | Only `git log` and `Export-Backlog.ps1` (pushing to ADO asks) |
 | `writer` | `/pr`, `/docs`, `/tsd`, `/publish`, `/memory` | Any `*.md` file, `docs/`, `.work/`, the global memory file. opencode config asks. | Cannot `git add` or `git commit` |
 
-Lanes are kept by what each agent can **edit** and **commit**, not by which shell commands it may run.
+Lanes are kept by what each agent can **edit** and **commit**, not by which shell commands it may run. The two scoping agents are the exception: they deny every shell command except the few they need, so they do not include `guards`.
 
 ## Permissions
 

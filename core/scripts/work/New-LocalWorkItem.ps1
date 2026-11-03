@@ -31,7 +31,10 @@ param(
 
     # The description as text, or a file holding it. Leave both out to fill it in later.
     [string]$Description,
-    [string]$DescriptionFile
+    [string]$DescriptionFile,
+
+    # Acceptance criteria as text. Leave out for "None provided". Export-Backlog.ps1 -Local passes the story's scenarios.
+    [string]$AcceptanceCriteria
 )
 
 $ErrorActionPreference = "Stop"
@@ -77,6 +80,8 @@ $desc = $Description
 if ($DescriptionFile) { $desc = [System.IO.File]::ReadAllText((Resolve-Path $DescriptionFile).Path) }
 $desc = "$desc".Trim()
 if (-not $desc) { $desc = "<describe the work here>" }
+$criteria = "$AcceptanceCriteria".Trim()
+if (-not $criteria) { $criteria = "None provided" }
 $repro = $(if ($Type -eq "Bug") { "<steps to reproduce, or ""See the description"">" } else { "Not a bug" })
 $today = (Get-Date).ToString("yyyy-MM-dd")
 
@@ -93,7 +98,7 @@ $desc
 
 ## Acceptance criteria
 
-None provided
+$criteria
 
 ## Repro steps (bugs only)
 

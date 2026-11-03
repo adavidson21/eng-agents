@@ -3,6 +3,9 @@
 How each phase works, why it is shaped this way, and what to do when it goes wrong. Daily commands are in the [README](../README.md). Which agent runs each command, and what it may do, is in [Customization](customization.md#agents).
 
 ```
+/scope <idea>          (optional, before any work item exists) epic, features, stories   GATE: /approve scope-<name>
+/slice scope-<name>    features and stories in build order, mapped to code              GATE: /approve scope-<name> milestones
+/backlog scope-<name>  ADO import file (default), ADO items, or local items
 /start <id> feature    fetch work item, create .work/<id>-<name>/, confirm repos, create branches
                        (add a repo folder or ADO connection as a 3rd argument for another collection)
 /spec <id>             questions one at a time, then spec.md        GATE: /approve <id>
@@ -72,6 +75,7 @@ Editing the line yourself still works; the next command reads whatever is on dis
 |---|---|---|
 | Feature | New behavior, or more than 3 files of change | Full pipeline |
 | Bug | A defect with a reproducible symptom | `/start` → `/bug` → `/approve` → `/do-task` (repeat) → `/review` → `/pr` |
+| Scope | The work is an idea, not work items yet | `/scope` → `/approve` → `/slice` → `/approve` → `/backlog`. Then each story runs the feature lane. See [Scoping](#scoping-before-work-items). |
 | Spike | You do not know enough to write a spec | `/spike` writes `findings.md`. No code changes. Good input to a later `/spec`. |
 | Docs | Writing or updating documentation | `/docs` (writer) → new session → `/check-docs` (reviewer fact-checks every claim) |
 | TSD | A technical spec of a product or repos, told through diagrams | `/tsd` (writer) → new session → `/check-docs` (reviewer checks every box and arrow) → revise → `/publish tsd-<name>` (approves it and moves it to the product docs folder) |
@@ -82,6 +86,30 @@ Bug lane rules:
 - Task 1 is always a test that fails because of the bug.
 - If root-cause confidence is Low, `/bug` stops and points you to `/spike`.
 - If the fix needs more than 3 tasks, it moves to the feature lane (`/spec`).
+
+## Scoping (before work items)
+
+Use this when you have an idea ("add a change request ticket type") and no work items yet. It ends with work items that `/start` can take, one per story.
+
+| Level | What it is | ADO type |
+|---|---|---|
+| Epic | A version of the product, for example "Tickets v2.1" | Epic |
+| Feature | The smallest piece a user can use on its own | Feature |
+| Story | A piece of a feature; one `/start` run | User Story (`-StoryType` for Scrum's Product Backlog Item) |
+
+| Step | Agent | What happens |
+|---|---|---|
+| `/scope <idea>` | product-manager | Reads the repo map, product docs, repo guides, and the code for what exists, and `git log` for recent changes. Asks at most 3 questions, one at a time (one is the epic if you did not name it). Writes `epics.md` (MVP features and Icebox) and `stories.md` (Gherkin acceptance criteria). |
+| `/approve scope-<name>` | planner | Approves `stories.md`, and `epics.md` with it. |
+| `/slice scope-<name>` | milestone-architect | Maps each story to real files, makes every feature a vertical slice, sizes each story for one `/start` run, puts schema and setup work first, orders everything, and writes `milestones.md`. Lists every change it made to the stories. Runs `Export-Backlog.ps1 -Check` on the result. |
+| `/approve scope-<name> milestones` | planner | Approves `milestones.md`. |
+| `/backlog scope-<name> [csv\|ado\|local]` | milestone-architect | `csv` (default): `backlog.csv` for ADO's Import Work Items, as an Epic, Feature, story tree. `ado`: a dry run, your yes, then creates the items with parent links. `local`: one `L<number>` item per story. `ado` and `local` record ids in `published.md`, so a failed run continues where it stopped. |
+
+Then run `/start <story id> feature` for each story, top to bottom. Each story's description carries its "Work item" notes (files, pattern to follow, data, dependencies), so `/spec` and `/plan` start from them.
+
+- To refine a draft, edit the file or add notes under "Open questions", then re-run `/scope scope-<name>` or `/slice scope-<name>`.
+- To use an epic that already exists in ADO, answer the epic question with its id. `milestones.md` gets `Epic: #<id> <title>`. `ado` links the features to it; the CSV leaves the epic out and you link the features after the import.
+- The scope folder shows on the dashboard with its next step.
 
 ## Technical specs (/tsd)
 
@@ -157,11 +185,13 @@ Better input gives better diagrams: fill in "External systems" and "Business pro
 **/tasks**
 - Each task touches one repo and at most 3 files (or your configured cap). Split big-looking tasks by hand before starting.
 - A coverage table proves every acceptance criterion has a task.
+- Every task has a "Human interface" line (page, button, endpoint, or command) so the implementer knows how a person meets the code.
 
 **/do-task**
 - Always in a new session. Checks the gate, the branch, and that the repo has no unrelated changes.
 - .NET is strict TDD: both the failing and the passing run go in `progress.md`. If the "failing" run passed, the test does not test the change.
 - Stages only the task's files and commits with a short summary. You approve the commit.
+- Ends with a Manual Validation Checklist: exact URL, exact click or command, exact result. It is saved in `progress.md`, and `/review` blocks on a missing or vague one and collects them all into `review.md`.
 
 **/review**
 - Runs every repo's unit tests, then reads the diff against `origin/main`.
@@ -182,6 +212,8 @@ All state lives in the workspace, outside every git repo, and never leaves the w
   workitem.md   repos.md   spec.md   plan.md   tasks.md
   progress.md   review.md  pr.md     bug.md    findings.md   paused.md
 
+.work/scope-<short-name>/                scoping: epics.md, stories.md, milestones.md, progress.md,
+                                         backlog.csv or published.md
 .work/spike-<short-name>/findings.md     spike without a work item
 .work/docs-<short-name>/sources.md       docs lane: claims and their source files
 .work/docs-<short-name>/check.md         docs lane: fact-check results
@@ -189,6 +221,7 @@ All state lives in the workspace, outside every git repo, and never leaves the w
                                          render/ (one SVG per diagram). /publish copies tsd.md out.
 .work/_onboard/<repo>-AGENTS.md          onboard draft when the repo already has a repo guide
                                          (<repo>-AGENTS.local.md when the team committed its own AGENTS.md)
+.work/runway.md                          end-of-day note from /shutdown; overwritten daily
 .work/dashboard.html                     the static dashboard; kept current by the live dashboard; never edit
 .work/_dashboard/                        live dashboard: sessions.json (item to session links), autopilot.json, and,
                                          on opencode 1.x, opencode.log; safe to delete when it is not running
@@ -208,6 +241,17 @@ All state lives in the workspace, outside every git repo, and never leaves the w
   git -C C:\src\work\<shared-repo> worktree add ..\<shared-repo>-12345 dev/feature/12345-short-name
   git -C C:\src\work\<shared-repo> worktree remove ..\<shared-repo>-12345
   ```
+
+## End of day
+
+`/shutdown` (planner) offloads your head before you log off.
+
+- Reads `git status` and `git diff` in every repo and the last `progress.md` entry of every item, without narrating.
+- Asks one question: the first thing tomorrow, and anything else lingering.
+- Writes `.work/runway.md` (overwritten daily): **Current State** (two sentences), **Tomorrow's Ignition** (the smallest first step, usually an exact command), **Open Loops** (your brain dump, plus loops from yesterday you did not drop, plus any blocked task), and a snapshot of repos and items.
+- Commits, stashes, and pushes nothing. If a repo has uncommitted work it says so and points to `/pause <id>` for a WIP commit.
+
+Next morning, `/status` with no id starts with the runway.
 
 ## Pausing and resuming
 
@@ -313,17 +357,9 @@ Restart the dashboard after changing it. Only listed sites get in:
 - **Shell API.** `GET /api/shell/status` (item stages and next steps) and `POST /api/shell/start` (`{ "id": "41207", "lane": "feature" }`, runs `/start` in a new session). Requests must come from a listed site; anything else gets 403. The full contract, including the frame messages, is in [Shell API](shell-api.md).
 - Every other route still answers only this page, as before.
 
-### Shared themes
+### Themes
 
-Workshop's `shared/themes.css` (in the workshop repo) is the source of truth for the dashboard's colors and theme list. The dashboard keeps a copy in `dashboard.template.html` between `themes:begin` and `themes:end` (plus the theme menu, its swatches, and the first-paint list). To pick up a change:
-
-```powershell
-node core\scripts\dashboard\sync-themes.mjs            # from the hub's main branch on GitHub
-node core\scripts\dashboard\sync-themes.mjs --from ..\workshop\shared\themes.css
-node core\scripts\dashboard\sync-themes.mjs --check    # exit 1 if the copy drifted
-```
-
-Bump the dashboard version with it. Do not edit the copied block by hand.
+The static dashboard keeps its own copy of the themes in `dashboard.template.html` (between `themes:begin` and `themes:end`). It used to be synced from Workshop with `sync-themes.mjs`; that script is gone now that Workshop's Dispatch is the live front end and Workshop has its own look. Edit the block by hand if you change it, and bump the dashboard version.
 
 ### Autopilot
 

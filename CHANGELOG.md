@@ -4,10 +4,32 @@ Core and the dashboard have their own versions (`core/VERSION`, `core/scripts/da
 
 Format: one `## Core <version> (<date>)` or `## Dashboard <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
-## Dashboard 1.8.0 (2026-11-01)
+## Dashboard 1.9.0 (2026-11-02)
 
 - Revision runner: request changes sends the feedback to the agent as one revision task on the same branch, then returns the review as the next revision once the agent writes its response file. A run that ends without a valid response, or that rewrote history, stays in revising with the reason shown.
 - Code review API for Dispatch's review screen, on the shell API: `GET /api/shell/code-review/<id>?repo=`, `GET .../file`, `POST .../submit`. One review per work item and repo, served from git in the workspace. Approve only records the verdict; nothing is pushed. Request changes saves the feedback, sets the review to `revising`, and signals the revision runner. Round 2 adds the agent's responses, the files changed since the last review, and a `prev` side for file content. Reviews are stored in `.work/<folder>/code-review/<repo>/`. See [docs/shell-api.md](docs/shell-api.md#code-review). Restart the live dashboard after updating.
+## Dashboard 1.8.1 (2026-11-02)
+
+- A published TSD (`Status: PUBLISHED to <path> on <date>`, written by `/publish`) shows as Published. Before, that line read as UNKNOWN and the TSD showed as a draft.
+- `sync-themes.mjs` is removed. The static dashboard keeps its own themes; Workshop's Dispatch is the live front end.
+- The repo now has an MIT `LICENSE`, like Workshop.
+
+## Core 2.5.0 (2026-11-02)
+
+- Manual validation checklist: every passing `/do-task` ends with 3 to 5 physical steps (exact URL, exact click or command, exact result), saved in `progress.md` and printed last.
+- Tasks carry a "Human interface" line (page, button, endpoint, or command) so the checklist is built from real routes, not guesses. Set by `/tasks` and `/bug`.
+- `/review` marks a missing or vague checklist as a Blocker and collects every task's checklist into a new "Manual validation" section of `review.md`. Checklist Blockers never become fix tasks (they change no code), so autopilot stops and asks you to add the missing checklist as a new `progress.md` entry.
+
+## Core 2.4.0 (2026-11-02)
+
+- Scoping before work items: `/scope <idea>` (new **product-manager** agent) turns an idea into an epic, MVP features, and user stories with Gherkin acceptance criteria. `/slice scope-<name>` (new **milestone-architect** agent) maps the stories to code and orders them into vertical-slice features and stories sized for one `/start` run each. Both are gated with `/approve scope-<name>`.
+- `/backlog scope-<name> [csv|ado|local]` exports the result: an ADO import CSV (default), ADO items with parent links (dry run first, asks before pushing), or local `L<number>` items (`scripts/ado/Export-Backlog.ps1`).
+- `New-LocalWorkItem.ps1` takes `-AcceptanceCriteria`.
+- `/shutdown`: end-of-day command. Captures uncommitted work across repos and what is in your head, and writes `.work/runway.md` with tomorrow's first step and open loops. `/status` with no id shows the runway first.
+
+## Dashboard 1.8.0 (2026-11-02)
+
+- `scope-<name>` folders show as Scope cards with their stage and next step.
 
 ## Core 2.3.0 (2026-11-01)
 

@@ -68,6 +68,14 @@ Work that is not defined yet is scoped first, in `.work/scope-<name>/`, before i
 | `milestones.md` | Features and stories in build order, each story mapped to real files. Has a `Status:` line. Written by `/slice`. |
 | `backlog.csv`, `published.md` | Written by `/backlog`: the ADO import file, or the ADO or local ids that were created. |
 
+A first-pass review of someone else's pull request lives in `.work/pr-<id>/` (written by `/pr-review`). It is not pipeline state and has no gates:
+
+| File | Purpose |
+|---|---|
+| `context.md` | The PR: repo folder, branches, source commit, the exact `git` commands to read it, changed files, description, linked work items. Written by `Get-PullRequest.ps1`. |
+| `threads.md` | Comments already on the PR. |
+| `review.md` | Draft comments for the engineer to post. Has a `Reviewed commit:` line. Older reviews move to `history/`. |
+
 `.work/runway.md` is the end-of-day note written by `/shutdown`. It is not pipeline state; read the files above for that.
 
 `.work/dashboard.html` is written by `/dashboard` and the live dashboard, and `.work/_dashboard/` belongs to the live dashboard. Never edit them and never read them for pipeline state; read the files above instead.

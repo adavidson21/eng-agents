@@ -13,6 +13,7 @@ Open opencode from your workspace root (for example `C:\src\work`).
 | Define the work first | `/scope <idea>` → `/approve scope-<name>` → `/slice scope-<name>` → `/approve scope-<name> milestones` → `/backlog scope-<name> [csv\|ado\|local]` → `/start <story id> feature` |
 | Bug | `/start <id> bug` → `/bug <id>` → `/approve <id>` → `/do-task <id> <n>` (repeat) → `/review <id>` → `/pr <id>` |
 | Question, no code changes | `/spike <id or topic>` |
+| First pass on a teammate's PR | `/pr-review <PR link>` (or **PR reviews** in Dispatch). Drafts comments in `.work/pr-<id>/review.md`; you post the ones you agree with. Never checks out the PR or posts anything. |
 | Docs | `/docs <target>`, new session, `/check-docs <doc path>` |
 | Technical spec with diagrams | `/tsd <product or repo> [repo ...]` → new session → `/check-docs .work/tsd-<name>/tsd.md` → revise → `/publish tsd-<name>` |
 | Where was I? | `/dashboard` (opens the live dashboard, starting it if needed) or `/status [id]` |

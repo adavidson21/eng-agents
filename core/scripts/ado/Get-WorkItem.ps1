@@ -62,6 +62,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "AdoConnection.ps1")
 
 function ConvertTo-Slug {
     param([string]$Text)
@@ -74,21 +75,6 @@ function ConvertTo-Slug {
     return $slug
 }
 
-function ConvertFrom-AdoHtml {
-    param([string]$Html)
-    if (-not $Html) { return "" }
-    $t = $Html
-    $t = $t -replace "(?i)<br\s*/?>", "`n"
-    $t = $t -replace "(?i)</(p|div|h[1-6]|tr)>", "`n"
-    $t = $t -replace "(?i)<li[^>]*>", "`n- "
-    $t = $t -replace "(?i)</(td|th)>", " | "
-    $t = $t -replace "<[^>]+>", ""
-    $t = [System.Net.WebUtility]::HtmlDecode($t)
-    $t = $t -replace "[ \t]+\n", "`n"
-    $t = $t -replace "\n{3,}", "`n`n"
-    return $t.Trim()
-}
-
 function Get-Field {
     param($Fields, [string]$Name)
     $p = $Fields.PSObject.Properties[$Name]
@@ -98,8 +84,7 @@ function Get-Field {
 
 function Write-Utf8 {
     param([string]$Path, [string]$Content)
-    $enc = New-Object System.Text.UTF8Encoding($false)
-    [System.IO.File]::WriteAllText($Path, $Content, $enc)
+    Write-AdoUtf8 $Path $Content
 }
 
 function New-WorkFolder {
@@ -147,199 +132,16 @@ if ($Title) {
 }
 
 # ----------------------------------------------------------------- online mode
-if (-not (Test-Path $ConfigPath)) {
-    throw "Config not found at $ConfigPath. Copy config.example.json there and fill it in, or use -Title for offline mode."
-}
-$config = Get-Content $ConfigPath -Raw | ConvertFrom-Json
-
-function Get-Prop {
-    param($Object, [string]$Name)
-    if ($null -eq $Object) { return $null }
-    $p = $Object.PSObject.Properties[$Name]
-    if ($p) { return $p.Value }
-    return $null
-}
-
-function ConvertTo-PathKey {
-    # Lowercase, forward slashes, no trailing slash. "~" expands to the home folder.
-    param([string]$Path)
-    $home2 = if ($env:USERPROFILE) { $env:USERPROFILE } else { $HOME }
-    if ($Path -eq "~") { $Path = $home2 }
-    elseif ($Path.StartsWith("~/") -or $Path.StartsWith("~\")) { $Path = Join-Path $home2 $Path.Substring(2) }
-    return $Path.Replace("\", "/").TrimEnd("/").ToLowerInvariant()
-}
-
-function ConvertTo-UrlKey {
-    # host + path, lowercase, without scheme, user, or port. Works for https and ssh remotes.
-    param([string]$Url)
-    $u = $Url.Trim().ToLowerInvariant()
-    $u = $u -replace "^[a-z+]+://", ""
-    $u = $u -replace "^[^@/]+@", ""
-    $u = $u -replace "^([^/:]+):\d+", '$1'
-    $u = $u -replace "^([^/:]+):(?!/)", '$1/'
-    return $u.TrimEnd("/")
-}
-
-# Build the connection list. A flat config (serverUrl at the top) is one connection named "default".
-$connections = [ordered]@{}
-$topApi = Get-Prop $config "apiVersion"
-$topAuth = Get-Prop $config "auth"
-$topPatEnv = Get-Prop $config "patEnv"
-$connSource = Get-Prop $config "connections"
-if ($connSource) {
-    foreach ($p in $connSource.PSObject.Properties) { $connections[$p.Name] = $p.Value }
-}
-elseif (Get-Prop $config "serverUrl") {
-    $connections["default"] = $config
-}
-if ($connections.Count -eq 0) { throw "config.json has no 'connections' (or 'serverUrl'). See config.example.json." }
-
-$names = @($connections.Keys)
-$namesText = $names -join ", "
-
-function Get-Connection {
-    param([string]$Name)
-    $c = $connections[$Name]
-    $conn = [pscustomobject]@{
-        Name       = $Name
-        ServerUrl  = (Get-Prop $c "serverUrl")
-        Collection = (Get-Prop $c "collection")
-        Project    = (Get-Prop $c "project")
-        ApiVersion = $(if (Get-Prop $c "apiVersion") { Get-Prop $c "apiVersion" } elseif ($topApi) { $topApi } else { "6.0" })
-        Auth       = $(if (Get-Prop $c "auth") { Get-Prop $c "auth" } elseif ($topAuth) { $topAuth } else { "pat" })
-        PatEnv     = $(if (Get-Prop $c "patEnv") { Get-Prop $c "patEnv" } elseif ($topPatEnv) { $topPatEnv } else { "ADO_PAT" })
-        Reason     = ""
-    }
-    foreach ($key in @("ServerUrl", "Collection")) {
-        if (-not $conn.$key) { throw "Connection '$Name' in config.json is missing '$($key.Substring(0,1).ToLowerInvariant() + $key.Substring(1))'." }
-    }
-    if ($conn.ServerUrl -match "example\.local") {
-        throw "Connection '$Name' still has the example serverUrl. Fill in your real ADO Server URL in $ConfigPath."
-    }
-    return $conn
-}
-
-function Find-PathMapping {
-    # Longest matching pattern wins. "*" matches any characters, including slashes.
-    param([string]$Path)
-    $map = Get-Prop $config "paths"
-    if (-not $map) { return $null }
-    $key = ConvertTo-PathKey $Path
-    $best = $null
-    $bestLen = -1
-    foreach ($p in $map.PSObject.Properties) {
-        $pattern = ConvertTo-PathKey $p.Name
-        if (($key -like $pattern) -or ("$key/" -like $pattern) -or ($key -like "$pattern/*")) {
-            if ($pattern.Length -gt $bestLen) { $best = $p; $bestLen = $pattern.Length }
-        }
-    }
-    if ($best) {
-        if (-not $connections.Contains([string]$best.Value)) { throw "config.json 'paths' maps '$($best.Name)' to '$($best.Value)', which is not a connection. Connections: $namesText" }
-        return [pscustomobject]@{ Name = [string]$best.Value; Pattern = $best.Name }
-    }
-    return $null
-}
-
-function Find-RemoteMapping {
-    # Match the repo's origin URL against each connection's serverUrl + collection.
-    param([string]$RepoPath)
-    $url = $null
-    try { $url = (& git -C $RepoPath remote get-url origin 2>$null) } catch { }
-    if (-not $url) { return $null }
-    $urlKey = ConvertTo-UrlKey ([string]$url)
-    foreach ($n in $names) {
-        $c = $connections[$n]
-        $server = Get-Prop $c "serverUrl"
-        $coll = Get-Prop $c "collection"
-        if (-not $server -or -not $coll) { continue }
-        $prefix = (ConvertTo-UrlKey $server) + "/" + $coll.ToLowerInvariant() + "/"
-        if ($urlKey.StartsWith($prefix)) {
-            $project = $null
-            if (([string]$url) -match ("(?i)/" + [regex]::Escape($coll) + "/([^/]+)/_git/")) { $project = [System.Uri]::UnescapeDataString($Matches[1]) }
-            return [pscustomobject]@{ Name = $n; Url = [string]$url; Project = $project }
-        }
-    }
-    return [pscustomobject]@{ Name = $null; Url = [string]$url; Project = $null }
-}
-
-# Pick the connection.
-$conn = $null
-$repoPath = $null
-$remoteNote = $null
-if ($From) {
-    if ($connections.Contains($From)) {
-        $conn = Get-Connection $From
-        $conn.Reason = "named with -From"
-    }
-    elseif (Test-Path $From -PathType Container) {
-        $repoPath = (Resolve-Path $From).Path
-    }
-    else {
-        throw "UNKNOWN: -From '$From' is not a connection name or a folder. Connections: $namesText"
-    }
-}
-if (-not $conn -and $repoPath) {
-    $m = Find-PathMapping $repoPath
-    if ($m) { $conn = Get-Connection $m.Name; $conn.Reason = "repo path matches '$($m.Pattern)'" }
-    else {
-        $r = Find-RemoteMapping $repoPath
-        if ($r -and $r.Name) {
-            $conn = Get-Connection $r.Name
-            $conn.Reason = "repo remote $($r.Url)"
-            if ($r.Project) { $conn.Project = $r.Project }
-        }
-        elseif ($r) { $remoteNote = "The remote $($r.Url) matches no connection's serverUrl + collection." }
-    }
-}
-if (-not $conn) {
-    $m = Find-PathMapping (Get-Location).Path
-    if ($m) { $conn = Get-Connection $m.Name; $conn.Reason = "current folder matches '$($m.Pattern)'" }
-}
-if (-not $conn) {
-    $def = Get-Prop $config "default"
-    if ($def) {
-        if (-not $connections.Contains([string]$def)) { throw "config.json 'default' is '$def', which is not a connection. Connections: $namesText" }
-        $conn = Get-Connection ([string]$def); $conn.Reason = "default connection"
-    }
-    elseif ($names.Count -eq 1) {
-        $conn = Get-Connection $names[0]; $conn.Reason = "only connection"
-    }
-}
-if (-not $conn) {
-    $msg = "AMBIGUOUS: could not tell which ADO connection to use. Rerun with -From <connection name or repo folder>. Connections: $namesText"
-    if ($remoteNote) { $msg += " ($remoteNote)" }
-    throw $msg
-}
-
-$base = "$($conn.ServerUrl.TrimEnd('/'))/$($conn.Collection)"
+$cfg = Read-AdoConfig $ConfigPath " Or use -Title for offline mode."
+$conn = Resolve-AdoConnection $cfg $From
+$base = $conn.Base
 
 if ($ShowConnection) {
-    Write-Output "Connection : $($conn.Name) ($($conn.Reason))"
-    Write-Output "Base URL   : $base"
-    Write-Output "Project    : $(if ($conn.Project) { $conn.Project } else { '(not set; only needed for -IncludeComments)' })"
-    Write-Output "API version: $($conn.ApiVersion)"
-    if ($conn.Auth -eq "windows") { Write-Output "Auth       : windows (your Windows login)" }
-    else {
-        $isSet = if ([Environment]::GetEnvironmentVariable($conn.PatEnv)) { "set" } else { "NOT SET" }
-        Write-Output "Auth       : pat from $($conn.PatEnv) ($isSet)"
-    }
+    Write-AdoConnectionInfo $conn "(not set; only needed for -IncludeComments)"
     exit 0
 }
 
-$request = @{ Method = "Get"; ContentType = "application/json" }
-
-if ($conn.Auth -eq "windows") {
-    $request.UseDefaultCredentials = $true
-}
-else {
-    $pat = [Environment]::GetEnvironmentVariable($conn.PatEnv)
-    if (-not $pat) { throw "$($conn.PatEnv) environment variable is not set (connection '$($conn.Name)'). Set it, or use -Title for offline mode." }
-    $basic = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":" + $pat))
-    $request.Headers = @{ Authorization = "Basic $basic" }
-}
-
-# Windows PowerShell 5.1 may default to old TLS versions.
-try { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 } catch { }
+$request = New-AdoRequest $conn " Set it, or use -Title for offline mode."
 
 $request.Uri = "$base/_apis/wit/workitems/$($Id)?`$expand=relations&api-version=$($conn.ApiVersion)"
 
@@ -392,7 +194,7 @@ elseif ($IncludeComments) {
 }
 
 # Web link to the work item, for the dashboard and PR text.
-$webLink = Get-Prop (Get-Prop (Get-Prop $item "_links") "html") "href"
+$webLink = Get-AdoProp (Get-AdoProp (Get-AdoProp $item "_links") "html") "href"
 if (-not $webLink) {
     $webLink = if ($conn.Project) { "$base/$([System.Uri]::EscapeDataString($conn.Project))/_workitems/edit/$Id" } else { "$base/_workitems/edit/$Id" }
 }

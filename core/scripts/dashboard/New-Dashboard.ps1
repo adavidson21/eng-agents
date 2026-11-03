@@ -15,6 +15,7 @@
       .work\docs-<name>\    sources.md, check.md
       .work\tsd-<name>\     tsd.md, check.md
       .work\scope-<name>\   epics.md, stories.md, milestones.md, published.md
+      .work\pr-<id>\        context.md, review.md (first-pass review of someone else's PR)
       Every git repo directly inside the workspace (the parent of .work):
                             branch, uncommitted files, unpushed commits, last commit
       config.json           ADO connections, only to build work item links
@@ -430,6 +431,78 @@ function Get-PushState {
     return $s
 }
 
+# A first-pass review of someone else's PR (.work/pr-<id>/, written by /pr-review). Same shape as
+# templates/pr-review.md and the context.md that Get-PullRequest.ps1 writes.
+function Get-PrReview {
+    param([string]$Folder, [string]$PrId)
+    $ctx = Read-Text (Join-Path $Folder "context.md")
+    $rev = Read-Text (Join-Path $Folder "review.md")
+    $out = [ordered]@{
+        id = $PrId; title = $null; repo = $null; folder = $null; author = $null; branch = $null; url = $null
+        commit = $null; size = $null; reviewed = $false; reviewedCommit = $null; reviewedOn = $null
+        recommendation = $null; risk = $null; summary = $null
+        counts = [ordered]@{ blocking = 0; "should-fix" = 0; optional = 0 }
+        comments = @(); questions = @(); history = 0; state = "Fetching"; nextText = $null
+    }
+    $hist = Join-Path $Folder "history"
+    if (Test-Path -LiteralPath $hist) { $out.history = @(Get-ChildItem -LiteralPath $hist -File -Filter "review-*.md" -ErrorAction SilentlyContinue).Count }
+    if ($ctx) {
+        if ($ctx -match '(?m)^#\s+Pull request\s+\d+:\s*(.+?)\s*$') { $out.title = $Matches[1] }
+        if ($ctx -match '(?m)^-\s*Repo:\s*(.+?)\s*\(folder\s*`([^`]+)`\)') { $out.repo = $Matches[1]; $out.folder = $Matches[2] }
+        $out.author = Get-Field $ctx "Author"
+        $out.branch = Get-Field $ctx "Branch"
+        $out.url = Get-Field $ctx "Link"
+        $out.commit = Get-Field $ctx "Source commit"
+        $out.size = Get-Field $ctx "Size"
+        $out.state = "Reviewing"
+        $out.nextText = "Finish the review with ``/pr-review $PrId``."
+    }
+    if ($rev) {
+        $rc = Get-Field $rev "Reviewed commit"
+        $out.reviewedCommit = $rc
+        $out.reviewedOn = Get-Field $rev "Reviewed"
+        $out.recommendation = Get-Field $rev "Recommendation"
+        $out.risk = Get-Field $rev "Risk"
+        $out.summary = Get-Section $rev "Summary"
+        $out.reviewed = [bool]$out.recommendation
+        $comments = Get-Section $rev "Comments"
+        $list = New-Object System.Collections.ArrayList
+        if ($comments) {
+            foreach ($block in [regex]::Split($comments, '(?m)^###\s+')) {
+                if ($block -notmatch '^(C\d+)\s*\r?\n') { continue }
+                $c = [ordered]@{ id = $Matches[1]; file = $null; line = $null; severity = $null; why = $null; comment = $null }
+                $c.file = Get-Field $block "File"
+                $c.line = Get-Field $block "Line"
+                $sev = Get-Field $block "Severity"
+                if ($sev) { $sev = $sev.ToLowerInvariant() -replace '[^a-z-]', '' }
+                if ($sev -eq "shouldfix") { $sev = "should-fix" }
+                $c.severity = $(if ($sev -in @("blocking", "should-fix", "optional")) { $sev } else { "optional" })
+                $c.why = Get-Field $block "Why"
+                $quote = @(($block -split '\r?\n') | Where-Object { $_ -match '^\s*>' } | ForEach-Object { ($_ -replace '^\s*>\s?', '') })
+                $c.comment = (($quote -join "`n").Trim())
+                if (-not $c.comment) { $c.comment = $null }
+                $out.counts[$c.severity]++
+                [void]$list.Add($c)
+            }
+        }
+        $out.comments = @($list)
+        $qs = Get-Section $rev "Questions for the author"
+        if ($qs) {
+            $out.questions = @(($qs -split '\r?\n') | Where-Object { $_ -match '^\s*[-*]\s+' } | ForEach-Object { ($_ -replace '^\s*[-*]\s+', '').Trim() } | Where-Object { $_ -and $_ -notmatch '^(none\.?|<.*>)$' })
+        }
+        if ($out.reviewed) {
+            $n = $out.comments.Count
+            $out.state = "$($out.recommendation)$(if ($n) { ", $n comment$(if ($n -ne 1) { 's' })" } else { '' })"
+            $out.nextText = $(if ($n) { "Read the drafts in review.md and post the ones you agree with on the PR." } else { "Nothing to raise. Approve it on the PR if you agree." })
+            if ($out.commit -and $rc -and -not $out.commit.StartsWith($rc)) {
+                $out.state = "Review is for an older commit"
+                $out.nextText = "New commits since the review. Run ``/pr-review $PrId`` again."
+            }
+        }
+    }
+    return $out
+}
+
 function Get-LastModified {
     param([string]$Folder)
     $files = @(Get-ChildItem -LiteralPath $Folder -File -Recurse -ErrorAction SilentlyContinue)
@@ -528,8 +601,8 @@ foreach ($dir in @(Get-ChildItem -LiteralPath $workRootFull -Directory | Where-O
         files = (Get-FileList $folder)
     }
 
-    # Spikes, docs, TSDs, and scopes: light treatment.
-    if ($dir.Name -match '^(spike|docs|tsd|scope)-(.+)$') {
+    # Spikes, docs, TSDs, scopes, and PR reviews: light treatment.
+    if ($dir.Name -match '^(spike|docs|tsd|scope|pr)-(.+)$') {
         $kind = $Matches[1]
         $base.kind = $kind
         $base.id = $null
@@ -558,6 +631,14 @@ foreach ($dir in @(Get-ChildItem -LiteralPath $workRootFull -Directory | Where-O
             elseif (-not $check) { $base.state = "Draft, not fact-checked"; $base.nextText = "Start a new session, then ``/check-docs $rel``." }
             elseif ($wrong -gt 0) { $base.state = "Draft, fact-check found $wrong wrong or outdated"; $base.nextText = "Fix what check.md flags (edit tsd.md or re-run ``/tsd``), then ``/publish $($dir.Name)``." }
             else { $base.state = "Draft, fact-checked"; $base.nextText = "Read it once more, then ``/publish $($dir.Name)``." }
+        }
+        elseif ($kind -eq "pr") {
+            $base.title = "Pull request $($Matches[2])"
+            $base.prReview = Get-PrReview $folder $Matches[2]
+            if ($base.prReview.title) { $base.title = $base.prReview.title }
+            $base.state = $base.prReview.state
+            $base.summary = $base.prReview.summary
+            $base.nextText = $base.prReview.nextText
         }
         elseif ($kind -eq "scope") {
             $e = Read-Text (Join-Path $folder "epics.md")

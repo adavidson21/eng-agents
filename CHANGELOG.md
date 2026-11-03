@@ -4,6 +4,16 @@ Core and the dashboard have their own versions (`core/VERSION`, `core/scripts/da
 
 Format: one `## Core <version> (<date>)` or `## Dashboard <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 2.6.0 (2026-11-02)
+
+- First-pass PR reviews for your team's pull requests: `/pr-review <PR link or number>` (new **pr-reviewer** agent) checks the PR against its linked work items' acceptance criteria, then for real problems, and writes numbered draft comments (file, line, severity, why, the comment itself) to `.work/pr-<id>/review.md`. It never posts, votes, or approves; you post the ones you agree with.
+- `scripts/ado/Get-PullRequest.ps1` reads the PR, linked work items, and existing comments (GET only) and fetches the PR's branches into private refs (`refs/eng-agents/pr/<id>/`) in your existing clone. Nothing is checked out. PRs from forks are read from ADO's merge ref. Re-running after new pushes moves the old review to `history/`.
+- The ADO connection logic shared by the scripts moved to `scripts/ado/AdoConnection.ps1`. `Get-WorkItem.ps1` uses it; behavior is unchanged.
+
+## Dashboard 1.10.0 (2026-11-02)
+
+- `pr-<id>` folders show as PR review cards: the recommendation and comment count, a link to the PR, and a Run button when the review is unfinished or out of date. `-AsJson` carries the parsed review (`items[].prReview`: recommendation, risk, comments, questions) for Workshop's Dispatch.
+
 ## Dashboard 1.9.0 (2026-11-02)
 
 - Revision runner: request changes sends the feedback to the agent as one revision task on the same branch, then returns the review as the next revision once the agent writes its response file. A run that ends without a valid response, or that rewrote history, stays in revising with the reason shown.

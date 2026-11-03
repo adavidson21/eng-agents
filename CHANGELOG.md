@@ -8,6 +8,7 @@ Format: one `## Core <version> (<date>)` or `## Dashboard <version> (<date>)` he
 
 - Revision runner: request changes sends the feedback to the agent as one revision task on the same branch, then returns the review as the next revision once the agent writes its response file. A run that ends without a valid response, or that rewrote history, stays in revising with the reason shown.
 - Code review API for Dispatch's review screen, on the shell API: `GET /api/shell/code-review/<id>?repo=`, `GET .../file`, `POST .../submit`. One review per work item and repo, served from git in the workspace. Approve only records the verdict; nothing is pushed. Request changes saves the feedback, sets the review to `revising`, and signals the revision runner. Round 2 adds the agent's responses, the files changed since the last review, and a `prev` side for file content. Reviews are stored in `.work/<folder>/code-review/<repo>/`. See [docs/shell-api.md](docs/shell-api.md#code-review). Restart the live dashboard after updating.
+
 ## Dashboard 1.8.1 (2026-11-02)
 
 - A published TSD (`Status: PUBLISHED to <path> on <date>`, written by `/publish`) shows as Published. Before, that line read as UNKNOWN and the TSD showed as a draft.

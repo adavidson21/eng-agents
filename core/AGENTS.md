@@ -59,9 +59,18 @@ Each work item has a folder `.work/<id>-<name>/`. Find it by listing `.work/` an
 | `findings.md` | Spike results. |
 | `paused.md` | Where a paused item stands and how to pick it up. Has a `Status:` line (`PAUSED` or `RESUMED`). |
 
+Work that is not defined yet is scoped first, in `.work/scope-<name>/`, before it becomes work items:
+
+| File | Purpose |
+|---|---|
+| `epics.md` | The epic (a product version), its MVP features, and what waits. Written by `/scope`. |
+| `stories.md` | User stories with Gherkin acceptance criteria. Has a `Status:` line; approving it approves `epics.md` too. |
+| `milestones.md` | Features and stories in build order, each story mapped to real files. Has a `Status:` line. Written by `/slice`. |
+| `backlog.csv`, `published.md` | Written by `/backlog`: the ADO import file, or the ADO or local ids that were created. |
+
 `.work/dashboard.html` is written by `/dashboard` and the live dashboard, and `.work/_dashboard/` belongs to the live dashboard. Never edit them and never read them for pipeline state; read the files above instead.
 
-**Gates.** A file with `Status: APPROVED` was approved by the engineer. The engineer approves by running `/approve <id>` (specs, plans, bug analyses) or `/publish <folder>` (finished documents such as a TSD), or by editing the line. Only those two commands may change a Status line to `APPROVED`, and only when the engineer runs them. In every other command, you never do.
+**Gates.** A file with `Status: APPROVED` was approved by the engineer. The engineer approves by running `/approve <id>` (specs, plans, bug analyses), `/approve scope-<name>` (stories, milestones) or `/publish <folder>` (finished documents such as a TSD), or by editing the line. Only those two commands may change a Status line to `APPROVED`, and only when the engineer runs them. In every other command, you never do.
 
 **Paused items.** If `paused.md` contains `Status: PAUSED`, the item is on hold. Do not run any other pipeline command on it except `/status` and `/resume`. Tell the engineer to run `/resume <id>` first.
 

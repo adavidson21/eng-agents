@@ -1,5 +1,5 @@
 ---
-description: "Approve a work item's spec, plan, or bug analysis so the next phase can start. Usage: /approve <id> [spec|plan|bug]"
+description: "Approve a work item's spec, plan, or bug analysis, or a scope's stories or milestones, so the next phase can start. Usage: /approve <id> [spec|plan|bug] or /approve scope-<name> [stories|milestones]"
 agent: planner
 ---
 
@@ -9,14 +9,16 @@ Running this command is the engineer's approval. It is the only command that may
 
 ## Step 1: Find the work folder
 
+- If `$1` starts with `scope-`, the folder is `.work/$1/`. If it does not exist, list the `.work/scope-*` folders and stop. Otherwise go to Step 2.
 - List `.work/` and find the folder that starts with `$1-`. If there is none, or more than one, stop and say so.
 - If `paused.md` contains `Status: PAUSED`, stop and tell the engineer to run `/resume $1` first.
 - For a TSD, tell the engineer to use `/publish tsd-<name>` instead and stop.
 
 ## Step 2: Pick the file
 
-- If the engineer named `spec`, `plan`, or `bug`, use `spec.md`, `plan.md`, or `bug.md`.
-- Otherwise use the first match:
+- If the engineer named `spec`, `plan`, `bug`, `stories`, or `milestones`, use that file (`spec.md`, `plan.md`, `bug.md`, `stories.md`, or `milestones.md`).
+- For a `scope-` folder, use the first match: `stories.md` if it says `Status: DRAFT`, otherwise `milestones.md` if it says `Status: DRAFT`. If neither, reply with the Status line of each that exists, and stop. Approving `stories.md` approves `epics.md` with it.
+- For a work item, use the first match:
 
 | Condition | File |
 |---|---|
@@ -27,13 +29,14 @@ Running this command is the engineer's approval. It is the only command that may
 - If the file does not exist, or there is no match, reply with the Status line of each of `spec.md`, `plan.md`, and `bug.md` that exists, and stop.
 - If the file already says `Status: APPROVED`, say so, give the next command from Step 5, and stop.
 - To approve `plan.md`, `spec.md` must already say `Status: APPROVED`. If not, stop and suggest `/approve $1 spec`.
+- To approve `milestones.md`, `stories.md` must already say `Status: APPROVED`. If not, stop and suggest `/approve $1 stories`.
 
 ## Step 3: Check open questions
 
-- Read the file's "Open questions" section, if it has one.
+- Read the file's "Open questions" section, if it has one. For `stories.md`, also read the one in `epics.md`.
 - If it lists anything that is not marked `accepted risk`, show those lines and ask: "These questions are still open. Approve anyway and mark them as accepted risk? (Recommended: no. Answer them in the file, or re-run the command that wrote it.)" Wait.
   - If no, stop.
-  - If yes, add ` (accepted risk)` to the end of each of those lines.
+  - If yes, add ` (accepted risk)` to the end of each of those lines, in whichever file they are in.
 
 ## Step 4: Approve
 
@@ -50,3 +53,5 @@ Running this command is the engineer's approval. It is the only command that may
 | `spec.md` | `/plan $1` |
 | `plan.md` | `/tasks $1` |
 | `bug.md` | Start a new session, then `/do-task $1 1` |
+| `stories.md` | `/slice $1` |
+| `milestones.md` | `/backlog $1` (import file), `/backlog $1 ado`, or `/backlog $1 local` |

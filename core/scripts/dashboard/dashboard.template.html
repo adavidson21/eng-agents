@@ -1048,7 +1048,7 @@ button.pill:hover { color: var(--ink); background: var(--hover); }
   }
 
   function noteCard(it) {
-    var label = { spike: "Spike", docs: "Docs", tsd: "TSD" }[it.kind] || "Folder";
+    var label = { spike: "Spike", docs: "Docs", tsd: "TSD", scope: "Scope" }[it.kind] || "Folder";
     var body = "";
     if (it.state) body += '<p style="margin:6px 0 0"><strong>' + h(it.state) + "</strong></p>";
     if (it.summary) body += '<p class="pre" style="margin:6px 0 0">' + md(it.summary) + "</p>";

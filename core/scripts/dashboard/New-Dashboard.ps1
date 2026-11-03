@@ -14,6 +14,7 @@
       .work\spike-<name>\   findings.md
       .work\docs-<name>\    sources.md, check.md
       .work\tsd-<name>\     tsd.md, check.md
+      .work\scope-<name>\   epics.md, stories.md, milestones.md, published.md
       Every git repo directly inside the workspace (the parent of .work):
                             branch, uncommitted files, unpushed commits, last commit
       config.json           ADO connections, only to build work item links
@@ -527,8 +528,8 @@ foreach ($dir in @(Get-ChildItem -LiteralPath $workRootFull -Directory | Where-O
         files = (Get-FileList $folder)
     }
 
-    # Spikes, docs, and TSDs: light treatment.
-    if ($dir.Name -match '^(spike|docs|tsd)-(.+)$') {
+    # Spikes, docs, TSDs, and scopes: light treatment.
+    if ($dir.Name -match '^(spike|docs|tsd|scope)-(.+)$') {
         $kind = $Matches[1]
         $base.kind = $kind
         $base.id = $null
@@ -555,6 +556,22 @@ foreach ($dir in @(Get-ChildItem -LiteralPath $workRootFull -Directory | Where-O
             elseif (-not $check) { $base.state = "Draft, not fact-checked"; $base.nextText = "Start a new session, then ``/check-docs $rel``." }
             elseif ($wrong -gt 0) { $base.state = "Draft, fact-check found $wrong wrong or outdated"; $base.nextText = "Fix what check.md flags (edit tsd.md or re-run ``/tsd``), then ``/publish $($dir.Name)``." }
             else { $base.state = "Draft, fact-checked"; $base.nextText = "Read it once more, then ``/publish $($dir.Name)``." }
+        }
+        elseif ($kind -eq "scope") {
+            $e = Read-Text (Join-Path $folder "epics.md")
+            if ($e -match '(?m)^Epic:\s*(.+?)\s*$' -and (Get-CleanValue $Matches[1])) { $base.title = $Matches[1] }
+            $stories = Get-GateStatus (Join-Path $folder "stories.md")
+            $miles = Get-GateStatus (Join-Path $folder "milestones.md")
+            $hasCsv = Test-Path -LiteralPath (Join-Path $folder "backlog.csv")
+            $hasPub = Test-Path -LiteralPath (Join-Path $folder "published.md")
+            $n = $dir.Name
+            if (-not $stories) { $base.state = "Scoping"; $base.nextText = "Finish scoping with ``/scope``." }
+            elseif ($stories -ne "APPROVED") { $base.state = "Stories in review"; $base.nextText = "Review epics.md and stories.md, then ``/approve $n``." }
+            elseif (-not $miles) { $base.state = "Stories approved"; $base.nextText = "``/slice $n``" }
+            elseif ($miles -ne "APPROVED") { $base.state = "Milestones in review"; $base.nextText = "Review milestones.md, then ``/approve $n milestones``." }
+            elseif ($hasPub) { $base.state = "Work items created"; $base.nextText = "See published.md, then ``/start <id> feature`` for the first story." }
+            elseif ($hasCsv) { $base.state = "Import file ready"; $base.nextText = "Import backlog.csv in ADO, then ``/start <id> feature`` for the first story." }
+            else { $base.state = "Milestones approved"; $base.nextText = "``/backlog $n``" }
         }
         else {
             $hasCheck = Test-Path -LiteralPath (Join-Path $folder "check.md")

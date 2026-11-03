@@ -153,9 +153,9 @@ type FileContent = {
 
 ### `GET /api/shell/code-review/<id>?repo=<repo>`
 
-Returns the `ReviewSession`. A review is available once the item reaches the `pr` stage (the step before Push PR), and from then on whatever stage it shows.
+Returns the `ReviewSession`. A review is available once the item reaches the `ship` stage (`pr.md` is written and pushing is next), and from then on whatever stage it shows.
 
-- 409 `{ "error", "status": "not_ready", "stage" }`: the item is not at the `pr` stage yet, or `pr.md` has no section for `repo`.
+- 409 `{ "error", "status": "not_ready", "stage" }`: the item is not at the `ship` stage yet, or `pr.md` has no section for `repo`.
 - 409 `{ "error" }`: the branch, target, or merge-base cannot be found.
 
 ### `GET /api/shell/code-review/<id>/file?repo=<repo>&path=<path>&side=old|new|prev`

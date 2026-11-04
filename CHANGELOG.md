@@ -4,6 +4,11 @@ Core and the dashboard have their own versions (`core/VERSION`, `core/scripts/da
 
 Format: one `## Core <version> (<date>)` or `## Dashboard <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 2.9.0 (2026-11-03)
+
+- Hub: `/hub <path to request.md>` (new **hub** agent) handles one message from the hub on Workshop's Dispatch page. It writes `route.json` next to the request: a capture (Docket task, receipt or note, as proposals the engineer accepts in Dispatch), a question, a place to go, a suggested action, or a clarifying question (Workshop `docs/hub.md`, `docs/schemas/hub-route.schema.json`). For a question it goes on to answer from the repo map, repo guides, code and `.work`, and writes `answer.md` from the new `templates/hub-answer.md` (Confirmed and Suspected lines with sources).
+- The request lives in Workshop's own folder, not the workspace. The hub agent may write only `route.json` and `answer.md` there, runs only read-only commands (`git log`, `git show`, `git grep`, `git ls-files`, `rg`, listing and reading files), cannot fetch web pages, and never assigns, creates or changes anything. A suggested action is a button the engineer clicks in Dispatch.
+
 ## Core 2.8.1 (2026-11-03)
 
 - `update.ps1 -Tag <tag>` fetches tags, checks that release tag out (detached) and reinstalls from it. It refuses when the clone has local changes. Without `-Tag` it pulls the branch as before and prints a line saying to pass `-Tag` on a work laptop.

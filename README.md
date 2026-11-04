@@ -14,6 +14,7 @@ Open opencode from your workspace root (for example `C:\src\work`).
 | Bug | `/start <id> bug` → `/bug <id>` → `/approve <id>` → `/do-task <id> <n>` (repeat) → `/review <id>` → `/pr <id>` |
 | Question, no code changes | `/spike <id or topic>` |
 | First pass on a teammate's PR | `/pr-review <PR link>` (or **PR reviews** in Dispatch). Drafts comments in `.work/pr-<id>/review.md`; you post the ones you agree with. Never checks out the PR or posts anything. |
+| Ask or capture from Workshop | Type in the hub on Workshop's Dispatch page. It runs `/hub <request>`: captures become proposals you accept, questions are answered from your repo map, repo guides and code, with sources. It writes nothing but its own two files and never changes ADO or git. |
 | Prep a 1:1 | **Draft talking points** in Workshop's 1:1s app runs `/one-on-one <packet>`. It drafts wins, follow-ups, blockers, growth topics and 3 questions from the app's packet; it never rates or judges anyone. |
 | Docs | `/docs <target>`, new session, `/check-docs <doc path>` |
 | Technical spec with diagrams | `/tsd <product or repo> [repo ...]` → new session → `/check-docs .work/tsd-<name>/tsd.md` → revise → `/publish tsd-<name>` |

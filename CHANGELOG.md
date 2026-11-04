@@ -4,6 +4,13 @@ Core and the dashboard have their own versions (`core/VERSION`, `core/scripts/da
 
 Format: one `## Core <version> (<date>)` or `## Dashboard <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 2.8.1 (2026-11-03)
+
+- `update.ps1 -Tag <tag>` fetches tags, checks that release tag out (detached) and reinstalls from it. It refuses when the clone has local changes. Without `-Tag` it pulls the branch as before and prints a line saying to pass `-Tag` on a work laptop.
+- Docs name release tags `core-v<core version>` (for example `core-v2.8.1`).
+- `company/repo-map.template.md` uses neutral examples (orders, catalog, notifications, a reporting job).
+- README and `docs/pipeline.md` say that Dispatch in Workshop is the main UI and the static dashboard remains for terminal-only use.
+
 ## Core 2.8.0 (2026-11-03)
 
 - 1:1 prep: `/one-on-one <path to packet.md>` (new **people-prep** agent) reads a prep packet from Workshop's 1:1s app and writes `draft.md` next to it: wins to recognize, follow-ups from last time, blockers to ask about, growth topics, and 3 questions to ask (new `templates/one-on-one.md`). It drafts only: it never rates, ranks or judges the person, and uses only facts in the packet.

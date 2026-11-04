@@ -314,6 +314,7 @@ cd C:\tools\eng-agents
 .\update.ps1                        # check, show what is new, ask, then update everything
 .\update.ps1 -Component dashboard   # only the dashboard
 .\update.ps1 -Check -ShowDiff       # report only, with diffs for files you override
+.\update.ps1 -Tag core-v2.8.1       # check out a release tag and install it (work laptops)
 ```
 
 - **Versions.** Core and the dashboard are versioned separately (`core/VERSION`, `core/scripts/dashboard/VERSION`). `install.ps1` prints both and records them, with the commit and source folder, in `eng-agents\manifest.json`. What changed in each version is in [CHANGELOG.md](../CHANGELOG.md).
@@ -322,7 +323,7 @@ cd C:\tools\eng-agents
 - **From the live dashboard.** It checks every 6 hours and when you click **More**, then **Check for updates**. When something is new, the header shows **Update available**, you get one browser notification, and the panel lists the changelog. **Update dashboard** runs `update.ps1 -Component dashboard` and restarts the dashboard in the same window; the page reloads itself. **Update everything** runs the full update; restart opencode afterwards to load new agents and commands. Both wait while an agent or autopilot is working.
 - **Safety.** It only fast-forwards (`git pull --ff-only`). If your clone has its own commits or conflicting edits, it stops and tells you to fix it with git. Every file it replaces is backed up under `eng-agents\backup\<time>\`, as with any install.
 - **Older installs** (from before versions were recorded) show as "unknown". Run `.\update.ps1` once to record them.
-- **Tags are optional.** Updates follow the branch your clone tracks. To pin a release, check out a tag (for example `git checkout core-v2.0.0`) and run `.\install.ps1`.
+- **Release tags.** Without `-Tag`, updates follow the branch your clone tracks. On a work laptop, run only release tags: `.\update.ps1 -Tag core-v2.8.1`. It fetches tags, checks the tag out (detached), and reinstalls. It refuses if your clone has local changes. Release tags are named `core-v<core version>`, the version in `core/VERSION` (for example `core-v2.8.1`). The older `core-v1` tag predates this naming.
 
 ## Mac or Linux
 

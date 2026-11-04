@@ -30,16 +30,16 @@ Also called: TODO(you) (other names people use in work items, for example an old
 
 | Repo | What lives here for this product | Typical changes |
 |---|---|---|
-| shared-lib | (example) Enrollment models, eligibility rules | (example) New fields, rule changes |
-| orders-api | (example) Enrollment endpoints, EF Core | (example) API and DB changes |
-| orders-ui | (example) Enrollment screens | (example) UI changes |
+| shared-lib | (example) Order models, pricing rules | (example) New fields, rule changes |
+| orders-api | (example) Order endpoints, EF Core | (example) API and DB changes |
+| orders-ui | (example) Order and catalog screens | (example) UI changes |
 
 - Usually change together: TODO(you) (example: shared-lib + orders-api)
 - Change order: TODO(you) (example: shared-lib, then orders-api, then orders-ui)
-- Entry points: TODO(you) (example: `orders-api\src\Api\Controllers\EnrollmentController.cs`)
-- External systems: TODO(you) (example: carrier SFTP drop, payment gateway REST API, state exchange SOAP service. Systems outside these repos that this product talks to.)
-- Business processes: TODO(you) (example: new enrollment, renewal, termination. Used by `/tsd` for BPMN-style diagrams.)
-- Product docs: TODO(you) (example: `product-docs\enrollment\`. Read these for user-facing behavior.)
+- Entry points: TODO(you) (example: `orders-api\src\Api\Controllers\OrdersController.cs`)
+- External systems: TODO(you) (example: a partner SFTP drop, a payment gateway REST API, an email notification service, a nightly reporting job. Systems outside these repos that this product talks to.)
+- Business processes: TODO(you) (example: place an order, cancel an order, issue a refund. Used by `/tsd` for BPMN-style diagrams.)
+- Product docs: TODO(you) (example: `product-docs\orders\`. Read these for user-facing behavior.)
 
 <!-- Copy the block above for each product. -->
 
@@ -49,7 +49,7 @@ Words from work items mapped to what they are called in code. Include words that
 
 | Work item term | Name in code | Product | Where it shows up |
 |---|---|---|---|
-| (example) Member | `Subscriber` | (example) Enrollment | (example) `shared-lib\src\Domain\Subscriber.cs` |
+| (example) Customer | `Account` | (example) Orders | (example) `shared-lib\src\Domain\Account.cs` |
 | TODO(you) | | | |
 
 ## Which repos for which kind of work

@@ -34,6 +34,7 @@ Open opencode from your workspace root (for example `C:\src\work`).
 - **Review findings** you accept become new tasks. Run `/do-task` for each, then `/review` again.
 - **You approve every push** and open the PR. No agent can merge or deploy.
 - Every command ends with the next command to run. If lost, run `/dashboard` or `/status <id>`.
+- Dispatch in Workshop is the main UI. The static dashboard (`.work\dashboard.html`, `/dashboard`) remains for terminal-only use.
 - **After a restart**, open `.work\dashboard.html` (bookmark it) to see where you were, then `/dashboard` in opencode to bring the live dashboard back (see [Dashboard](docs/pipeline.md#dashboard)).
 
 Something went wrong? See [Recovering from problems](docs/pipeline.md#recovering-from-problems).

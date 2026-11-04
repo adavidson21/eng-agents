@@ -14,6 +14,10 @@
          -ShowDiff prints the Core diff for each one.
       4. Asks, then runs git pull --ff-only and install.ps1 (or install.ps1 -Component dashboard).
 
+    With -Tag, it fetches tags, compares with that tag instead of the branch, and checks the
+    tag out (detached) instead of pulling. It refuses when the clone has local changes.
+    On a work laptop, always pass -Tag, so only release tags are installed.
+
     Versions live in core/VERSION (Core) and core/scripts/dashboard/VERSION (dashboard).
     The dashboard can be updated on its own; a full update includes it.
 
@@ -27,6 +31,10 @@
 .EXAMPLE
     .\update.ps1 -Component dashboard
     Updates only the dashboard. Agents, AGENTS.md, and opencode.json are left as they are.
+
+.EXAMPLE
+    .\update.ps1 -Tag core-v2.8.1
+    Checks out the release tag core-v2.8.1 and reinstalls from it. Use this on a work laptop.
 
 .EXAMPLE
     .\update.ps1 -Check -ShowDiff
@@ -51,6 +59,10 @@ param(
 
     # Compare with the local repo only (no git fetch).
     [switch]$NoFetch,
+
+    # A release tag to check out (detached) and install, for example core-v2.8.1. Without it, the branch is pulled.
+    [ValidatePattern('^[A-Za-z0-9][A-Za-z0-9._/-]*$')]
+    [string]$Tag,
 
     # Passed to install.ps1. Same default.
     [string]$Target = (Join-Path $(if ($env:USERPROFILE) { $env:USERPROFILE } else { $HOME }) ".config/opencode")
@@ -122,6 +134,7 @@ $result = [ordered]@{
     repo = $repo
     branch = $null
     upstream = $null
+    tag = $null
     behind = 0
     ahead = 0
     fetched = $false
@@ -180,7 +193,19 @@ if ($result.upstream) {
     }
     if ($result.behind -gt 0) { $available = (Invoke-Git @("rev-parse", "@{u}")).out }
 }
-if ($result.ahead -gt 0 -and $result.behind -gt 0) {
+if ($Tag) {
+    # Compare with the tag instead of the branch.
+    $result.tag = $Tag
+    if (-not $NoFetch) {
+        $remote = if ($result.upstream) { $result.upstream.Split("/")[0] } else { "origin" }
+        $f = Invoke-Git @("fetch", "--quiet", "--tags", $remote)
+        if ($f.ok) { $result.fetched = $true } else { $result.fetchError = ($f.out -split "`n" | Select-Object -Last 1) }
+    }
+    $t = Invoke-Git @("rev-parse", "--verify", "--quiet", "refs/tags/$Tag^{commit}")
+    if (-not $t.ok) { Stop-WithError "There is no tag $Tag. List the tags with: git tag" }
+    $available = $t.out.Trim()
+}
+elseif ($result.ahead -gt 0 -and $result.behind -gt 0) {
     $result.error = "This clone and $($result.upstream) have both changed. Merge or rebase it with git, then update."
 }
 
@@ -277,7 +302,9 @@ if ($Check -and $Json) {
 Write-Host "eng-agents update"
 Write-Host "  Repo     : $repo ($($result.branch)$(if ($result.upstream) { " tracking $($result.upstream)" }))"
 if ($result.fetchError) { Write-Warning "Could not fetch: $($result.fetchError). Comparing with what this clone already has." }
-elseif (-not $result.upstream) { Write-Warning "This branch tracks no remote. Comparing with the local clone only." }
+elseif (-not $result.upstream -and -not $Tag) { Write-Warning "This branch tracks no remote. Comparing with the local clone only." }
+if ($Tag) { Write-Host "  Tag      : $Tag" }
+else { Write-Host "  On a work laptop, pass -Tag core-v<version> so only release tags are installed." }
 foreach ($name in @("core", "dashboard")) {
     $c = $result.components[$name]
     $label = if ($name -eq "core") { "Core     " } else { "Dashboard" }
@@ -319,7 +346,7 @@ if (-not $needed.Count) {
 }
 if ($Check) {
     Write-Host ""
-    Write-Host "Update with: .\update.ps1$(if ($Component -eq 'dashboard') { ' -Component dashboard' })"
+    Write-Host "Update with: .\update.ps1$(if ($Component -eq 'dashboard') { ' -Component dashboard' })$(if ($Tag) { " -Tag $Tag" })"
     exit 0
 }
 
@@ -330,7 +357,15 @@ if (-not $Yes) {
 
 # ------------------------------------------------------------------ update
 
-if ($result.behind -gt 0) {
+if ($Tag) {
+    $dirty = Invoke-Git @("status", "--porcelain", "--untracked-files=no")
+    if (-not $dirty.ok) { Stop-WithError "git status failed: $($dirty.out)" }
+    if ($dirty.out.Trim()) { Stop-WithError "This clone has local changes. Commit or stash them with git, then run update.ps1 -Tag $Tag again." }
+    Write-Host "Checking out $Tag..."
+    $c = Invoke-Git @("checkout", "--quiet", "--detach", "refs/tags/$Tag")
+    if (-not $c.ok) { Stop-WithError "git checkout failed: $(($c.out -split "`n" | Select-Object -Last 2) -join ' ') Fix it with git, then run update.ps1 again." }
+}
+elseif ($result.behind -gt 0) {
     Write-Host "Pulling $($result.behind) commit(s) from $($result.upstream)..."
     $p = Invoke-Git @("pull", "--ff-only", "--quiet")
     if (-not $p.ok) { Stop-WithError "git pull failed: $(($p.out -split "`n" | Select-Object -Last 2) -join ' ') Fix it with git, then run update.ps1 again." }

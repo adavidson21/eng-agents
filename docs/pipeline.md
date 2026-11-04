@@ -293,6 +293,8 @@ Next morning, `/status` with no id starts with the runway.
 
 ## Dashboard
 
+Dispatch in Workshop is the main UI for this pipeline. The dashboard below remains for terminal-only use.
+
 `/dashboard` opens the [live dashboard](#live-dashboard-optional), starting it in its own minimized window if it is not running. If Node is missing or it cannot start, it builds the static page instead. `/dashboard static` always builds the static page: `.work\dashboard.html`, a read-only summary of the files above plus the git state of every repo in the workspace, for picking up where you left off.
 
 | Part of the page | What it shows |

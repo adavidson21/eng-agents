@@ -79,7 +79,7 @@ A first-pass review of someone else's pull request lives in `.work/pr-<id>/` (wr
 
 `.work/runway.md` is the end-of-day note written by `/shutdown`. It is not pipeline state; read the files above for that.
 
-`.work/dashboard.html` is written by `/dashboard` and the live dashboard, and `.work/_dashboard/` belongs to the live dashboard. Never edit them and never read them for pipeline state; read the files above instead.
+`.work/dashboard.html` is written by `/dashboard static`, and `.work/_dashboard/` belongs to Dispatch (Workshop's opencode connector). Never edit them and never read them for pipeline state; read the files above instead.
 
 **Gates.** A file with `Status: APPROVED` was approved by the engineer. The engineer approves by running `/approve <id>` (specs, plans, bug analyses), `/approve scope-<name>` (stories, milestones) or `/publish <folder>` (finished documents such as a TSD), or by editing the line. Only those two commands may change a Status line to `APPROVED`, and only when the engineer runs them. In every other command, you never do.
 

@@ -227,9 +227,9 @@ All state lives in the workspace, outside every git repo, and never leaves the w
 .work/_onboard/<repo>-AGENTS.md          onboard draft when the repo already has a repo guide
                                          (<repo>-AGENTS.local.md when the team committed its own AGENTS.md)
 .work/runway.md                          end-of-day note from /shutdown; overwritten daily
-.work/dashboard.html                     the static dashboard; kept current by the live dashboard; never edit
-.work/_dashboard/                        live dashboard: sessions.json (item to session links), autopilot.json, and,
-                                         on opencode 1.x, opencode.log; safe to delete when it is not running
+.work/dashboard.html                     the static dashboard (/dashboard static); never edit
+.work/_dashboard/                        Dispatch (Workshop's opencode connector): sessions.json (item to session
+                                         links), autopilot.json, projects.json, pr-queue.json; never edit
 ```
 
 `<short-name>` is the first 5 words of the work item title, lowercase, filler words dropped, at most 40 characters.
@@ -305,9 +305,26 @@ Next morning, `/status` with no id starts with the runway.
 
 ## Dashboard
 
-Dispatch in Workshop is the main UI for this pipeline. The dashboard below remains for terminal-only use.
+Dispatch, the Agents app in [Workshop](https://github.com/adavidson21/workshop), is the live UI for this pipeline: every item in `.work`, where it stands, the agents working on it, and one button per step. It runs in Workshop on your computer, through Workshop's opencode connector, and replaced the live dashboard that used to run from eng-agents (Core 2.11.0). To set it up, see Dispatch in Workshop's README.
 
-`/dashboard` opens the [live dashboard](#live-dashboard-optional), starting it in its own minimized window if it is not running. If Node is missing or it cannot start, it builds the static page instead. `/dashboard static` always builds the static page: `.work\dashboard.html`, a read-only summary of the files above plus the git state of every repo in the workspace, for picking up where you left off.
+- `/dashboard` opens Dispatch in your browser. `/dashboard <id>` opens it at that item.
+- It starts nothing. If Workshop is not running, it says so (start it with `workshop up`, or Workshop in the Start menu) and stops.
+- `/dashboard static` builds the [static page](#static-page) instead. It needs only PowerShell and git, for terminal-only use.
+- `/status [id]` answers the same question in the terminal.
+
+Where `/dashboard` opens Dispatch: Workshop's site (`https://workshop.alexisdavidson.org`), or Workshop on this computer (`http://127.0.0.1:<port>/`, port from Workshop's `config.json`) when Workshop is in work mode. To use another address, set Workshop's address in `config.json`:
+
+```json
+{
+  "dispatch": { "url": "https://workshop.example.com" }
+}
+```
+
+Dispatch keeps its own state next to `.work`: `.work\_dashboard\` (item to session links, autopilot, projects, the PR review queue). What Dispatch does, and the full list of its actions, is in Workshop's `connectors/opencode/README.md`.
+
+### Static page
+
+`/dashboard static` writes `.work\dashboard.html`, a read-only summary of the files above plus the git state of every repo in the workspace, for picking up where you left off, and opens it.
 
 | Part of the page | What it shows |
 |---|---|
@@ -315,7 +332,7 @@ Dispatch in Workshop is the main UI for this pipeline. The dashboard below remai
 | Track | The pipeline stages for the item's lane. Finished stages have a check mark. The current stage is a filled label in the item's color (blue moving, amber needs you, red blocked, gray paused) with what is happening under it, for example "2 of 5 done" or "Approve". Later stages are faint, on a dashed line. Hover a stage for details. |
 | Needs you | Items waiting on you: a `DRAFT` spec, plan, or bug to review and `/approve`, review findings to accept, or a `/do-task` that failed or was blocked. |
 | In progress, Paused, Ready to ship | Every other item, grouped. Each card shows the next command, where you left off (the last `progress.md` entry, or `paused.md` when paused), its repos, tasks, files, and resume commands. |
-| Pull requests | On Ready to ship items: the PR text from `pr.md` for each repo, with Copy title and Copy description, a **Create PR in ADO** button that opens the new PR page with the branches filled in, and, when the branch is not pushed yet, its push command with a **Push** button (live dashboard) and a copy button. |
+| Pull requests | On Ready to ship items: the PR text from `pr.md` for each repo, with Copy title and Copy description, a **Create PR in ADO** button that opens the new PR page with the branches filled in, and, when the branch is not pushed yet, its push command with a copy button. |
 | Spikes, docs, and TSDs | `spike-`, `docs-`, and `tsd-` folders with their state and next step (for a TSD: fact-check, fix, or `/publish`). |
 | Repos with work in progress | Repos that are off their default branch or have uncommitted or unpushed work, and which item owns each branch. Clean repos are listed in one line. |
 | Recent activity | One line per item per day, newest first, summing up what moved (for example "Did 3 tasks, reviewed, wrote PR text"). A red dot means a verify step failed that day. |
@@ -325,9 +342,9 @@ Links are built locally, with no network calls and no PAT:
 - **Work item:** the `Link:` line in `workitem.md` (written by `/start`). For older or offline items, it falls back to the `ADO:` line plus `config.json`, then a repo's git remote.
 - **Branch and Create PR:** from each repo's `origin` remote and the branch in `repos.md`. Works for ADO Server and GitHub remotes.
 
-The static page is a snapshot. While the live dashboard runs, it rewrites `.work\dashboard.html` whenever something changes, so the file always shows the latest state. The header says when it was built and turns amber after 3 hours. A bar at the top says whether the live dashboard is running: **Open live dashboard** when it is, or how to start it when it is not.
+The page is a snapshot: it changes only when you build it again. The header says when it was built and turns amber after 3 hours. A bar at the top links to Dispatch for the live view.
 
-**After a restart**, bookmark `.work\dashboard.html` and open it first thing: it shows where everything stood when you left. To get the live dashboard back, open opencode in the workspace and run `/dashboard`. Without opencode, rebuild the static page from any terminal in the workspace root:
+**After a restart**, open `.work\dashboard.html` (bookmark it) to see where everything stood, or run `/dashboard` to open Dispatch. Without opencode, rebuild the static page from any terminal in the workspace root:
 
 ```powershell
 cd C:\src\work
@@ -336,76 +353,17 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\.config\op
 
 Use `pwsh` instead of `powershell` if you installed from PowerShell 7, and your `-Target` folder if you installed somewhere else. The page also has a "Copy shell command" button with the exact path. Each card's resume commands (`cd`, `opencode`, next command) are what to paste into a new terminal.
 
-Options: `-NoOpen` writes the file without opening a browser, `-OutFile <path>` writes it somewhere else, `-Recent <n>` changes how many progress entries Recent activity draws from (default 80).
+Options: `-NoOpen` writes the file without opening a browser, `-OutFile <path>` writes it somewhere else, `-Recent <n>` changes how many progress entries Recent activity draws from (default 80), `-AsJson` prints the data as one line of JSON instead of writing the page.
 
-The next-command logic matches `/status`. If you change the rules in `commands/status.md`, change `Get-NextStep` in `scripts/dashboard/New-Dashboard.ps1` to match. The live dashboard uses the same function, so one change covers both.
-
-### Live dashboard (optional)
-
-The same page, kept current, with buttons that drive opencode. The easiest way to start it is `/dashboard` in opencode: it runs in its own minimized window (close that window to stop it), and running `/dashboard` again just opens it. To run it in a terminal of your own instead, start it from the workspace root and keep the window open:
-
-```powershell
-cd C:\src\work
-powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\.config\opencode\eng-agents\scripts\dashboard\Start-LiveDashboard.ps1"
-```
-
-It needs Node 18 or newer. When the live dashboard is off, the static page has a "Copy launch command" button with your exact path. `Start-LiveDashboard.ps1 -Detach` is what `/dashboard` runs: it starts the dashboard in its own window and returns once it answers, or opens it if it is already running. It does not change any settings on your computer and does not start anything at login.
-
-What changes compared to `/dashboard`:
-
-- **Live.** The page updates when `.work` changes and re-reads git every 20 seconds. No refresh command.
-- **One button per step.** Each item's Next line says the step in plain words (for example "Task 3: Update invoice totals") with one main button: **Approve and build** or **Build with autopilot** when autopilot can take over, otherwise **Run**, **Approve**, or **Resume**. A quieter second button runs just the next step. The command it sends is in the button's tooltip. Commands run in opencode, in that item's session; `/do-task` and `/check-docs` get a fresh session, as the pipeline requires, so you never need `/new`. The static page keeps the commands and Copy buttons for the terminal.
-- **Agent panel** on each item with a session: working or done, the current step (for example `bash: dotnet test ...`), the agent's last reply, a reply box, and Stop.
-- **Prompts.** Permission prompts (Allow once, Always allow, Reject) and agent questions show on the item and turn it amber. Prompts from sessions not tied to an item show under "Waiting for you".
-- **Header.** One status pill (green **Live** when the page and opencode are both connected; hover for details), **Update available** only when there is one, the **More** menu (`...`), and the theme button. More holds Refresh now, Turn on alerts, Open the opencode TUI, Copy terminal command, and Check for updates.
-- **Open in terminal** on an item's agent panel opens the opencode TUI on that item's session (Windows and macOS). "Copy terminal command" gives the same command to paste.
-- **Themes.** The theme button in the header picks Slate, Graphite, Ivory, Rosé, Solarized Light, Nord, or Dracula, or follows your system setting. The static page has it too. The choice is remembered in that browser. The themes come from Prioritizer (see [Shared themes](#shared-themes)).
-- **Updates.** The header shows **Update available** when there is a new dashboard or Core version. The Updates panel lists what is new, warns about files you override, and updates and restarts the dashboard for you (see [Updating](onboarding-company.md#updating)). Updating is the one action that writes outside `.work\_dashboard\`: it runs `update.ps1`, the same as from a terminal.
-- **Abandon and Remove.** Each card has an **Abandon** button (**Remove** on Ready to ship items, spikes, docs, and TSDs). It asks you to type the item id, then deletes the item's `.work` folder and its sessions and autopilot state. It never touches the repos: the dialog lists unpushed or uncommitted work that stays behind, and gives the commands to delete the branches yourself. It is not available while the item's agent or autopilot is working.
-- **Alerts.** Click **More**, then "Turn on alerts", once. While the page is in the background, you get a browser notification when an agent starts waiting for you or finishes. The tab title shows how many prompts are waiting, for example `(1) Work dashboard`.
-
-How it fits together:
-
-| | opencode 2.x | opencode 1.x |
-|---|---|---|
-| Server | The background service every opencode client shares. Started with `opencode service start` if it is not running. | `opencode serve` on port 4096, started by the dashboard if nothing is listening there. |
-| Terminal on the same sessions | Run `opencode` from the workspace root as usual. | Run `opencode attach http://127.0.0.1:4096` instead of `opencode`. |
-| When the dashboard stops | The service keeps running for your TUI. | The `opencode serve` it started stops too. |
-
-- The page is served on `http://127.0.0.1:4300`, this machine only.
-- Pipeline commands you run in the TUI link to their item automatically.
-- Item to session links are kept in `.work\_dashboard\sessions.json`, so after a restart each item opens its old session again.
-- Ctrl+C or closing the window stops the dashboard.
-
-It reads the same files as `/dashboard` (through `New-Dashboard.ps1 -AsJson`) and writes only to `.work\_dashboard\`, except Abandon and Remove, which delete that item's `.work` folder. It never calls ADO. It pushes only when you click **Push** on a PR card: it runs `git -C <repo> push -u origin <branch>` itself, for the branch named in `pr.md`, and your click is the approval (no prompt). It never pushes `main`, `master`, `develop`, `dev`, or the PR's target branch, and never force pushes. Commands run with the same agents and permission rules as in the TUI; a `bash` command that would ask in the TUI asks on the page.
-
-Options: `-Port <n>` (page), `-OpencodeUrl <url>` (use that opencode server instead of finding one), `-NoOpencode` (do not start opencode), `-NoUpdateCheck` (no update checks), `-NoOpen`, `-Workspace <path>`, `-ShellOrigin <url>` (see below).
-
-Start it with `Start-LiveDashboard.ps1`, not `node live-server.mjs` directly: the script restarts the server after an update.
-
-#### Showing it inside another app (optional)
-
-Another web app, a "shell", can show the live dashboard as one of its own pages and badge its tasks with each work item's stage. The [Workshop](https://github.com/adavidson21/workshop) does this: its **Dashboard** page is this page, and Prioritizer's ADO tasks show their stage and get a **Start** button. Off by default; turn it on by listing the shell's address in `config.json`:
-
-```json
-{
-  "dashboard": { "shellOrigins": ["https://em.example.com"] }
-}
-```
-
-Restart the dashboard after changing it. Only listed sites get in:
-
-- **Embedding.** The page sends `frame-ancestors 'self'` plus the listed sites, so no other site can put it in a frame. Opened as `/?embed=1` inside a listed site, the page drops its own name and theme button and follows the shell's theme.
-- **Shell API.** `GET /api/shell/status` (item stages and next steps) and `POST /api/shell/start` (`{ "id": "41207", "lane": "feature" }`, runs `/start` in a new session). Requests must come from a listed site; anything else gets 403. The full contract, including the frame messages, is in [Shell API](shell-api.md).
-- Every other route still answers only this page, as before.
+The next-command logic matches `/status`. If you change the rules in `commands/status.md`, change `Get-NextStep` in `scripts/dashboard/New-Dashboard.ps1` to match. Workshop's opencode connector reads `.work` with a copy of `New-Dashboard.ps1 -AsJson`, so Dispatch follows the same rules; change it here first, and Workshop syncs its copy.
 
 ### Themes
 
-The static dashboard keeps its own copy of the themes in `dashboard.template.html` (between `themes:begin` and `themes:end`). It used to be synced from Workshop with `sync-themes.mjs`; that script is gone now that Workshop's Dispatch is the live front end and Workshop has its own look. Edit the block by hand if you change it, and bump the dashboard version.
+The static dashboard keeps its own copy of the themes in `dashboard.template.html` (between `themes:begin` and `themes:end`). Edit the block by hand if you change it, and bump Core's version.
 
 ### Autopilot
 
-Autopilot runs the build half of an item for you, so your only stops are approving the plan and opening the PR. It is part of the live dashboard.
+Autopilot runs the build half of an item for you, so your only stops are approving the plan and opening the PR. It runs in Dispatch (Workshop's opencode connector), which sends each step below to opencode.
 
 | Button | Shows when | What it does |
 |---|---|---|
@@ -423,22 +381,20 @@ Each step runs in a **new session**, so every step starts with a clear context:
 /pr <id>                    PR text in pr.md, then autopilot finishes. It never pushes.
 ```
 
-The next step comes from the same rules as the page's "Next" line, read fresh from disk after every step. Commits happen inside `/do-task` as usual.
+The next step comes from the same rules as the "Next" line, read fresh from disk after every step. Commits happen inside `/do-task` as usual.
 
-Autopilot **waits for you** (the item turns amber, moves to "Needs you", and you get an alert) when:
+Autopilot **waits for you** (the item turns amber and moves to "Needs you") when:
 
-- A step ends without moving the item forward, for example the agent asked you something in its reply instead of finishing. **Reply in the agent panel** and autopilot carries on when that turn ends, or fix it yourself and click **Resume**.
+- A step ends without moving the item forward, for example the agent asked you something in its reply instead of finishing. **Reply to the agent** and autopilot carries on when that turn ends, or fix it yourself and click **Resume**.
 - A task is blocked (verify failed 3 times), a step fails, or you press **Stop** on the agent.
 - The review is still not READY after **2 fix rounds**. The third review runs without `auto`, so it asks you which findings to fix.
 - The item is paused.
 
-Permission prompts and agent questions do **not** stop autopilot. The step waits for your answer on the page, then continues.
+Permission prompts and agent questions do **not** stop autopilot. The step waits for your answer in Dispatch, then continues.
 
-While autopilot runs an item, that item's Run buttons are off, so two agents never work on it at once. Per-step "Agent finished" alerts are off for that item too: you get one alert when autopilot needs you and one when the PR text is ready.
+While autopilot runs an item, that item's Run buttons are off, so two agents never work on it at once.
 
-State is kept in `.work\_dashboard\autopilot.json`. If the dashboard restarts mid-run, the item shows "The dashboard restarted". Click **Resume**.
-
-**After a restart:** run the launch command again. To have it start on login, put a shortcut to it in your Startup folder (`Win+R`, `shell:startup`) with "Start in" set to your workspace root.
+State is kept in `.work\_dashboard\autopilot.json`. If Workshop restarts mid-run, the item says so. Click **Resume**.
 
 ## Repo guides, team guides, and memory
 
@@ -463,12 +419,12 @@ Plus **global memory** in `%USERPROFILE%\.config\eng-agents\memory.md` (`/memory
 |---|---|
 | A session went off the rails | Close it, start a new one, run `/status <id>`. State is on disk. |
 | Autopilot keeps stopping on the same task | Read the agent's last reply and the blocked entry in `progress.md`. Split the task or fix the plan, then click **Resume**. |
-| Lost your terminals (restart, crash) | Open `.work\dashboard.html` to see where you were, then run `/dashboard` in opencode to bring the live dashboard back: each item reopens its session. |
+| Lost your terminals (restart, crash) | Open `.work\dashboard.html` to see where you were, or start Workshop and run `/dashboard` to open Dispatch: each item reopens its session. |
 | A task is marked done but is wrong | Uncheck it in `tasks.md`, revert the commit yourself if needed (`git -C <repo> revert <sha>`), re-run `/do-task`. |
 | A task keeps failing | Read the blocked entry in `progress.md`. Usually the task is too big or the pattern file is wrong. Split the task or fix the plan. |
 | The plan was wrong after tasks started | Edit `plan.md` and `tasks.md` by hand. Add new tasks at the end; do not renumber finished ones. |
 | Work item scope changed | Update `workitem.md`, set `spec.md` back to DRAFT, re-run `/spec`, then re-plan. |
-| Abandon an item | In the live dashboard, click **Abandon** on its card. Otherwise delete its `.work` folder yourself. Delete its branches yourself either way. |
+| Abandon an item | In Dispatch, click **Abandon** on its card. Otherwise delete its `.work` folder yourself. Delete its branches yourself either way. |
 
 ## Tuning when the model struggles
 

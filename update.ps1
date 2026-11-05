@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
     Updates eng-agents: pulls the repo, warns about Core changes to files you override,
-    then reinstalls everything or only the dashboard.
+    then reinstalls.
 
 .DESCRIPTION
     Run it from anywhere; it works on the repo it lives in.
@@ -12,25 +12,18 @@
       3. Warns when Core changed a file that your Personal or Company layer overrides.
          Your override keeps winning, so you may want to copy the Core change into it.
          -ShowDiff prints the Core diff for each one.
-      4. Asks, then runs git pull --ff-only and install.ps1 (or install.ps1 -Component dashboard).
+      4. Asks, then runs git pull --ff-only and install.ps1.
 
     With -Tag, it fetches tags, compares with that tag instead of the branch, and checks the
     tag out (detached) instead of pulling. It refuses when the clone has local changes.
     On a work laptop, always pass -Tag, so only release tags are installed.
 
-    Versions live in core/VERSION (Core) and core/scripts/dashboard/VERSION (dashboard).
-    The dashboard can be updated on its own; a full update includes it.
-
-    The live dashboard runs "update.ps1 -Check -Json" to show an update notice, and
-    "update.ps1 -Component <name> -Yes" when you click Update.
+    The version lives in core/VERSION. The static dashboard is part of Core (since Core 2.11.0);
+    it no longer has a version of its own.
 
 .EXAMPLE
     .\update.ps1
     Checks, shows what is new, asks, then updates everything.
-
-.EXAMPLE
-    .\update.ps1 -Component dashboard
-    Updates only the dashboard. Agents, AGENTS.md, and opencode.json are left as they are.
 
 .EXAMPLE
     .\update.ps1 -Tag core-v2.8.1
@@ -42,14 +35,13 @@
 #>
 [CmdletBinding()]
 param(
+    # Kept so older habits still work. The dashboard is part of Core now (Core 2.11.0), so
+    # -Component dashboard updates everything.
     [ValidateSet("all", "dashboard")]
     [string]$Component = "all",
 
     # Report only. Nothing is pulled or installed (the repo is still fetched).
     [switch]$Check,
-
-    # With -Check: print one line of JSON instead of text.
-    [switch]$Json,
 
     # Do not ask before updating.
     [switch]$Yes,
@@ -70,6 +62,10 @@ param(
 
 $ErrorActionPreference = "Stop"
 $repo = $PSScriptRoot
+if ($Component -eq "dashboard") {
+    Write-Host "The dashboard is part of Core now, so -Component dashboard updates everything."
+    $Component = "all"
+}
 
 # Windows PowerShell 5.1 wraps some arrays as {"value":[...],"Count":n} in JSON without this.
 if ($PSVersionTable.PSVersion.Major -lt 6) { Remove-TypeData System.Array -ErrorAction SilentlyContinue }
@@ -110,20 +106,9 @@ function Compare-Version {
     return 0
 }
 
-# What each component covers in the repo, for "did anything change".
+# What Core covers in the repo, for "did anything change".
 $paths = @{
-    # Core is everything except the dashboard, which has its own version.
-    core = @("core", "install.ps1", "update.ps1", ":(exclude)core/scripts/dashboard", ":(exclude)core/commands/dashboard.md")
-    dashboard = @("core/scripts/dashboard", "core/commands/dashboard.md")
-}
-function Test-InComponent {
-    param([string]$Name, [string]$File)
-    $hit = $false
-    foreach ($p in $paths[$Name]) {
-        if ($p.StartsWith(":(exclude)")) { $x = $p.Substring(10); if ($File -eq $x -or $File.StartsWith("$x/")) { return $false } }
-        elseif ($File -eq $p -or $File.StartsWith("$p/")) { $hit = $true }
-    }
-    return $hit
+    core = @("core", "install.ps1", "update.ps1")
 }
 
 # ------------------------------------------------------------------ gather
@@ -149,12 +134,6 @@ $result.command = $(if ($PSVersionTable.PSVersion.Major -lt 6) { "powershell" } 
 
 function Stop-WithError {
     param([string]$Message)
-    if ($Json) {
-        $result.ok = $false
-        $result.error = $Message
-        [Console]::Out.Write((ConvertTo-Json -InputObject $result -Depth 8 -Compress))
-        exit 0
-    }
     Write-Host "update: $Message" -ForegroundColor Red
     exit 1
 }
@@ -214,8 +193,9 @@ if ($manifest.PSObject.Properties["components"] -and $manifest.components) {
     foreach ($p in $manifest.components.PSObject.Properties) { $installed[$p.Name] = $p.Value }
 }
 
-$versionFile = @{ core = "core/VERSION"; dashboard = "core/scripts/dashboard/VERSION" }
-foreach ($name in @("core", "dashboard")) {
+# Installs from before Core 2.11.0 also list a "dashboard" component; it is ignored.
+$versionFile = @{ core = "core/VERSION" }
+foreach ($name in @("core")) {
     $inst = $installed[$name]
     $instVersion = if ($inst) { "$($inst.version)" } else { $null }
     $instCommit = if ($inst) { "$($inst.commit)" } else { $null }
@@ -246,7 +226,7 @@ foreach ($name in @("core", "dashboard")) {
 if ($manifest.PSObject.Properties["overrides"] -and $manifest.overrides) {
     foreach ($p in $manifest.overrides.PSObject.Properties) {
         $rel = $p.Name
-        $comp = if (Test-InComponent "dashboard" "core/$rel") { "dashboard" } else { "core" }
+        $comp = "core"
         $c = $result.components[$comp]
         if (-not $c.update) { continue }
         $diffText = $null
@@ -265,7 +245,8 @@ if ($manifest.PSObject.Properties["overrides"] -and $manifest.overrides) {
     }
 }
 
-# CHANGELOG.md entries newer than what is installed. Headings look like: ## Dashboard 1.1.0 (2026-10-20)
+# CHANGELOG.md entries newer than what is installed. Headings look like: ## Core 2.11.0 (2026-11-05)
+# Older "## Dashboard <version>" entries are skipped: the dashboard is part of Core now.
 $log = Get-At $available "CHANGELOG.md"
 if ($log) {
     $cur = $null
@@ -273,6 +254,7 @@ if ($log) {
         $m = [regex]::Match($line, '^##\s+(Core|Dashboard)\s+v?([0-9][0-9.]*)\s*(?:\((.*)\))?\s*$')
         if ($m.Success) {
             $comp = $m.Groups[1].Value.ToLowerInvariant()
+            if ($comp -ne "core") { $cur = $null; continue }
             $inst = $result.components[$comp].installed
             $keep = (-not $inst) -or ((Compare-Version $inst $m.Groups[2].Value) -lt 0)
             $cur = if ($keep) { [ordered]@{ component = $comp; version = $m.Groups[2].Value; date = $m.Groups[3].Value; lines = @() } } else { $null }
@@ -286,18 +268,9 @@ if ($log) {
 
 # ------------------------------------------------------------------ report
 
-$wanted = if ($Component -eq "dashboard") { @("dashboard") } else { @("core", "dashboard") }
+$wanted = @("core")
 $needed = @($wanted | Where-Object { $result.components[$_].update })
 $relevantOverrides = @($result.overrides | Where-Object { $wanted -contains $_.component })
-
-if ($Check -and $Json) {
-    $out = ConvertTo-Json -InputObject $result -Depth 8 -Compress
-    # ASCII only, so the console code page (Windows PowerShell 5.1) cannot garble it.
-    $out = [regex]::Replace($out, '[^\x00-\x7F]', { param($m) '\u{0:x4}' -f [int][char]$m.Value })
-    [Console]::Out.Write($out)
-    [Console]::Out.Flush()
-    exit 0
-}
 
 Write-Host "eng-agents update"
 Write-Host "  Repo     : $repo ($($result.branch)$(if ($result.upstream) { " tracking $($result.upstream)" }))"
@@ -305,9 +278,9 @@ if ($result.fetchError) { Write-Warning "Could not fetch: $($result.fetchError).
 elseif (-not $result.upstream -and -not $Tag) { Write-Warning "This branch tracks no remote. Comparing with the local clone only." }
 if ($Tag) { Write-Host "  Tag      : $Tag" }
 else { Write-Host "  On a work laptop, pass -Tag core-v<version> so only release tags are installed." }
-foreach ($name in @("core", "dashboard")) {
+foreach ($name in $wanted) {
     $c = $result.components[$name]
-    $label = if ($name -eq "core") { "Core     " } else { "Dashboard" }
+    $label = "Core"
     $state = if (-not $c.update) { "up to date" } elseif ($c.installed -eq $c.available) { "(newer changes, same version)" } else { "-> $($c.available)" }
     Write-Host "  ${label}: $(if ($c.installed) { $c.installed } else { 'unknown' }) $state"
 }
@@ -318,8 +291,7 @@ if ($result.changelog.Count) {
     Write-Host "What's new:"
     foreach ($e in $result.changelog) {
         if ($wanted -notcontains $e.component) { continue }
-        $title = if ($e.component -eq "core") { "Core" } else { "Dashboard" }
-        Write-Host "  $title $($e.version)$(if ($e.date) { " ($($e.date))" })"
+        Write-Host "  Core $($e.version)$(if ($e.date) { " ($($e.date))" })"
         foreach ($l in $e.lines) { Write-Host "    - $l" }
     }
 }
@@ -346,12 +318,12 @@ if (-not $needed.Count) {
 }
 if ($Check) {
     Write-Host ""
-    Write-Host "Update with: .\update.ps1$(if ($Component -eq 'dashboard') { ' -Component dashboard' })$(if ($Tag) { " -Tag $Tag" })"
+    Write-Host "Update with: .\update.ps1$(if ($Tag) { " -Tag $Tag" })"
     exit 0
 }
 
 if (-not $Yes) {
-    $answer = Read-Host "`nUpdate $(if ($Component -eq 'dashboard') { 'the dashboard' } else { 'eng-agents' }) now? [y/N]"
+    $answer = Read-Host "`nUpdate eng-agents now? [y/N]"
     if ($answer -notmatch '^(y|yes)$') { Write-Host "Nothing changed."; exit 0 }
 }
 
@@ -373,7 +345,6 @@ elseif ($result.behind -gt 0) {
 
 $install = Join-Path $repo "install.ps1"
 $installArgs = @{ Target = $Target }
-if ($Component -eq "dashboard") { $installArgs["Component"] = "dashboard" }
 # Reinstall with the same layer folders as last time (install.ps1 -Personal / -Company).
 if ($manifest.PSObject.Properties["layers"]) {
     foreach ($l in $manifest.layers) {

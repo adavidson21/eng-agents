@@ -269,7 +269,7 @@ Run these in a scratch opencode session. Each confirms an assumption the setup d
 | 8 | Global memory works | `/memory -global Test rule, delete me`, then `/new` and ask: "What rules are in your global memory?" Delete the line from `memory.md` afterwards. | Check `instructions` in the installed `opencode.json` lists `memory.md`. |
 | 9 | Repo memory works | `/memory <repo> Test rule, delete me`. The line appears under `## Remembered` in the repo guide with no prompt. Delete it. | The writer could not edit the file. Approve once and report it. |
 | 10 | Each ADO connection resolves | Run the `-ShowConnection` command from step 3 once per connection (`-From <name>`) and once for a repo in each collection. | Fix `paths` or the connection's `serverUrl` and `collection`. |
-| 11 | Dashboard builds | Run `/dashboard`. No approval prompt, and a page opens listing your repos. Click a repo's Branch link: it opens in ADO. | A prompt means a guard matched; the prompt shows which command. Wrong links mean an unusual remote URL format; report it. |
+| 11 | Dashboard builds | Run `/dashboard static`. No approval prompt, and a page opens listing your repos. Click a repo's Branch link: it opens in ADO. | A prompt means a guard matched; the prompt shows which command. Wrong links mean an unusual remote URL format; report it. |
 | 12 | Normal work does not prompt | Run one real item through `/start` to `/review`. The only prompts should be `git push` and anything else in `guards.json`. | Set that command to `allow` in `overlay\permissions\guards.json` ([Permissions](customization.md#permissions)) and reinstall. |
 
 Then delete the test folder yourself (agents cannot delete recursively): `Remove-Item C:\src\work\.work\_test -Recurse`. Keep `.work`.
@@ -291,7 +291,7 @@ Take one small, low-risk bug through the bug lane:
 /dashboard
 ```
 
-Run `/dashboard` at any point along the way to check it shows the right stage and next command. Write down every place the model stumbled. Generic problems are Core fixes; company-specific ones go in your overlay or a repo guide.
+Run `/dashboard` (Dispatch in Workshop) or `/status <id>` at any point along the way to check it shows the right stage and next command. Write down every place the model stumbled. Generic problems are Core fixes; company-specific ones go in your overlay or a repo guide.
 
 ## Keeping it current
 
@@ -307,20 +307,18 @@ Updates never touch your overlay, config, memory, workspace, or repo guides. Nev
 
 ## Updating
 
-You install once. After that, `update.ps1` keeps you current: it pulls your clone and reinstalls only what it needs to.
+You install once. After that, `update.ps1` keeps you current: it pulls your clone and reinstalls.
 
 ```powershell
 cd C:\tools\eng-agents
 .\update.ps1                        # check, show what is new, ask, then update everything
-.\update.ps1 -Component dashboard   # only the dashboard
 .\update.ps1 -Check -ShowDiff       # report only, with diffs for files you override
 .\update.ps1 -Tag core-v2.8.1       # check out a release tag and install it (work laptops)
 ```
 
-- **Versions.** Core and the dashboard are versioned separately (`core/VERSION`, `core/scripts/dashboard/VERSION`). `install.ps1` prints both and records them, with the commit and source folder, in `eng-agents\manifest.json`. What changed in each version is in [CHANGELOG.md](../CHANGELOG.md).
-- **Dashboard only.** `-Component dashboard` reinstalls `scripts\dashboard\` and `commands\dashboard.md` and leaves agents, `AGENTS.md`, and `opencode.json` alone. A full update includes the dashboard.
-- **Files you override.** If Core changed a file your Personal or Company layer replaces, the update warns you. Your copy keeps winning, so it does not get the change. `-ShowDiff` (or the live dashboard's Updates panel) shows the Core diff so you can copy what you want into your override.
-- **From the live dashboard.** It checks every 6 hours and when you click **More**, then **Check for updates**. When something is new, the header shows **Update available**, you get one browser notification, and the panel lists the changelog. **Update dashboard** runs `update.ps1 -Component dashboard` and restarts the dashboard in the same window; the page reloads itself. **Update everything** runs the full update; restart opencode afterwards to load new agents and commands. Both wait while an agent or autopilot is working.
+- **Versions.** There is one version, Core's (`core/VERSION`). `install.ps1` prints it and records it, with the commit and source folder, in `eng-agents\manifest.json`. What changed in each version is in [CHANGELOG.md](../CHANGELOG.md). The static dashboard is part of Core; until Core 2.11.0 it had its own version, and `-Component dashboard` is still accepted but updates everything.
+- **Files you override.** If Core changed a file your Personal or Company layer replaces, the update warns you. Your copy keeps winning, so it does not get the change. `-ShowDiff` shows the Core diff so you can copy what you want into your override.
+- **From Workshop.** `workshop update --latest` prints the `update.ps1 -Tag` line when eng-agents sits next to Workshop and is behind. Restart opencode after updating to load new agents and commands.
 - **Safety.** It only fast-forwards (`git pull --ff-only`). If your clone has its own commits or conflicting edits, it stops and tells you to fix it with git. Every file it replaces is backed up under `eng-agents\backup\<time>\`, as with any install.
 - **Older installs** (from before versions were recorded) show as "unknown". Run `.\update.ps1` once to record them.
 - **Release tags.** Without `-Tag`, updates follow the branch your clone tracks. On a work laptop, run only release tags: `.\update.ps1 -Tag core-v2.8.1`. It fetches tags, checks the tag out (detached), and reinstalls. It refuses if your clone has local changes. Release tags are named `core-v<core version>`, the version in `core/VERSION` (for example `core-v2.8.1`). The older `core-v1` tag predates this naming.

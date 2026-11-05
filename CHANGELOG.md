@@ -1,8 +1,17 @@
 # Changelog
 
-Core and the dashboard have their own versions (`core/VERSION`, `core/scripts/dashboard/VERSION`), so the dashboard can be updated on its own. `update.ps1` and the live dashboard read this file to show what is new.
+Core has one version (`core/VERSION`). `update.ps1` reads this file to show what is new. Until Core 2.11.0 the dashboard had its own version; its `## Dashboard` entries below are history.
 
-Format: one `## Core <version> (<date>)` or `## Dashboard <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
+Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
+
+## Core 2.11.0 (2026-11-05)
+
+- The live dashboard moved to Dispatch, the Agents app in Workshop (adavidson21/workshop, with its opencode connector). Dispatch is now the one live UI for Tandem's agents, and the live dashboard server is removed: `scripts/dashboard/live-server.mjs`, `server/` and its tests, `Start-LiveDashboard.ps1`, its update checks, and the shell API for showing the page inside another app (`shellOrigins`, the page token, `docs/shell-api.md`). eng-agents no longer needs Node.
+- `/dashboard` opens Dispatch in your browser, and `/dashboard <id>` opens it at that item (new `scripts/dashboard/Open-Dispatch.ps1`). It starts nothing: if Workshop is not running, it says to start it (`workshop up`) and stops. It opens Workshop's site, or Workshop on this computer in work mode; `"dispatch": { "url": "..." }` in `config.json` sets another address.
+- `/dashboard static` and `/status` are unchanged. The static page drops its live-mode code, and its top bar links to Dispatch instead of checking for the live dashboard on port 4300. Nothing rewrites `.work/dashboard.html` in the background any more: `/dashboard static` rebuilds it. `New-Dashboard.ps1 -AsJson` stays the `.work` parser that Workshop's connector copies.
+- What replaces each command: `/dashboard` (start the live dashboard) is now `/dashboard` (open Dispatch; start Workshop with `workshop up`). `Start-LiveDashboard.ps1` and `Start-LiveDashboard.ps1 -Detach` are now `workshop up`. `update.ps1 -Component dashboard` and `install.ps1 -Component dashboard` still run but update everything. `update.ps1 -Check -Json` is removed; use `update.ps1 -Check`.
+- What replaces each live dashboard button: Run, Approve, Resume, the agent panel, prompts and questions, Push, Abandon and Remove, alerts, Open in terminal, and Autopilot (**Approve and build**, **Build with autopilot**) are in Dispatch. The code review API and its revision runner are Dispatch's review screen. **Update available** is gone: run `.\update.ps1` (Workshop's `workshop update --latest` prints the line when eng-agents is behind).
+- One version: `core/scripts/dashboard/VERSION` (last Dashboard 1.10.1) is removed, `install.ps1` records only Core in `manifest.json`, and the static page shows Core's version.
 
 ## Core 2.10.0 (2026-11-05)
 

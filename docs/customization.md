@@ -240,11 +240,11 @@ Open a pull request to eng-agents. Before merging:
 - [ ] It would help **anyone**. No company names, no personal preferences.
 - [ ] Shell permission changes for everyone go in `core/permissions/`. Changes for one agent go in that agent file, after its `{{BASH:guards}}` line.
 - [ ] `Status: DRAFT` lines in the `spec`, `plan`, `bug`, and `tsd` templates, `Status: PAUSED` in `paused`, and `## [ ] Task N:` headings in `tasks` are unchanged.
-- [ ] If you changed the next-command rules in `core/commands/status.md`, `Get-NextStep` in `core/scripts/dashboard/New-Dashboard.ps1` matches them (the static and live dashboards both use it).
+- [ ] If you changed the next-command rules in `core/commands/status.md`, `Get-NextStep` in `core/scripts/dashboard/New-Dashboard.ps1` matches them (the static dashboard uses it, and Workshop's copy of it drives Dispatch).
 - [ ] Docs that describe the behavior are updated.
-- [ ] The version is bumped: `core/VERSION` for Core, `core/scripts/dashboard/VERSION` for the dashboard (major for breaking changes, minor for features, patch for fixes), with a `## Core <version> (<date>)` or `## Dashboard <version> (<date>)` entry at the top of `CHANGELOG.md`. `update.ps1` and the live dashboard show these entries.
+- [ ] The version is bumped in `core/VERSION` (major for breaking changes, minor for features, patch for fixes), with a `## Core <version> (<date>)` entry at the top of `CHANGELOG.md`. `update.ps1` shows these entries.
 - [ ] `pwsh ./install.ps1 -DryRun` runs cleanly.
-- [ ] For a notable release, tag it `core-v<core version>` (for example `core-v2.8.1`, matching `core/VERSION`; `dashboard-v<version>` for a dashboard-only release) and tell teammates to `git fetch upstream` and `git merge upstream/main` in their forks, then run `.\update.ps1` (on a work laptop, `.\update.ps1 -Tag core-v<version>`).
+- [ ] For a notable release, tag it `core-v<core version>` (for example `core-v2.8.1`, matching `core/VERSION`) and tell teammates to `git fetch upstream` and `git merge upstream/main` in their forks, then run `.\update.ps1` (on a work laptop, `.\update.ps1 -Tag core-v<version>`).
 
 ## Never
 

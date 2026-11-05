@@ -18,16 +18,16 @@ Open opencode from your workspace root (for example `C:\src\work`).
 | Prep a 1:1 | **Draft talking points** in Workshop's 1:1s app runs `/one-on-one <packet>`. It drafts wins, follow-ups, blockers, growth topics and 3 questions from the app's packet; it never rates or judges anyone. |
 | Docs | `/docs <target>`, new session, `/check-docs <doc path>` |
 | Technical spec with diagrams | `/tsd <product or repo> [repo ...]` → new session → `/check-docs .work/tsd-<name>/tsd.md` → revise → `/publish tsd-<name>` |
-| Where was I? | `/dashboard` (opens the live dashboard, starting it if needed) or `/status [id]` |
-| Drive it from the browser | `/dashboard`: the live dashboard runs commands in opencode (see [Live dashboard](docs/pipeline.md#live-dashboard-optional)) |
-| Hands-off build after the plan | Live dashboard: **Approve and build**. It runs tasks, review, and PR text, each step in a new session, and stops only when it needs you (see [Autopilot](docs/pipeline.md#autopilot)) |
+| Where was I? | `/dashboard [id]` (opens Dispatch in Workshop, at the item when you give an id) or `/status [id]` |
+| Drive it from the browser | Dispatch in [Workshop](https://github.com/adavidson21/workshop): it runs each step in opencode (see [Dashboard](docs/pipeline.md#dashboard)) |
+| Hands-off build after the plan | Dispatch: **Approve and build**. It runs tasks, review, and PR text, each step in a new session, and stops only when it needs you (see [Autopilot](docs/pipeline.md#autopilot)) |
 | End of day | `/shutdown`: writes `.work/runway.md` with where you left off, tomorrow's first step, and open loops. Next morning, `/status` shows it first. |
 | Standup update | `/standup [days back]` (default 1, or 3 on a Monday) |
 | Switch to something urgent | `/pause <id> [reason]`, later `/resume <id>` |
 | New repo in the workspace | `/onboard-repo <folder>` |
 | Remember a rule | `/memory <rule>` (one repo) or `/memory -global <rule>` (every repo). `/memory -list` shows them. |
 | Work item in another ADO collection | `/start <id> <lane> <repo folder or connection>` |
-| Update eng-agents | `.\update.ps1` in your clone (`-Component dashboard` for just the dashboard), or **Update available** in the live dashboard header (see [Updating](docs/onboarding-company.md#updating)) |
+| Update eng-agents | `.\update.ps1` in your clone (see [Updating](docs/onboarding-company.md#updating)) |
 
 - **Approve** a spec, plan, or bug analysis with `/approve <id>` (it picks the current draft; add `spec`, `plan`, or `bug` to choose). Edit the file first if anything is wrong. Changing `Status: DRAFT` to `Status: APPROVED` by hand still works.
 - **Publish** a finished document with `/publish <folder>`, for example `/publish tsd-orders`. It approves it, moves it to the product docs folder, and you commit it.
@@ -35,8 +35,8 @@ Open opencode from your workspace root (for example `C:\src\work`).
 - **Review findings** you accept become new tasks. Run `/do-task` for each, then `/review` again.
 - **You approve every push** and open the PR. No agent can merge or deploy.
 - Every command ends with the next command to run. If lost, run `/dashboard` or `/status <id>`.
-- Dispatch in Workshop is the main UI. The static dashboard (`.work\dashboard.html`, `/dashboard`) remains for terminal-only use.
-- **After a restart**, open `.work\dashboard.html` (bookmark it) to see where you were, then `/dashboard` in opencode to bring the live dashboard back (see [Dashboard](docs/pipeline.md#dashboard)).
+- Dispatch in Workshop is the live UI; `/dashboard` opens it and says to start Workshop if it is not running. The static dashboard (`.work\dashboard.html`, `/dashboard static`) remains for terminal-only use.
+- **After a restart**, open `.work\dashboard.html` (bookmark it) to see where you were, or start Workshop and run `/dashboard` (see [Dashboard](docs/pipeline.md#dashboard)).
 
 Something went wrong? See [Recovering from problems](docs/pipeline.md#recovering-from-problems).
 
@@ -52,7 +52,6 @@ Something went wrong? See [Recovering from problems](docs/pipeline.md#recovering
 |---|---|
 | [Personal onboarding](docs/onboarding-personal.md) | Your fork and your `personal/` rules |
 | [Company onboarding](docs/onboarding-company.md) | Work PC setup, day-one checks, [updating](docs/onboarding-company.md#updating) |
-| [Changelog](CHANGELOG.md) | What is new in each Core and dashboard version |
+| [Changelog](CHANGELOG.md) | What is new in each Core version |
 | [Customization](docs/customization.md) | Files to review, how layers combine, agents, permissions, templates, changing Core |
 | [Pipeline](docs/pipeline.md) | How each phase works, gates, lanes, work files, the dashboard, repo guides and memory, pausing, recovery, tuning |
-| [Shell API](docs/shell-api.md) | Showing the live dashboard and item stages inside another web app (such as Workshop) |

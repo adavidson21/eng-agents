@@ -1,26 +1,34 @@
 ---
-description: "Open the work dashboard: every item in .work, where it stands, and what to run next. Starts the live dashboard if it is not running. Usage: /dashboard, or /dashboard static for a one-off page"
+description: "Open Dispatch in Workshop: every item in .work, where it stands, and the agents working on it. Usage: /dashboard [id], or /dashboard static for a snapshot page without Workshop"
 agent: planner
 ---
 
-Open the work dashboard.
+Open the work dashboard. Argument: **$ARGUMENTS**
 
-Do not change any files yourself. The scripts below write the only files (`.work/dashboard.html` and `.work/_dashboard/`).
+Do not change any files yourself. Do not start Workshop yourself. The static page script in Step 2 writes the only file (`.work/dashboard.html`).
 
 If `$ARGUMENTS` is `static`, skip to Step 2.
 
-## Step 1: Open the live dashboard
+## Step 1: Open Dispatch
 
-Run exactly this command from the workspace root:
+Dispatch, in Workshop, is the live view: every item, the next step, and the agents working on them, with buttons that run each step.
+
+If `$ARGUMENTS` is empty, run exactly this command:
 
 ```
-{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/dashboard/Start-LiveDashboard.ps1" -Detach
+{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/dashboard/Open-Dispatch.ps1"
 ```
 
-- It returns within about 30 seconds. It starts the live dashboard in its own minimized window (or just opens it if it is already running) and opens it in the browser. This is not a long-running process for you to manage: the command itself ends.
-- If it succeeds, reply with its first output line and "It runs in its own minimized window; close that window to stop it." Then stop.
-- If it fails because `.work` does not exist, tell the engineer there is no work yet and suggest `/start <id> <feature|bug>`. Stop.
-- If it fails for any other reason (for example, Node is missing), show the error in one line, say "Building the static page instead.", and go on to Step 2.
+If `$ARGUMENTS` is an id (a work item number such as `41207`, a local id such as `L3`, or a `.work` folder such as `pr-512`), add `-Id <id>` so Dispatch opens at that item:
+
+```
+{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/dashboard/Open-Dispatch.ps1" -Id <id>
+```
+
+- It returns within a few seconds. It never starts anything.
+- Exit code 0: Dispatch opened. Reply with every output line but the last, then the address (the last line). Stop.
+- Exit code 2: Workshop is not running (or not installed). Reply with its output lines, without the address, and stop. Do not start Workshop and do not build the static page unless the engineer asks.
+- Any other failure: show the error in one line, say "Building the static page instead.", and go on to Step 2.
 
 ## Step 2: Build the static page
 
@@ -30,7 +38,7 @@ Run exactly this command from the workspace root:
 {{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/dashboard/New-Dashboard.ps1" -WorkRoot ".work"
 ```
 
-- It reads `.work/` and the git state of each repo in the workspace, writes `.work/dashboard.html`, and opens it in the browser.
+- It reads `.work/` and the git state of each repo in the workspace, writes `.work/dashboard.html`, and opens it in the browser. The page is a snapshot for terminal-only use, with a link to Dispatch.
 - If it fails because `.work` does not exist, tell the engineer there is no work yet and suggest `/start <id> <feature|bug>`. Stop.
 - If it fails for any other reason, show the error in one line and stop.
 

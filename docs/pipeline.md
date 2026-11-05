@@ -261,8 +261,8 @@ The PAT needs **Code (Read)** and **Work Items (Read)**. The repo must be cloned
 
 `/hub <path to request.md>` (agent: **hub**) handles one message typed into the hub on Workshop's Dispatch page. You normally never type it: Dispatch writes the request and reads the result.
 
-1. Dispatch saves your message, with today's date, your people directory names and your Docket list and Queue area names, as `request.md` in Workshop's own folder (`~/.workshop/data/_connectors/opencode/hub/<id>/`). Nothing goes in the workspace or `.work`.
-2. The agent writes `route.json` next to it: captures (Docket tasks, receipts, notes) that you accept in Dispatch, a question, an app to open, a suggested action, or a clarifying question such as which product you mean.
+1. Dispatch saves your message, with today's date, your people directory (people and groups, with ids and @handles) and your Docket list and Queue area names, as `request.md` in Workshop's own folder (`~/.workshop/data/_connectors/opencode/hub/<id>/`). Nothing goes in the workspace or `.work`.
+2. The agent writes `route.json` next to it: captures (Docket tasks, receipts, notes) that you accept in Dispatch, with people and groups named by their directory ids, a question, an app to open, a suggested action, or a clarifying question such as which product you mean.
 3. For a question it goes on to answer. It finds the product in the repo map (Products, "Also called", Glossary), reads that repo's guide, confirms in the code, and writes `answer.md`: the answer first, then Confirmed lines with file and line, Suspected lines, and a confidence. "Where was I" questions read `.work/runway.md` and the item's files.
 
 **It changes nothing.** It can write only those two files, runs only read-only commands, makes no web requests, and never assigns, creates or changes anything in Azure DevOps or git. A suggested action (for example a spike) is a button you click in Dispatch, with its own confirm. The session shows in Dispatch, so you can follow it or reply.

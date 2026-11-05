@@ -4,6 +4,11 @@ Core and the dashboard have their own versions (`core/VERSION`, `core/scripts/da
 
 Format: one `## Core <version> (<date>)` or `## Dashboard <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 2.10.0 (2026-11-05)
+
+- Hub: Docket task captures name people and groups by their directory ids (`who`), copied from the request's People section, instead of names (`people`). People lines now carry an `@handle`, and groups (`g_...` ids) are listed with their members; a group is assigned like a person (Workshop `docs/people.md` v2).
+- Hub: the `go` app ids match Workshop today: Rapport (`receipts`) holds 1:1s; Queue and the separate 1:1s app are gone.
+
 ## Core 2.9.0 (2026-11-03)
 
 - Hub: `/hub <path to request.md>` (new **hub** agent) handles one message from the hub on Workshop's Dispatch page. It writes `route.json` next to the request: a capture (Docket task, receipt or note, as proposals the engineer accepts in Dispatch), a question, a place to go, a suggested action, or a clarifying question (Workshop `docs/hub.md`, `docs/schemas/hub-route.schema.json`). For a question it goes on to answer from the repo map, repo guides, code and `.work`, and writes `answer.md` from the new `templates/hub-answer.md` (Confirmed and Suspected lines with sources).

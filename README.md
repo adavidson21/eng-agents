@@ -55,3 +55,7 @@ Something went wrong? See [Recovering from problems](docs/pipeline.md#recovering
 | [Changelog](CHANGELOG.md) | What is new in each Core version |
 | [Customization](docs/customization.md) | Files to review, how layers combine, agents, permissions, templates, changing Core |
 | [Pipeline](docs/pipeline.md) | How each phase works, gates, lanes, work files, the dashboard, repo guides and memory, pausing, recovery, tuning |
+
+## License
+
+[PolyForm Shield 1.0.0](https://polyformproject.org/licenses/shield/1.0.0), see `LICENSE`. Free to use, change and share, including at work; not for building a product that competes with it. Versions up to November 5, 2026 were MIT and stay MIT.

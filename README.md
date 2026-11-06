@@ -12,6 +12,9 @@ Open opencode from your workspace root (for example `C:\src\work`).
 | Work with no tracker item | `/start new <feature or bug>`: describe it in chat. It gets a local id like `L3`; use that id in the commands above. |
 | Define the work first | `/scope <idea>` → `/approve scope-<name>` → `/slice scope-<name>` → `/approve scope-<name> milestones` → `/backlog scope-<name> [csv\|ado\|local]` → `/start <story id> feature` |
 | Bug | `/start <id> bug` → `/bug <id>` → `/approve <id>` → `/do-task <id> <n>` (repeat) → `/review <id>` → `/pr <id>` |
+| Triage a request before work starts | `/triage <ADO id or the request in words>`: writes `.work/triage-<id>/triage.md` with a summary, what it touches, questions for the requester, a size and a suggested route (delegate or do it yourself). Never posts. Slate in Workshop runs it from a button. |
+| Define one story or bug | `/refine <title>` → `/approve refine-<name>`. Writes `refine.md` with a description and Gherkin acceptance criteria, ready to publish (Slate publishes it to ADO). For anything epic-sized, use `/scope`. |
+| Hand work to a teammate | `/handoff <ADO id> <name>`: a brief with context, acceptance criteria, where to start and what to watch. Posts nothing. |
 | Question, no code changes | `/spike <id or topic>` |
 | First pass on a teammate's PR | `/pr-review <PR link>` (or **PR reviews** in Dispatch). Drafts comments in `.work/pr-<id>/review.md`; you post the ones you agree with. Never checks out the PR or posts anything. |
 | Ask or capture from Workshop | Type in the hub on Workshop's Dispatch page. It runs `/hub <request>`: captures become proposals you accept, questions are answered from your repo map, repo guides and code, with sources. It writes nothing but its own two files and never changes ADO or git. |

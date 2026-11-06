@@ -104,6 +104,9 @@ Use this when you have an idea ("add a change request ticket type") and no work 
 | `/slice scope-<name>` | milestone-architect | Maps each story to real files, makes every feature a vertical slice, sizes each story for one `/start` run, puts schema and setup work first, orders everything, and writes `milestones.md`. Lists every change it made to the stories. Runs `Export-Backlog.ps1 -Check` on the result. |
 | `/approve scope-<name> milestones` | planner | Approves `milestones.md`. |
 | `/backlog scope-<name> [csv\|ado\|local]` | milestone-architect | `csv` (default): `backlog.csv` for ADO's Import Work Items, as an Epic, Feature, story tree. `ado`: a dry run, your yes, then creates the items with parent links. `local`: one `L<number>` item per story. `ado` and `local` record ids in `published.md`, so a failed run continues where it stopped. |
+| `/triage <ADO id or words>` | investigator | Before any work: fetches the item and its comments (`Get-WorkItem.ps1` into `.work/triage-<id>/`), reads the repo map, guides and code, and writes `triage.md`: summary, products and repos, related items, questions for the requester, `Route:` (delegate, myself, undecided) and `Size:`. Run it again after the requester answers (comments, or `answers.md` in the folder). Never posts. |
+| `/refine <title>` | product-manager | One story or bug: asks at most 2 questions, writes `.work/refine-<name>/refine.md` (Description, Gherkin Acceptance criteria, Notes for the builder). Gate: `/approve refine-<name>`. `/refine refine-<name>` revises a draft. |
+| `/handoff <id> <name>` | writer | A brief for the person the work is delegated to, in `.work/handoff-<id>/handoff.md`. Posts nothing. |
 
 Then run `/start <story id> feature` for each story, top to bottom. Each story's description carries its "Work item" notes (files, pattern to follow, data, dependencies), so `/spec` and `/plan` start from them.
 

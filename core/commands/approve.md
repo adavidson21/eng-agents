@@ -1,5 +1,5 @@
 ---
-description: "Approve a work item's spec, plan, or bug analysis, or a scope's stories or milestones, so the next phase can start. Usage: /approve <id> [spec|plan|bug] or /approve scope-<name> [stories|milestones]"
+description: "Approve a work item's spec, plan, or bug analysis, a scope's stories or milestones, or a refined story, so the next phase can start. Usage: /approve <id> [spec|plan|bug], /approve scope-<name> [stories|milestones], or /approve refine-<name>"
 agent: planner
 ---
 
@@ -10,6 +10,7 @@ Running this command is the engineer's approval. It is the only command that may
 ## Step 1: Find the work folder
 
 - If `$1` starts with `scope-`, the folder is `.work/$1/`. If it does not exist, list the `.work/scope-*` folders and stop. Otherwise go to Step 2.
+- If `$1` starts with `refine-`, the folder is `.work/$1/` and the file is `refine.md`. If either does not exist, list the `.work/refine-*` folders and stop. Otherwise go to Step 2.
 - List `.work/` and find the folder that starts with `$1-`. If there is none, or more than one, stop and say so.
 - If `paused.md` contains `Status: PAUSED`, stop and tell the engineer to run `/resume $1` first.
 - For a TSD, tell the engineer to use `/publish tsd-<name>` instead and stop.
@@ -17,6 +18,7 @@ Running this command is the engineer's approval. It is the only command that may
 ## Step 2: Pick the file
 
 - If the engineer named `spec`, `plan`, `bug`, `stories`, or `milestones`, use that file (`spec.md`, `plan.md`, `bug.md`, `stories.md`, or `milestones.md`).
+- For a `refine-` folder, use `refine.md`.
 - For a `scope-` folder, use the first match: `stories.md` if it says `Status: DRAFT`, otherwise `milestones.md` if it says `Status: DRAFT`. If neither, reply with the Status line of each that exists, and stop. Approving `stories.md` approves `epics.md` with it.
 - For a work item, use the first match:
 
@@ -55,3 +57,4 @@ Running this command is the engineer's approval. It is the only command that may
 | `bug.md` | Start a new session, then `/do-task $1 1` |
 | `stories.md` | `/slice $1` |
 | `milestones.md` | `/backlog $1` (import file), `/backlog $1 ado`, or `/backlog $1 local` |
+| `refine.md` | Publish it to ADO from Slate (Workshop), or paste its Description and Acceptance criteria into a new work item. Then `/start <id> feature` or `/handoff <id> <name>`. |

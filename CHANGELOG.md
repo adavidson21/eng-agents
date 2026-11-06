@@ -4,6 +4,13 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 2.12.0 (2026-11-05)
+
+- Triage: `/triage <ADO id or the request in words>` (investigator) takes a first look at an enhancement request before any work starts. It fetches the item and its comments into `.work/triage-<id>/`, reads the repo map, guides and code, and writes `triage.md` from the new `templates/triage.md`: a summary, products and repos, related items, questions for the requester, a `Route:` (delegate, myself, undecided) and a `Size:`. Run it again after the requester answers. It never posts to ADO.
+- Refine: `/refine <title>` (product-manager) defines one story or bug: at most 2 questions, then `.work/refine-<name>/refine.md` from the new `templates/refine.md` with a Description and Gherkin Acceptance criteria. `/approve refine-<name>` approves it; `/refine refine-<name>` revises a draft. product-manager may now also write `.work/refine-*/`.
+- Handoff: `/handoff <ADO id> <name>` (writer) writes a brief for the person the work is delegated to, in `.work/handoff-<id>/handoff.md` from the new `templates/handoff.md`. It posts nothing.
+- These three are the steps behind Slate, Workshop's request-to-decision app, which runs them from buttons. They work the same from the terminal.
+
 ## Core 2.11.0 (2026-11-05)
 
 - The live dashboard moved to Dispatch, the Agents app in Workshop (adavidson21/workshop, with its opencode connector). Dispatch is now the one live UI for Tandem's agents, and the live dashboard server is removed: `scripts/dashboard/live-server.mjs`, `server/` and its tests, `Start-LiveDashboard.ps1`, its update checks, and the shell API for showing the page inside another app (`shellOrigins`, the page token, `docs/shell-api.md`). eng-agents no longer needs Node.

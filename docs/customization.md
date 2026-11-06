@@ -132,7 +132,7 @@ Override an agent by copying its file from `core/agents/` into your layer. Keep 
 | `hub` | `/hub` | Only `route.json` and `answer.md` next to the request it was given | Only read-only commands: `git log`, `git show`, `git grep`, `git ls-files`, `rg`, listing and reading files; no web requests. No `guards`. |
 | `chat` | Workshop's Dispatch: hub follow-ups and the Chat tab (no command) | Nothing | Same read-only commands as `hub`; no web requests. No `guards`. |
 | `investigator` | `/bug`, `/spike`, `/triage`, `/onboard-repo` | `.work/`. A repo guide and `.git/info/exclude` ask. | Cannot `git add` or `git commit` |
-| `product-manager` | `/scope`, `/refine` | `.work/scope-*/` and `.work/refine-*/` only | Only `git log` |
+| `product-manager` | `/scope`, `/refine`, `/shape` | `.work/scope-*/`, `.work/refine-*/` and `.work/shape-*/` only | Only `git log` |
 | `milestone-architect` | `/slice`, `/backlog` | `milestones.md` and `progress.md` in `.work/scope-*/` | Only `git log` and `Export-Backlog.ps1` (pushing to ADO asks) |
 | `writer` | `/pr`, `/docs`, `/tsd`, `/publish`, `/memory`, `/handoff` | Any `*.md` file, `docs/`, `.work/`, the global memory file. opencode config asks. | Cannot `git add` or `git commit` |
 

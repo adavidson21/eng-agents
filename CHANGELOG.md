@@ -4,6 +4,11 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 2.16.0 (2026-11-06)
+
+- Shape: `/shape <idea>` (product-manager) interviews you about an idea before it is defined, one round per run and never in the chat. Its questions go in a file the engineer asked for, so core rule 3's 3-question cap does not apply; it still asks at most 5 per round, never asks what the files answer, and writes safe guesses as assumptions. Each round writes up to 5 questions with options and a recommendation to `.work/shape-<name>/questions.md` (new `templates/shape-questions.md`, with `Status: ASKING | READY` and `Round:` lines Workshop's Slate reads) and keeps a running `understanding.md` (`templates/shape-understanding.md`; your edits win). Your answers go in `answers.md`. When the idea is understood, or with `/shape shape-<name> brief`, it writes `brief.md` (`templates/shape-brief.md`) with a `Level:` and `Size:`. `/shape triage-<name>` starts from a triage; `/shape shape-<name> more` asks another round. product-manager may now also write `.work/shape-*/`.
+- `/scope shape-<name>` and `/refine shape-<name>` start from a brief: they write `.work/scope-<name>/` or `.work/refine-<name>/` and ask only what the brief leaves open.
+
 ## Core 2.15.0 (2026-11-06)
 
 - Agents ask fewer questions and avoid over-engineering, so Dispatch runs and chats do not keep piling up questions. Core rule 3 now says: check the files and earlier decisions first, ask only when a wrong guess would change what gets built or be hard to undo, otherwise assume the recommended answer and record it under "Assumptions"; at most 3 questions per command. New core rule 8, Simple but built to maintain: smallest thing that meets the acceptance criteria and is easy to change later (values likely to change go in existing config, follow the repo's extension points, clear seams), without speculative features, unrequested options or single-use layers.

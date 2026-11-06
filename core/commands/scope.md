@@ -1,5 +1,5 @@
 ---
-description: "Turn an idea into an epic, features, and user stories. Usage: /scope <idea>, or /scope scope-<name> to refine a draft"
+description: "Turn an idea into an epic, features, and user stories. Usage: /scope <idea>, /scope shape-<name> to start from a shaped brief, or /scope scope-<name> to refine a draft"
 agent: product-manager
 ---
 
@@ -9,12 +9,19 @@ Follow these steps in order. Do not change any code.
 
 ## Step 1: New scope or refine a draft
 
-- If the request above is empty, stop and reply: `Usage: /scope <idea>, or /scope scope-<name> to refine a draft`.
+- If the request above is empty, stop and reply: `Usage: /scope <idea>, /scope shape-<name>, or /scope scope-<name> to refine a draft`.
 - **Refine:** if the request is one word that starts with `scope-`, it is an existing folder.
   - The folder is `.work/<that word>/`. If it does not exist, list the `.work/scope-*` folders and stop.
   - If `stories.md` says `Status: APPROVED`, stop and suggest `/slice <that word>`.
   - Read `epics.md`, `stories.md`, and `progress.md`. The engineer's notes under "Open questions", and any edits they made, are what to change. Keep everything else.
   - Go to Step 2. In Step 3, ask only about the open questions.
+- **From a shape:** if the request is one word that starts with `shape-`, it is a shaped idea (`/shape`).
+  - If `.work/<that word>/brief.md` does not exist, stop and reply: "No brief yet. Finish the interview first: `/shape <that word> brief`."
+  - The folder is `.work/scope-<the rest>/` (for `shape-change-request`, `.work/scope-change-request/`). If it exists, this is a refine of that scope (above), with the brief read as well.
+  - Otherwise create the folder and copy `{{ENG_HOME}}/templates/progress.md` into it as `progress.md`, with `scope-<the rest>` as the id and the brief's title. Add the line `From: .work/<that word>/` under the header.
+  - Read `brief.md`, `understanding.md`, `answers.md` and `idea.md` in the shape folder. The brief is the idea: the engineer already answered these questions. Its Product line picks the product in Step 2.
+  - In Step 3, ask only what the brief leaves open (its "Open questions" and the epic, when the brief does not name one). If nothing is open, ask nothing. Record the brief's settled points under "Decisions made during clarification", each ending "(from the shape interview)".
+  - Its "MVP, In the first version" are the MVP features in Step 4; "Later" goes to Icebox.
 - **New:** otherwise the request is the idea.
   - Make a short name from the idea: the first 5 meaningful words, lowercase, joined with `-`, at most 40 characters, filler words (a, an, the, to, of, for, and, add, new) dropped. For example "I want to add a new ticket called a change request" gives `ticket-called-change-request`.
   - The folder is `.work/scope-<short name>/`. If it already exists, stop and ask: "`.work/scope-<short name>/` exists. Refine it (`/scope scope-<short name>`) or use another name?"

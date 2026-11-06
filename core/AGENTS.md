@@ -37,9 +37,28 @@ The engineer saves rules with `/memory`. Follow them like any other rule.
 |---|---|---|
 | One repo | The `## Remembered` section of that repo's guide | When you read the repo guide |
 | Every repo | `{{ENG_CONFIG}}/memory.md` | Automatically, in every session |
+| One product | Its product note in Workshop's Notes app (see Product notes) | When you work on that product |
 
 - A repo's `## Remembered` rule wins over a global memory rule.
-- If the engineer says "remember this", "from now on", or "always do X here", suggest `/memory <rule>` (one repo) or `/memory -global <rule>` (every repo). Do not write memory files yourself unless running `/memory`.
+- If the engineer says "remember this", "from now on", or "always do X here", suggest `/memory <rule>` (one repo), `/memory -global <rule>` (every repo) or `/memory -product <product> <fact>` (a product fact, written to the product note; see Product notes). Do not write memory files yourself unless running `/memory`.
+
+## Product notes
+
+Each product can have a **product note** in Workshop's Notes app: one Markdown file per product with what the code cannot tell you (business rules, gotchas, who to ask, why decisions were made). The engineer edits them in Notes; you read them and add to them.
+
+- **Read:** after you match work to a product in the repo map, and before you plan, change, review or answer anything about it, run:
+  `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/notes/Get-ProductNote.ps1" -Product "<product name>"`
+  Use the product's `Note:` line in the repo map if it has one (`-Note products/<slug>.md`). Read only the notes of the products the work touches, never all of them. If it says product notes are not available, or the note does not exist yet, go on without it.
+- **What goes where (split rule):** if a fact would still be true after the product's code was rewritten (a business rule, a customer need, who owns what, why a decision was made), it belongs in the product note. If it is about one codebase (a build quirk, a pattern, a file to avoid), it belongs in that repo guide's `## Remembered`. Never write a fact in both.
+- **Write:** when you confirm a product fact that is missing from the note or contradicts it, and it would help the next person working on this product, change the note with:
+  `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/notes/Set-ProductNote.ps1" -Product "<product name>" -Line "<the fact>" -Source "<PR, work item or file>" [-Section <section>] [-Replace "<text of the wrong line>"]`
+  - One fact per call, one short line, only facts you saw in code, a work item, a PR or from the engineer. Never guesses, plans, to-dos or session notes.
+  - If a line already covers the subject, replace that line (`-Replace`) instead of adding a second. When a line is wrong, replace it; never keep both.
+  - Default section is `Remembered`. Use `Business rules`, `Gotchas`, `People` or `Decisions` when the fact clearly belongs there.
+  - Never edit product notes with any other tool: the script keeps the earlier version in Notes' history and marks the note "Changed by Tandem" for the engineer to review.
+  - If the script says the note is over budget, propose a tidy to the engineer instead of adding more.
+  - List every product note change in your reply: the note, the section, and the line before and after.
+- Agents that may not run scripts or write files (hub, pr-reviewer) only read product notes. pr-reviewer suggests product note lines in `review.md` instead of writing them.
 
 ## Pipeline files
 

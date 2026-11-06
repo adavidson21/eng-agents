@@ -1,5 +1,5 @@
 ---
-description: "Remember a rule for one repo, or for every repo with -global. Usage: /memory [-global | <repo folder>] <rule>, or /memory -list [repo folder]"
+description: "Remember a rule for one repo, for every repo with -global, or a product fact with -product. Usage: /memory [-global | -product <product> | <repo folder>] <rule>, or /memory -list [repo folder]"
 agent: writer
 ---
 
@@ -7,7 +7,7 @@ Remember this: **$ARGUMENTS**
 
 First word: **$1**
 
-Do not change any code. Write only the one memory file chosen below.
+Do not change any code. Write only the one memory file chosen below (for `-product`, only through `Set-ProductNote.ps1`).
 
 ## Step 1: Pick the scope
 
@@ -16,6 +16,7 @@ Use the first word:
 | First word | Scope | The rule is |
 |---|---|---|
 | `-global`, `--global`, or `-g` | Global: every repo | Everything after the first word |
+| `-product` | One product: its product note. Go to "Product facts" below. | The second word is the product (quote it if it has spaces); the fact is everything after it |
 | `-list` | Show memory, write nothing. Go to "Listing" at the end. | |
 | A folder in the workspace root that contains `.git` | That repo | Everything after the first word |
 | Anything else | One repo | All of the arguments |
@@ -26,7 +27,9 @@ If the scope is "one repo" but no repo was named, pick it:
 2. Otherwise, if this conversation is about one work item and its `repos.md` lists exactly one repo, use that repo.
 3. Otherwise ask: "Which repo is this for? `<repos from this conversation, or every repo folder in the workspace>`, or `-global` for every repo." Wait for the answer.
 
-If there are no arguments, reply: `Usage: /memory [-global | <repo folder>] <rule>, or /memory -list [repo folder]`. Stop.
+If there are no arguments, reply: `Usage: /memory [-global | -product <product> | <repo folder>] <rule>, or /memory -list [repo folder]`. Stop.
+
+If the scope is one repo or global but the rule is a product fact (it would still be true if the product's code were rewritten: a business rule, who owns what, why a decision was made), ask: "This sounds like a fact about `<product>`. Save it in its product note instead?" Wait. If yes, go to "Product facts".
 
 ## Step 2: Write the rule as one line
 
@@ -77,6 +80,18 @@ Reply with:
   - One repo: the next time an agent reads that repo guide (every pipeline command does).
   - Global: every new session. Run `/new` to load it now in other work.
 - "To undo, delete the line from that file."
+
+## Product facts
+
+For `-product <product> <fact>`:
+
+1. Match `<product>` to a product in the repo map (Products, "Also called"). If none matches, ask which product. Use its `Note:` line if it has one.
+2. Read the note: `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/notes/Get-ProductNote.ps1" -Product "<product>"`.
+   - Not available: reply with the reason it printed and stop.
+   - Does not exist yet: add `-Create` to the call in step 4.
+3. Write the fact as one line (Step 2's rules). Pick the section: `Business rules`, `Gotchas`, `People`, `Decisions`, or `Remembered` when unsure. If a line in the note already covers the subject, show it and ask: "Replace this line, keep both, or cancel?" Wait.
+4. Run `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/notes/Set-ProductNote.ps1" -Product "<product>" -Section <section> -Line "<fact>" -Source "the engineer"`, with `-Replace "<text of the old line>"` if they chose to replace it.
+5. Reply with what the script printed, and: "It shows as Changed by Tandem in Notes until you mark it reviewed. To undo, restore the earlier version from History in Notes."
 
 ## Listing
 

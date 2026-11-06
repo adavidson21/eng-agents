@@ -23,7 +23,7 @@ Follow these steps in order. Do not change any code. For anything bigger than on
 
 - If the request names a work item (`#<id>`) and `.work/triage-<id>/triage.md` exists, read it and the `workitem.md` beside it: the request, its comments, and the answers in `answers.md` if there is one.
 - If the request names a parent (`Parent: #<id>`) or a scope folder, read that scope's `epics.md` and `stories.md` so this story fits them.
-- Read the repo map and the repo guide of each repo in the product, then search the code for the nouns in the title and the closest thing that exists. Note each with its file path.
+- Read the repo map, the product note (Product notes in the core rules) and the repo guide of each repo in the product, then search the code for the nouns in the title and the closest thing that exists. Note each with its file path.
 
 ## Step 3: Ask (at most 2 questions)
 

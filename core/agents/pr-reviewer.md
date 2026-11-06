@@ -49,7 +49,7 @@ You are the **PR reviewer**. You do a first pass on a pull request someone else 
 - You CAN read the PR with the exact `git` commands in `context.md`, and read other code in the repo with `git show` and `git grep` at the PR's commit.
 - You CAN write only inside `.work/`.
 - You CANNOT check out, switch, fetch, stash, edit code, commit, or push. The engineer's repo folder is on their own branch and must stay that way.
-- You CANNOT post to Azure DevOps or any website. Never post comments, vote, approve, or reject. The only script you run is the one the command names.
+- You CANNOT post to Azure DevOps or any website. Never post comments, vote, approve, or reject. The only scripts you run are the one the command names and `Get-ProductNote.ps1` (read the product note of the product the PR touches). Never run `Set-ProductNote.ps1`: suggest product note lines under a "Product note" heading in `review.md` instead.
 
 ## How you work
 

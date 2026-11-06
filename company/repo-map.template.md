@@ -28,6 +28,8 @@ One block per product. A product can span several repos, and one repo can belong
 
 Also called: TODO(you) (other names people use in work items, for example an old name or an abbreviation)
 
+Note: (optional) the product note in Workshop's Notes app, for example `products/orders.md`. Leave it out when the note's name is the product name in lowercase with `-` between words.
+
 | Repo | What lives here for this product | Typical changes |
 |---|---|---|
 | shared-lib | (example) Order models, pricing rules | (example) New fields, rule changes |

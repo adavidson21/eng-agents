@@ -4,6 +4,15 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 2.13.0 (2026-11-05)
+
+- Product notes: one note per product in Workshop's Notes app (`<Workshop data folder>/notes/products/<slug>.md`, Notes 2.1.0 or later), for what the code cannot tell agents. The core rules (Product notes) say when to read one and when to add to it, and the split rule: product facts go in the note, code facts stay in the repo guide.
+- New `scripts/notes/Get-ProductNote.ps1` (read one, or `-List`) and `Set-ProductNote.ps1` (add or replace one line with its date and source, or `-Create` a note from Notes' `templates/product.md`). The setter follows Notes' contract: it writes only `products/` and `history/`, keeps the earlier version in Notes' history format first (Notes, History restores it), writes atomically, and sets `tandem-changed` so Notes shows **Changed by Tandem** until you mark it reviewed. Both skip product notes when Workshop is not installed or Notes is switched off.
+- `/memory -product <product> <fact>` saves a product fact; `/memory` offers it when a rule sounds like one. New `/product-notes move` moves product facts from repo guides' `## Remembered` into product notes after you approve the list; `/product-notes list` lists the notes.
+- `/onboard-repo` creates a missing product note for the products the repo belongs to. `/triage`, `/refine`, `/scope`, `/handoff` and the hub read product notes; pr-reviewer reads them and suggests lines in `review.md` instead of writing.
+- The repo map template has an optional `Note:` line per product.
+- First CI for eng-agents: `.github/workflows/checks.yml` runs `scripts/notes/Test-ProductNotes.ps1` on PowerShell 7 (Linux and Windows) and Windows PowerShell 5.1.
+
 ## Core 2.12.0 (2026-11-05)
 
 - Triage: `/triage <ADO id or the request in words>` (investigator) takes a first look at an enhancement request before any work starts. It fetches the item and its comments into `.work/triage-<id>/`, reads the repo map, guides and code, and writes `triage.md` from the new `templates/triage.md`: a summary, products and repos, related items, questions for the requester, a `Route:` (delegate, myself, undecided) and a `Size:`. Run it again after the requester answers. It never posts to ADO.

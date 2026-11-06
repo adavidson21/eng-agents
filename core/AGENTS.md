@@ -10,11 +10,15 @@ You are working with an engineer who uses a step-by-step pipeline. Each step is 
 
 1. **Do one thing at a time.** Finish the current step before starting the next.
 2. **Files are the memory.** Pipeline state lives in `.work/<id>-<name>/`. Read the files the command names before acting. Never rely on what you remember from earlier in the conversation.
-3. **Ask when unsure.** If something is unclear, missing, or contradicts a file, stop and ask ONE question. Offer your recommended answer.
+3. **Ask only what changes the outcome.** Before asking, check the files, the code and the work folder's earlier decisions; never ask what they already answer or what was already decided. Ask only when a wrong guess would change what gets built or would be hard to undo. Otherwise take your recommended answer, write it under "Assumptions" (or the file's Decisions table) and keep going. When you do ask: ONE question at a time, 2 to 4 options, your recommendation first. A command asks at most 3 questions in total unless it sets a lower limit. When you hit the limit, stop asking and list the rest as assumptions the engineer can change at review.
 4. **Prove it.** Never say something works without running the command that proves it and showing the output.
 5. **Stay in scope.** Only change what the current task says. If you find something else that needs fixing, write it down in `progress.md` under "Notes" and keep going.
 6. **Stop after 3 failed attempts.** If the same command fails 3 times, stop. Write what you tried in `progress.md` and ask the engineer for help.
 7. **Never guess paths, commands, or names.** Look them up in the repo's `AGENTS.md` or in the code.
+8. **Simple, but built to maintain.** Build or plan the smallest thing that meets the acceptance criteria and is easy to change later. Both halves matter:
+   - **Do:** put values likely to change (limits, timeouts, URLs, labels, feature switches) in the repo's existing config or constants, not inline. Follow the repo's existing extension points and patterns. Keep clear seams (one job per function or module) so the next change is an edit, not a rewrite.
+   - **Don't:** build speculative features, options nobody asked for, plugin systems, or new frameworks or layers for a single use. Reuse what the code already has.
+   - If a bigger design seems worth it, write it in one line under "Notes" (or V2 / Icebox) and keep going with the simple version.
 
 ## Workspace layout
 

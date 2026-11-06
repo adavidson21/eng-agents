@@ -29,6 +29,10 @@ Each criterion must be testable.
 |---|---|
 | <question asked> | <engineer's answer> |
 
+## Assumptions
+
+- <What you assumed instead of asking, with your recommended answer. The engineer changes these at review.>
+
 ## Open questions
 
 - <Anything still unknown. Must be empty before approval, or marked "accepted risk".>

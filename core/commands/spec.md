@@ -23,10 +23,11 @@ Write the spec for work item **$1**.
 
 ## Step 4: Ask clarifying questions
 
-- Make a private list of everything that is unclear or ambiguous.
+- Make a private list of everything that is unclear or ambiguous. Drop anything the code, the work item or the files already answer, and anything where your recommended answer is safe to assume.
 - Ask the engineer the most important question first. Ask **one question at a time**. For each question give 2 to 4 options and say which you recommend and why.
 - Wait for each answer before asking the next question.
-- Ask at most 6 questions. Stop sooner if the requirement is clear.
+- Ask at most 3 questions. Stop sooner if the requirement is clear. Zero questions is fine.
+- Put everything you did not ask under "Assumptions" with your recommended answer, so the engineer can change it at review.
 
 ## Step 5: Write spec.md
 

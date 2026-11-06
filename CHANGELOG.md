@@ -4,6 +4,10 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 2.14.0 (2026-11-06)
+
+- New read-only `chat` agent for conversations from Workshop's Dispatch (hub follow-ups and the Chat tab, Dispatch 1.7.0). It reads the repo map, repo guides, product notes, code, git history and `.work`, runs only the hub's read-only commands, and cannot write any file. Workshop names it on every message it sends, so a reply never goes to an agent that can edit.
+
 ## Core 2.13.2 (2026-11-06)
 
 - `/hub`: `route.json` must be the bare JSON object (no code fence or text around it), with `version` as the number `1` and no extra fields. For a question the final reply now carries a short version of the answer, so Workshop's Dispatch can show it when it cannot read the files (Dispatch 1.6.1 shows what the session said).

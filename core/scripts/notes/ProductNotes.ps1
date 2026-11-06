@@ -34,7 +34,7 @@ tags: [product, product/{{slug}}]
 ## Links
 
 ## Remembered
-"@
+"@ -replace "\r\n", "`n"   # LF like Notes, whatever line endings this file was checked out with
 
 function Get-WorkshopHome {
     if ($env:WORKSHOP_HOME) { return $env:WORKSHOP_HOME }
@@ -125,7 +125,7 @@ function Write-NoteAtomic([string]$File, [string]$Text) {
     [System.IO.File]::WriteAllText($tmp, $Text, $script:Utf8)
     for ($try = 1; ; $try++) {
         try {
-            if (Test-Path -LiteralPath $File) { [System.IO.File]::Replace($tmp, $File, $null) }
+            if (Test-Path -LiteralPath $File) { [System.IO.File]::Replace($tmp, $File, [NullString]::Value) }
             else { [System.IO.File]::Move($tmp, $File) }
             return
         } catch [System.IO.IOException] {

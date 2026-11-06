@@ -15,6 +15,7 @@ $ps = (Get-Process -Id $PID).Path
 $get = Join-Path $PSScriptRoot "Get-ProductNote.ps1"
 $set = Join-Path $PSScriptRoot "Set-ProductNote.ps1"
 function Run([string]$Script, [string[]]$Arguments) {
+    $ErrorActionPreference = "Continue"   # Windows PowerShell 5.1 turns a child's stderr into errors
     $out = & $ps -NoProfile -ExecutionPolicy Bypass -File $Script @Arguments 2>&1 | Out-String
     return @{ Out = $out; Code = $LASTEXITCODE }
 }

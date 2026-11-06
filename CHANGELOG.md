@@ -4,6 +4,10 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 2.13.1 (2026-11-06)
+
+- `update.ps1` no longer stops with a git error on Windows PowerShell 5.1 when a git call it expects might fail (for example `git show` of a file the tag does not have). Its git helper now returns the failure, as it says it does.
+
 ## Core 2.13.0 (2026-11-05)
 
 - Product notes: one note per product in Workshop's Notes app (`<Workshop data folder>/notes/products/<slug>.md`, Notes 2.1.0 or later), for what the code cannot tell agents. The core rules (Product notes) say when to read one and when to add to it, and the split rule: product facts go in the note, code facts stay in the repo guide.

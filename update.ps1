@@ -80,6 +80,9 @@ function Read-Text {
 function Invoke-Git {
     # Returns @{ ok; out } and never throws, so one failed git call does not end the check.
     param([string[]]$GitArgs)
+    # Windows PowerShell 5.1 turns native stderr into a terminating error under "Stop" when it is redirected,
+    # so a git call that fails (like git show of a file a tag does not have) would end the script.
+    $ErrorActionPreference = "Continue"
     $out = & git -C $repo @GitArgs 2>&1
     return @{ ok = ($LASTEXITCODE -eq 0); out = (@($out) | ForEach-Object { "$_" }) -join "`n" }
 }

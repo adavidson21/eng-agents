@@ -4,6 +4,12 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 2.15.0 (2026-11-06)
+
+- Agents ask fewer questions and avoid over-engineering, so Dispatch runs and chats do not keep piling up questions. Core rule 3 now says: check the files and earlier decisions first, ask only when a wrong guess would change what gets built or be hard to undo, otherwise assume the recommended answer and record it under "Assumptions"; at most 3 questions per command. New core rule 8, Simple but built to maintain: smallest thing that meets the acceptance criteria and is easy to change later (values likely to change go in existing config, follow the repo's extension points, clear seams), without speculative features, unrequested options or single-use layers.
+- `/spec` asks at most 3 questions (was 6) and writes the rest as assumptions; the spec template has an "Assumptions" section.
+- `planner` caps questions at 3 per command, never re-asks what the spec decided, and plans the simplest maintainable design. `product-manager` skips questions it can safely assume. `chat` answers first and asks at most one question per reply.
+
 ## Core 2.14.0 (2026-11-06)
 
 - New read-only `chat` agent for conversations from Workshop's Dispatch (hub follow-ups and the Chat tab, Dispatch 1.7.0). It reads the repo map, repo guides, product notes, code, git history and `.work`, runs only the hub's read-only commands, and cannot write any file. Workshop names it on every message it sends, so a reply never goes to an agent that can edit.

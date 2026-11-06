@@ -21,7 +21,11 @@ You route, and for a question you answer. You never change anything. Workshop sh
 
 ## Step 3: Route
 
-Pick exactly one intent and write `route.json` next to `request.md`. It must be valid JSON matching Workshop's `docs/schemas/hub-route.schema.json` (`version` is `1`). Write only the field for the intent.
+Pick exactly one intent and write `route.json` next to `request.md`. It must be valid JSON matching Workshop's `docs/schemas/hub-route.schema.json`. Write only the field for the intent.
+
+- The file is the JSON object alone: no code fence, no comments, no text before or after it.
+- `version` is the number `1`, not the string `"1"`.
+- Use only the fields named below. Extras (a `question`, an `answer`, a top-level `reason`) are dropped by Workshop, and the answer belongs in `answer.md`, never in `route.json`.
 
 | Intent | When | Field |
 |---|---|---|
@@ -61,4 +65,5 @@ If the intent is not `ask`, stop after writing `route.json` and go to Step 5.
 
 ## Step 5: Finish
 
-- Reply with one line: "Wrote `route.json`" (and "and `answer.md`" for a question), with the folder. Do not print the files again.
+- For a question, reply with the answer's short version in two or three sentences, then a line saying you wrote `route.json` and `answer.md`. Workshop shows this reply when it cannot read the files, so it must stand on its own.
+- Otherwise reply with one line: "Wrote `route.json`", with the folder. Do not print the files again.

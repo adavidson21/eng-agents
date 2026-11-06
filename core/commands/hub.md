@@ -53,7 +53,8 @@ If the intent is not `ask`, stop after writing `route.json` and go to Step 5.
 - For a question about code or a product:
   1. Find the product in the repo map (Products, "Also called", Glossary). Use the repos you listed in `route.json`.
   2. Read each repo's guide (`<repo>/AGENTS.local.md`, else `<repo>/AGENTS.md`). The Tech stack and Commands sections answer many questions.
-  3. Confirm in the code (for example a `.csproj` `TargetFramework`, `package.json`, or a config file). Read at most about 10 files, then answer with what you have.
+  3. Read the product note if there is one (business rules, gotchas, who to ask, decisions): `Get-Content ~/.workshop/config.json` gives `dataDir` (default `~/Workshop`), then `Get-Content "<dataDir>/notes/products/<slug>.md"`, where `<slug>` is the repo map's `Note:` line or the product name in lowercase with `-` between words. If either file is missing, go on without it. Cite it as `notes/products/<slug>.md`.
+  4. Confirm in the code (for example a `.csproj` `TargetFramework`, `package.json`, or a config file). Read at most about 10 files, then answer with what you have.
 - For "where was I" or a work item: read `.work/runway.md` and the item's `brief.md` and latest `progress.md` entry.
 - For a question about the engineer's own Workshop data: use only the request's sections.
 - Write `answer.md` next to `request.md`, from `{{ENG_HOME}}/templates/hub-answer.md`. Replace an existing one.

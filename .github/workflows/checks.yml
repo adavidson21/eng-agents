@@ -1,0 +1,22 @@
+name: checks
+# Pull requests, and pushes to main. Runs the self-tests that need no opencode, no ADO and no network.
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  product-notes:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, shell: pwsh }
+          - { os: windows-latest, shell: pwsh }
+          - { os: windows-latest, shell: powershell }
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./core/scripts/notes/Test-ProductNotes.ps1

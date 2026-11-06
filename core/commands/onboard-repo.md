@@ -78,10 +78,20 @@ Wait for the answer. The engineer can choose differently per file.
 
 - Read `$1/.git/info/exclude`. If it does not contain a line with the guide file name (`AGENTS.md` or `AGENTS.local.md`), add that line at the end. This keeps the file out of commits without changing `.gitignore`.
 
+## Step 7b: Product notes
+
+- Find the products in the repo map whose repo table lists `$1`. Skip this step if there are none.
+- For each, run `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/notes/Get-ProductNote.ps1" -Product "<product>"` (with `-Note <path>` if the product has a `Note:` line).
+  - Not available: skip this step and say why in the hand off.
+  - Does not exist yet: create it, with the product's repos and "Also called" names from the repo map:
+    `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/notes/Set-ProductNote.ps1" -Product "<product>" -Create -Repos <repo>,<repo> -AlsoCalled "<name>","<name>"`
+- Never write code facts into a product note; they go in the repo guide.
+
 ## Step 8: Hand off
 
 Tell the engineer:
 - Where the draft was written, and which guide file it is (`AGENTS.md` or `AGENTS.local.md`).
 - Each team guide and the mode chosen (link, copy, or ignore).
 - A list of every `(inferred, verify)` item, every `TODO(you)`, and every team guide disagreement, one line each.
+- Each product note created in Step 7b, and: "Fill in what the code cannot tell agents (business rules, gotchas, who to ask) in Notes, Products."
 - "Review and correct this file before using this repo in the pipeline. Every agent will trust it."

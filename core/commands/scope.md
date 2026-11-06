@@ -24,7 +24,7 @@ Follow these steps in order. Do not change any code.
 
 - Read the repo map (the workspace root `AGENTS.md`). Match words in the idea against the **Products** and **Glossary** tables to pick the product. If none matches, or more than one does, ask ONE question to pick it (this counts toward the 3 in Step 3). If there is no repo map, say so and use the repo folder names.
 - If the product block names a "Product docs" folder, read the `technical-spec.md` in it if there is one, and any product docs the block links.
-- Read the repo guide (`<repo>/AGENTS.local.md` if it exists, otherwise `<repo>/AGENTS.md`) of each repo in the product.
+- Read the repo guide (`<repo>/AGENTS.local.md` if it exists, otherwise `<repo>/AGENTS.md`) of each repo in the product, and the product note (Product notes in the core rules).
 - Search the code for the nouns in the idea and the closest existing thing (for a new ticket type: the existing ticket types). Find the entities, endpoints, screens, and business rules that already exist. Note each with its file path.
 - For each repo in the product, run `git -C <repo> log --oneline -20`. For the paths you found, run `git -C <repo> log --oneline -10 -- <path>`. Note recent changes that matter to the idea.
 

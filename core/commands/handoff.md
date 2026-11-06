@@ -24,7 +24,7 @@ Follow these steps in order. Do not change any code, and never post anything to 
   If it fails, say so in one line and stop.
 - For a local id, read `workitem.md` in the `.work/$1-*` folder.
 - Read `.work/triage-$1/triage.md` and any `.work/refine-*/refine.md` or `.work/scope-*/milestones.md` that names `#$1`, if they exist.
-- Read the repo map and the repo guide of each repo the work touches, then find the files where the work starts. Note each with its path.
+- Read the repo map, the product note (Product notes in the core rules) and the repo guide of each repo the work touches, then find the files where the work starts. Note each with its path.
 
 ## Step 3: Write handoff.md
 

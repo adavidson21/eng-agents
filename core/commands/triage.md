@@ -30,6 +30,7 @@ Run exactly this command:
 
 - Read the repo map (the workspace root `AGENTS.md`). Match words in the request against the **Products** and **Glossary** tables to pick the product. If none matches, say so in Products and repos and carry on with what you can find.
 - Read the repo guide (`<repo>/AGENTS.local.md` if it exists, otherwise `<repo>/AGENTS.md`) of each repo in the product.
+- Read the product note of each product you matched (`Get-ProductNote.ps1`, see Product notes in the core rules). Its business rules, gotchas and decisions often answer a question before you ask the requester.
 - Search the code for the nouns in the request and the closest thing that already exists. Note each with its file path.
 - Run `git -C <repo> log --oneline -20 -- <path>` for the paths you found, to see recent or related work.
 - List `.work/` for folders about the same thing (a scope, a spike, a started item).

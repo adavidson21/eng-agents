@@ -411,6 +411,8 @@ Agents learn a repo from three places, read in this order:
 
 Plus **global memory** in `%USERPROFILE%\.config\eng-agents\memory.md` (`/memory -global <rule>`), loaded in every session. The repo guide wins over a team guide, and repo memory wins over global memory.
 
+**Product notes** hold what the code cannot tell agents about a product (business rules, gotchas, who to ask, decisions): one note per product in Workshop's Notes app, `<Workshop data folder>/notes/products/<product>.md`. Agents read the note of each product the work touches (`scripts/notes/Get-ProductNote.ps1`) and add facts they confirm (`scripts/notes/Set-ProductNote.ps1`: one line at a time, with its date and source, keeping the earlier version in Notes' History). Notes marks a note **Changed by Tandem** until you click **Mark reviewed**. A fact that would still be true if the code were rewritten goes in the product note; a fact about one codebase stays in that repo guide. `/memory -product <product> <fact>` saves one yourself, `/onboard-repo` starts a missing note, and `/product-notes move` moves product facts out of repo guides. Without Workshop, or with Notes switched off, agents skip product notes.
+
 - `/memory <rule>` uses the repo you are working in, or asks. `/memory <repo> <rule>` names it. `/memory -list` shows everything saved.
 - It checks for a duplicate or contradicting line first, and offers to fix a wrong command or path in the repo guide instead of adding a memory line.
 - Run it in the session where the rule came up, so "remember that" can be resolved to the real thing.

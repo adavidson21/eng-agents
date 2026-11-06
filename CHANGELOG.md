@@ -4,6 +4,10 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 2.13.2 (2026-11-06)
+
+- `/hub`: `route.json` must be the bare JSON object (no code fence or text around it), with `version` as the number `1` and no extra fields. For a question the final reply now carries a short version of the answer, so Workshop's Dispatch can show it when it cannot read the files (Dispatch 1.6.1 shows what the session said).
+
 ## Core 2.13.1 (2026-11-06)
 
 - `update.ps1` no longer stops with a git error on Windows PowerShell 5.1 when a git call it expects might fail (for example `git show` of a file the tag does not have). Its git helper now returns the failure, as it says it does.

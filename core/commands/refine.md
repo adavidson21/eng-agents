@@ -1,5 +1,5 @@
 ---
-description: "Define one story or bug: a description and Gherkin acceptance criteria, ready to publish. Usage: /refine <title>, or /refine refine-<name> to revise a draft"
+description: "Define one story or bug: a description and Gherkin acceptance criteria, ready to publish. Usage: /refine <title>, /refine shape-<name> to start from a shaped brief, or /refine refine-<name> to revise a draft"
 agent: product-manager
 ---
 
@@ -9,11 +9,17 @@ Follow these steps in order. Do not change any code. For anything bigger than on
 
 ## Step 1: New or revise
 
-- If the request above is empty, stop and reply: `Usage: /refine <title>, or /refine refine-<name> to revise a draft`.
+- If the request above is empty, stop and reply: `Usage: /refine <title>, /refine shape-<name>, or /refine refine-<name> to revise a draft`.
 - **Revise:** if the request is one word that starts with `refine-`, it is an existing folder.
   - The folder is `.work/<that word>/`. If it does not exist, list the `.work/refine-*` folders and stop.
   - If `refine.md` says `Status: APPROVED`, stop and say it is approved: publish it from Slate, or `/start <id> feature` once it is in ADO.
   - Read `refine.md` and `progress.md`. The engineer's notes under "Open questions", and any edits they made, are what to change. Keep everything else. Go to Step 2, and in Step 3 ask only about the open questions.
+- **From a shape:** if the request is one word that starts with `shape-`, it is a shaped idea (`/shape`).
+  - If `.work/<that word>/brief.md` does not exist, stop and reply: "No brief yet. Finish the interview first: `/shape <that word> brief`."
+  - The folder is `.work/refine-<the rest>/`. If it exists, revise it (above), reading the brief as well.
+  - Otherwise create it and copy `{{ENG_HOME}}/templates/progress.md` into it as `progress.md`, with `refine-<the rest>` as the id and the brief's title. Add the line `From: .work/<that word>/` under the header.
+  - Read `brief.md`, `understanding.md` and `answers.md` in the shape folder. The brief's title is the title; its Level line sets `Type:` (`Bug` for Bug, otherwise `User Story`).
+  - In Step 3, ask only what the brief leaves open under "Open questions". If nothing is open, ask nothing.
 - **New:** otherwise the request is the title, optionally followed by a description on the next lines.
   - Make a short name: the first 5 meaningful words of the title, lowercase, joined with `-`, at most 40 characters, filler words (a, an, the, to, of, for, and, add, new) dropped.
   - The folder is `.work/refine-<short name>/`. If it already exists, stop and ask: "`.work/refine-<short name>/` exists. Revise it (`/refine refine-<short name>`) or use another name?"

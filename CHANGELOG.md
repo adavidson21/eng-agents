@@ -4,6 +4,10 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 2.18.0 (2026-11-07)
+
+- Triage: `/triage <ADO id> <note>` keeps the note. Anything after the id (who asked, why it matters, a deadline) goes in `.work/triage-<id>/note.md`, dated, and counts as part of the request; a re-triage reads it too. Workshop's Slate sends the note you typed with `#1234 <note>` in quick capture (Slate 2.3.0).
+
 ## Core 2.17.0 (2026-11-06)
 
 - The static dashboard matches Workshop again: its theme block is Workshop's current Light and Dark (the old seven themes map to the closer of the two), and its fonts are Workshop's Figtree and DM Mono, inlined so the page still works offline with no web requests.

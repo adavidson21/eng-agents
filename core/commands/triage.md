@@ -1,5 +1,5 @@
 ---
-description: "Triage an enhancement request before any work starts: what it is, what it touches, what is missing, and who should build it. Usage: /triage <ADO id or the request in words>, or /triage triage-<name> to triage again"
+description: "Triage an enhancement request before any work starts: what it is, what it touches, what is missing, and who should build it. Usage: /triage <ADO id> [note], /triage <the request in words>, or /triage triage-<name> to triage again"
 agent: investigator
 ---
 
@@ -9,11 +9,11 @@ Follow these steps in order. Do not change any code, and never post anything to 
 
 ## Step 1: Pick the folder
 
-- If `$ARGUMENTS` is empty, stop and reply: `Usage: /triage <ADO id or the request in words>, or /triage triage-<name> to triage again`.
+- If `$ARGUMENTS` is empty, stop and reply: `Usage: /triage <ADO id> [note], /triage <the request in words>, or /triage triage-<name> to triage again`.
 - **Folder:** if `$ARGUMENTS` is one word that starts with `triage-`, it is an existing folder: `.work/$1/`. If it does not exist, list the `.work/triage-*` folders and stop. Otherwise this is a re-triage (below). If the folder name is `triage-<number>`, that number is the ADO item: do Step 2 with it.
-- **ADO item:** `$1` is a number. The folder is `.work/triage-$1/`.
+- **ADO item:** `$1` is a number. The folder is `.work/triage-$1/`. Anything after the number is a note from the engineer (who asked, why it matters, a deadline). Write it to `note.md` in the folder, with today's date on its first line (on a re-triage, add it under the notes already there), and treat it as part of the request: it can answer a question before you ask the requester.
 - **Words:** otherwise the whole of `$ARGUMENTS` is the request. Make a short name from it: the first 5 meaningful words, lowercase, joined with `-`, at most 40 characters, filler words (a, an, the, to, of, for, and, add, new) dropped. The folder is `.work/triage-<short name>/`.
-- **Again:** if the folder already has a `triage.md`, this is a re-triage. Read it, and `answers.md` in the folder if there is one (the requester's answers, pasted in by the engineer or by Slate). Keep what still holds and update the rest.
+- **Again:** if the folder already has a `triage.md`, this is a re-triage. Read it, `note.md` if there is one, and `answers.md` in the folder if there is one (the requester's answers, pasted in by the engineer or by Slate). Keep what still holds and update the rest.
 
 ## Step 2: Get the request (ADO item only)
 

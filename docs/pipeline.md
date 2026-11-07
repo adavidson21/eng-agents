@@ -254,9 +254,9 @@ The PAT needs **Code (Read)** and **Work Items (Read)**. The repo must be cloned
 
 ## Prepping a 1:1
 
-`/one-on-one <path to packet.md>` (agent: **people-prep**) drafts talking points for a 1:1 with someone on your team. You normally run it from Workshop's 1:1s app (**Draft talking points**), which writes the packet and reads the draft back.
+`/one-on-one <path to packet.md>` (agent: **people-prep**) drafts talking points for a 1:1 with someone on your team. You normally run it from the 1:1s tab in Workshop's Rapport (**Draft talking points**), which writes the packet and reads the draft back.
 
-1. The 1:1s app gathers what Docket, Receipts and Queue know about the person since your last 1:1 and saves it as `packet.md` in Workshop's own folder (`~/.workshop/data/_connectors/opencode/oneonones/<person>-<date>/`). It leaves out the person's name, and Receipts concerns unless you ask for them on that run. Nothing goes in the workspace or `.work`.
+1. Rapport gathers what Docket, its own receipts and notes, and Slate (work delegated to the person) know about the person since your last 1:1 and saves it as `packet.md` in Workshop's own folder (`~/.workshop/data/_connectors/opencode/oneonones/<person>-<date>/`). It leaves out the person's name, and concerns from receipts unless you ask for them on that run. Nothing goes in the workspace or `.work`.
 2. The agent reads only that file and writes `draft.md` next to it from `templates/one-on-one.md`: wins to recognize, follow-ups from last time, blockers to ask about, growth topics, and 3 questions to ask.
 
 **It drafts only.** It never rates, ranks or judges the person, and it never adds facts that are not in the packet. It can edit nothing but that `draft.md`, runs no shell commands except listing the packet's folder, and makes no web requests.
@@ -265,7 +265,7 @@ The PAT needs **Code (Read)** and **Work Items (Read)**. The repo must be cloned
 
 `/hub <path to request.md>` (agent: **hub**) handles one message typed into the hub on Workshop's Dispatch page. You normally never type it: Dispatch writes the request and reads the result.
 
-1. Dispatch saves your message, with today's date, your people directory (people and groups, with ids and @handles) and your Docket list and Queue area names, as `request.md` in Workshop's own folder (`~/.workshop/data/_connectors/opencode/hub/<id>/`). Nothing goes in the workspace or `.work`.
+1. Dispatch saves your message, with today's date, your people directory (people and groups, with ids and @handles) and your Docket list names and your team's ADO area paths (the `Team areas` section), as `request.md` in Workshop's own folder (`~/.workshop/data/_connectors/opencode/hub/<id>/`). Nothing goes in the workspace or `.work`.
 2. The agent writes `route.json` next to it: captures (Docket tasks, receipts, notes) that you accept in Dispatch, with people and groups named by their directory ids, a question, an app to open, a suggested action, or a clarifying question such as which product you mean.
 3. For a question it goes on to answer. It finds the product in the repo map (Products, "Also called", Glossary), reads that repo's guide, confirms in the code, and writes `answer.md`: the answer first, then Confirmed lines with file and line, Suspected lines, and a confidence. "Where was I" questions read `.work/runway.md` and the item's files.
 

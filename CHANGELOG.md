@@ -4,6 +4,10 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 2.19.0 (2026-11-08)
+
+- `/dashboard` and the static page's Dispatch link no longer name Workshop's website. They use the site Workshop's agent reports (`GET /api/health`, agent 1.5.0), else the first https site in Workshop's `config.json`, else Workshop on this computer. `"dispatch": { "url" }` in `config.json` and work mode work as before.
+
 ## Core 2.18.0 (2026-11-07)
 
 - Triage: `/triage <ADO id> <note>` keeps the note. Anything after the id (who asked, why it matters, a deadline) goes in `.work/triage-<id>/note.md`, dated, and counts as part of the request; a re-triage reads it too. Workshop's Slate sends the note you typed with `#1234 <note>` in quick capture (Slate 2.3.0).

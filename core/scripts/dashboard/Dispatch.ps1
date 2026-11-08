@@ -1,7 +1,8 @@
 # Where Dispatch is. Dispatch (the Agents app in adavidson21/workshop) is the live view of .work
 # and the opencode agents; it replaced the live dashboard that used to run from this folder.
 # Dot-sourced by Open-Dispatch.ps1 (/dashboard) and New-Dashboard.ps1 (the static page's link).
-# Reads two files and makes no network calls.
+# Reads two files and makes no network calls. Names no website: Workshop says where it lives
+# (its health answer, or the sites in its config.json).
 
 function Get-WorkshopConfig {
     # Workshop on this computer: <home>/config.json, where <home> is WORKSHOP_HOME or ~/.workshop
@@ -24,7 +25,13 @@ function Get-WorkshopConfig {
         $oc = $cfg.connectors.opencode
         $opencodeOn = [bool]($oc -and $oc.PSObject.Properties["enabled"] -and $oc.enabled -eq $true)
     }
-    return [pscustomobject]@{ Found = [bool]$cfg; File = $file; Port = $port; WorkMode = $workMode; OpencodeOn = $opencodeOn }
+    # Workshop's own site: the first https origin in allowedOrigins, which a new install fills from Workshop's
+    # shared/site.js with Workshop's site first (Workshop docs/config.md). Null when there is none.
+    $site = $null
+    if ($cfg -and $cfg.PSObject.Properties["allowedOrigins"] -and $cfg.allowedOrigins) {
+        $site = @($cfg.allowedOrigins) | Where-Object { "$_" -match '^https://[^/]+$' } | Select-Object -First 1
+    }
+    return [pscustomobject]@{ Found = [bool]$cfg; File = $file; Port = $port; WorkMode = $workMode; OpencodeOn = $opencodeOn; Site = $site }
 }
 
 function Get-DispatchUrl {
@@ -32,8 +39,10 @@ function Get-DispatchUrl {
     # Workshop's address, in order:
     #   1. "dispatch": { "url": "<Workshop's address>" } in the eng-agents config.json
     #   2. Workshop on this computer (http://127.0.0.1:<port>/) in work mode, where no website can reach it
-    #   3. https://workshop.alexisdavidson.org
-    param($Workshop, [string]$ConfigPath, [string]$Id)
+    #   3. -Site: the site Workshop's agent names in GET /api/health (agent 1.5.0; Open-Dispatch.ps1 passes it)
+    #   4. the first https site in Workshop's config.json (allowedOrigins)
+    #   5. Workshop on this computer (http://127.0.0.1:<port>/), which opens its Settings
+    param($Workshop, [string]$ConfigPath, [string]$Id, [string]$Site)
     $base = $null
     if ($ConfigPath -and (Test-Path -LiteralPath $ConfigPath)) {
         try {
@@ -43,7 +52,11 @@ function Get-DispatchUrl {
         catch { $base = $null }
     }
     if (-not $base) {
-        $base = if ($Workshop -and $Workshop.WorkMode) { "http://127.0.0.1:$($Workshop.Port)/" } else { "https://workshop.alexisdavidson.org/" }
+        $port = if ($Workshop -and $Workshop.Port) { $Workshop.Port } else { 4380 }
+        $base = if ($Workshop -and $Workshop.WorkMode) { "http://127.0.0.1:$port/" }
+            elseif ($Site -and $Site -match '^https://[^/]+/?$') { $Site }
+            elseif ($Workshop -and $Workshop.Site) { "$($Workshop.Site)" }
+            else { "http://127.0.0.1:$port/" }
     }
     $url = $base.Split("#")[0].TrimEnd("/") + "/#/agents"
     if ($Id) { $url += "/" + [uri]::EscapeDataString($Id) }

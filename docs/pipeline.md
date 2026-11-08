@@ -316,7 +316,7 @@ Dispatch, the Agents app in [Workshop](https://github.com/adavidson21/workshop),
 - `/dashboard static` builds the [static page](#static-page) instead. It needs only PowerShell and git, for terminal-only use.
 - `/status [id]` answers the same question in the terminal.
 
-Where `/dashboard` opens Dispatch: Workshop's site (`https://workshop.alexisdavidson.org`), or Workshop on this computer (`http://127.0.0.1:<port>/`, port from Workshop's `config.json`) when Workshop is in work mode. To use another address, set Workshop's address in `config.json`:
+Where `/dashboard` opens Dispatch: the site Workshop names itself (its `GET /api/health` answer since agent 1.5.0, else the first https site in its `config.json`), or Workshop on this computer (`http://127.0.0.1:<port>/`, port from Workshop's `config.json`) when Workshop is in work mode. Tandem names no website itself. To use another address, set Workshop's address in `config.json`:
 
 ```json
 {

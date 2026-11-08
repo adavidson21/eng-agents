@@ -12,7 +12,8 @@
       2. Not running: says how to start Workshop and exits with code 2. Nothing is opened.
       3. Running: opens Dispatch, at the item when -Id is given. The address comes from
          Dispatch.ps1: "dispatch": { "url": ... } in config.json if set, else Workshop on
-         this computer in work mode, else https://workshop.alexisdavidson.org.
+         this computer in work mode, else the site Workshop names in its health answer
+         (or in its config.json).
 
     The first output line says what happened. The last line is always the address.
 
@@ -43,14 +44,16 @@ if ($Id -and $Id -notmatch '^[A-Za-z0-9][A-Za-z0-9._-]*$') {
 }
 
 $ws = Get-WorkshopConfig
-$url = Get-DispatchUrl -Workshop $ws -ConfigPath $ConfigPath -Id $Id
 
 $running = $false
+$site = $null
 try {
     $health = Invoke-RestMethod -Uri "http://127.0.0.1:$($ws.Port)/api/health" -TimeoutSec 3
     $running = ($health -and $health.PSObject.Properties["app"] -and $health.app -eq "workshop-agent")
+    if ($running -and $health.PSObject.Properties["site"]) { $site = "$($health.site)" }
 }
 catch { $running = $false }
+$url = Get-DispatchUrl -Workshop $ws -ConfigPath $ConfigPath -Id $Id -Site $site
 
 if (-not $running) {
     if ($ws.Found) {

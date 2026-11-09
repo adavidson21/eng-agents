@@ -4,6 +4,10 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 2.19.1 (2026-11-09)
+
+- Fixes `/pr-review` failing with "Agent not found: pr-reviewer" even after restarting opencode. pr-reviewer's own `git push*` rules repeated keys from the shared guard rules, and opencode skips an agent whose frontmatter repeats a key. `install.ps1` now leaves out a guard rule when the agent writes the same key itself (the agent's rule wins, as in `opencode.json`). A new check installs Core and fails on any repeated frontmatter key.
+
 ## Core 2.19.0 (2026-11-08)
 
 - `/dashboard` and the static page's Dispatch link no longer name Workshop's website. They use the site Workshop's agent reports (`GET /api/health`, agent 1.5.0), else the first https site in Workshop's `config.json`, else Workshop on this computer. `"dispatch": { "url" }` in `config.json` and work mode work as before.

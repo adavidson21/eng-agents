@@ -20,3 +20,38 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: ./core/scripts/notes/Test-ProductNotes.ps1
+  agent-frontmatter:
+    # opencode skips an agent whose frontmatter repeats a key, and Dispatch then says "Agent not found".
+    # Install into a scratch folder and check every installed agent for repeated keys.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, shell: pwsh }
+          - { os: windows-latest, shell: powershell }
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          $target = Join-Path ([IO.Path]::GetTempPath()) "oc-check"
+          ./install.ps1 -Target $target -CoreOnly
+          $bad = 0
+          foreach ($f in Get-ChildItem (Join-Path $target "agents") -Filter *.md) {
+            $fm = ((Get-Content $f.FullName -Raw) -split "(?m)^---\s*$")[1]
+            $seen = @{}; $path = @()
+            foreach ($line in $fm -split "`r?`n") {
+              $m = [regex]::Match($line, '^(\s*)("(?:[^"\\]|\\.)*"|[A-Za-z_][\w-]*)\s*:')
+              if (-not $m.Success) { continue }
+              $depth = $m.Groups[1].Value.Length
+              $path = @($path | Where-Object { $_.d -lt $depth })
+              $full = (($path | ForEach-Object { $_.k }) + $m.Groups[2].Value) -join " > "
+              if ($seen.ContainsKey($full)) { Write-Host "::error::$($f.Name) repeats $full"; $bad++ }
+              $seen[$full] = $true
+              $path += [pscustomobject]@{ d = $depth; k = $m.Groups[2].Value }
+            }
+          }
+          if ($bad) { exit 1 }
+          Write-Host "Agent frontmatter: no repeated keys."

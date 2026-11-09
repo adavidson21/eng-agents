@@ -103,8 +103,15 @@ function Get-Tier {
 
 function Expand-BashTiersText {
     # YAML frontmatter: a line '    "{{BASH:read}}": include' becomes one line per rule, same indent.
+    # A rule the file writes itself at that indent wins: the tier's line for the same key is left out, because
+    # opencode skips an agent whose frontmatter repeats a key ("Agent not found"), as pr-reviewer's git push did.
     param([string]$Text, [string]$Where)
     $lines = $Text -split "`r?`n"
+    $own = @{}
+    foreach ($line in $lines) {
+        $k = [regex]::Match($line, '^(\s*)"((?:[^"\\]|\\.)*)"\s*:')
+        if ($k.Success -and $k.Groups[2].Value -notmatch '^\{\{BASH:') { $own["$($k.Groups[1].Value)|$($k.Groups[2].Value)"] = $true }
+    }
     $out = New-Object System.Collections.Generic.List[string]
     foreach ($line in $lines) {
         $m = [regex]::Match($line, '^(\s*)"\{\{BASH:([A-Za-z0-9_-]+)\}\}"\s*:.*$')
@@ -113,6 +120,7 @@ function Expand-BashTiersText {
         $tier = Get-Tier $m.Groups[2].Value $Where
         foreach ($k in @($tier.Keys)) {
             $key = $k.Replace("\", "\\").Replace('"', '\"')
+            if ($own.ContainsKey("$indent|$key")) { continue }
             $out.Add("$indent""$key"": $($tier[$k])")
         }
     }

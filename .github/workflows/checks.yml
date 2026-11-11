@@ -20,6 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: ./core/scripts/notes/Test-ProductNotes.ps1
+      - run: ./core/scripts/ado/Test-ExportBacklog.ps1
   agent-frontmatter:
     # opencode skips an agent whose frontmatter repeats a key, and Dispatch then says "Agent not found".
     # Install into a scratch folder and check every installed agent for repeated keys.

@@ -4,6 +4,12 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 2.20.0 (2026-11-11)
+
+- Lighter features and stories, so engineering decides the implementation. A feature's description is two or three sentences of what and why, and each feature gets a `#### Release note`: one or two business-friendly sentences (at most 255 characters). Stories keep the "As a ..." line with at most two sentences of context and 2 to 5 outcome-only Gherkin scenarios (no button labels, layouts, field names or data shapes unless asked). `/scope`, `/slice`, `/refine`, product-manager and milestone-architect follow this.
+- `/backlog`: a story's code mapping is now "Notes for the builder" and stays local (only `local` items include it); ADO and the CSV get the story without it or the "Part of" block. Release notes go to their own field: set `releaseNoteField` (reference name, for `ado`; a connection may override it) and `releaseNoteColumn` (display name, for `csv`) in `config.json`. When unset they are left out and the output says so. `Export-Backlog.ps1 -Check` now requires a feature description (at most 600 characters) and a release note, and still reads older "Work item" headings. `/spec` reads a story's builder notes from its scope through `published.md`, as hints.
+- New self-test `core/scripts/ado/Test-ExportBacklog.ps1`, run in CI.
+
 ## Core 2.19.1 (2026-11-09)
 
 - Fixes `/pr-review` failing with "Agent not found: pr-reviewer" even after restarting opencode. pr-reviewer's own `git push*` rules repeated keys from the shared guard rules, and opencode skips an agent whose frontmatter repeats a key. `install.ps1` now leaves out a guard rule when the agent writes the same key itself (the agent's rule wins, as in `opencode.json`). A new check installs Core and fails on any repeated frontmatter key.

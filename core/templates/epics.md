@@ -21,7 +21,7 @@ Epic: <version name, for example "Orders v2.1", or "#1234 Orders v2.1">
 
 ## MVP features
 
-<!-- A feature is the smallest piece a user can use on its own. Every MVP feature has at least one story in stories.md. -->
+<!-- A feature is the smallest piece a user can use on its own. Every MVP feature has at least one story in stories.md. Keep each row to a plain-language line: no design. -->
 
 | # | Feature | When it ships, the user can | Stories |
 |---|---|---|---|

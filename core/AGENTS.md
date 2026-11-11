@@ -89,7 +89,7 @@ Work that is not defined yet is scoped first, in `.work/scope-<name>/`, before i
 |---|---|
 | `epics.md` | The epic (a product version), its MVP features, and what waits. Written by `/scope`. |
 | `stories.md` | User stories with Gherkin acceptance criteria. Has a `Status:` line; approving it approves `epics.md` too. |
-| `milestones.md` | Features and stories in build order, each story mapped to real files. Has a `Status:` line. Written by `/slice`. |
+| `milestones.md` | Features (short description and release note) and stories in build order, each story with local notes for the builder. Has a `Status:` line. Written by `/slice`. |
 | `backlog.csv`, `published.md` | Written by `/backlog`: the ADO import file, or the ADO or local ids that were created. |
 
 A first-pass review of someone else's pull request lives in `.work/pr-<id>/` (written by `/pr-review`). It is not pipeline state and has no gates:

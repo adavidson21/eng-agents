@@ -73,6 +73,8 @@ Add one entry under `connections` for each project collection (or server) you ge
 | `apiVersion` | Start with `6.0`. Use `5.1` if requests fail with a version error. Can be set per connection. |
 | `auth` | `pat`, or `windows` to use your Windows login instead. Can be set per connection. |
 | `patEnv` | Environment variable holding the PAT. Default `ADO_PAT`. Set it per connection if one PAT does not work for every collection. |
+| `releaseNoteField` | Reference name of the Feature field `/backlog ado` writes release notes to, for example `Custom.ReleaseNotes` (Process settings > Feature > the field's details). Can be set per connection. Optional: without it release notes stay in `milestones.md`. |
+| `releaseNoteColumn` | Display name of that field, for example `Release Notes`. `/backlog` (CSV) uses it as the import column. Optional. |
 | `default` | Connection to use when nothing else decides. Optional. |
 | `paths` | Folder pattern to connection. `*` matches anything, including `\`. The longest matching pattern wins. Optional. |
 

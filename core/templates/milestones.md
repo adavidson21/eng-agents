@@ -12,17 +12,28 @@ Epic: <copy the Epic line from epics.md>
 ## Feature 1: <title>
 
 <!-- Features are in build order. Each one is a vertical slice: when its stories are done, a user can use it and you can verify it end to end. -->
+<!-- The description is two or three sentences: what the user can do when it ships, and why it matters. No design, screens, fields, or code. It is published to ADO. -->
 
-- Goal: <what the user can do when this ships>
-- Verify: <how to see it working end to end>
+<Two or three sentences.>
+
+#### Release note
+
+<!-- One or two business-friendly sentences for customers: what they can do now. No jargon, ids, or code. At most 255 characters. Published to the release note field in ADO. -->
+
+<One or two sentences.>
 
 ### Story 1.1: <title>
 
 <!-- Stories are in build order. Each story is one /start item: at most 2 repos and about 8 tasks. -->
+<!-- Say what and why, not how. Engineering decides the implementation. -->
 
 As a <role>, I want <capability>, so that <benefit>.
 
+<Optional: one or two sentences of context.>
+
 #### Acceptance criteria
+
+<!-- 2 to 5 scenarios: the main outcome and the edge cases a user would notice. Outcomes only: no button labels, layouts, field names, or data shapes unless the requester asked for them. -->
 
 ```gherkin
 Scenario: <name>
@@ -31,12 +42,13 @@ Scenario: <name>
   Then <result>
 ```
 
-#### Work item
+#### Notes for the builder
+
+<!-- Local only: never published to ADO. Pointers, not decisions; the engineer may build it another way. -->
 
 - Repos: `<repo>`
-- Changes: `<repo>/path/to/File.cs` (<what changes>)
-- Pattern to follow: `<repo>/path/to/Similar.cs`
-- Data: <tables, columns, or migrations, or "none">
+- Where to look: `<repo>/path/to/File.cs` (<why>)
+- Similar existing code: `<repo>/path/to/Similar.cs`
 - Depends on: <Story n.m, or "none">
 
 ## Changes from stories.md

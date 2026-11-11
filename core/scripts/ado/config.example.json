@@ -1,6 +1,8 @@
 {
   "apiVersion": "6.0",
   "auth": "pat",
+  "releaseNoteField": "Custom.ReleaseNotes",
+  "releaseNoteColumn": "Release Notes",
   "default": "main",
   "connections": {
     "main": {

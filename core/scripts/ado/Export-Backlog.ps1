@@ -23,6 +23,15 @@
     picks the connection named with -From, else "default", else the only one. The PAT is
     never written to disk.
 
+    What goes to ADO stays light: a feature's description and its release note, and a
+    story's "As a ..." line, context, and acceptance criteria. A story's "Notes for the
+    builder" (older files: "Work item") stay local; only -Local items include them.
+
+    Release notes go to their own field. Set it in config.json: "releaseNoteField" (the
+    field's reference name, for -Push; a connection may override it) and
+    "releaseNoteColumn" (its display name, for the -Csv import). When it is not set, the
+    release notes are left out and the output says so.
+
     The LAST line of output is always the file written (backlog.csv or published.md),
     except for -Check and -DryRun.
 
@@ -119,7 +128,7 @@ function Read-Milestones {
         Errors        = $errors
     }
 
-    $section = "top"      # top, epic, feature, story, ac, work, ignore
+    $section = "top"      # top, epic, feature, release, story, ac, work, ignore
     $feature = $null
     $story = $null
     $inFence = $false
@@ -142,7 +151,7 @@ function Read-Milestones {
 
         if ($isHeading) {
             if ($line -match '^##\s+Feature\s+(\d+)\s*:\s*(.+?)\s*$') {
-                $feature = [ordered]@{ Num = [int]$Matches[1]; Title = $Matches[2]; Lines = (New-Object System.Collections.ArrayList); Stories = (New-Object System.Collections.ArrayList) }
+                $feature = [ordered]@{ Num = [int]$Matches[1]; Title = $Matches[2]; Lines = (New-Object System.Collections.ArrayList); Release = (New-Object System.Collections.ArrayList); HasRelease = $false; Stories = (New-Object System.Collections.ArrayList) }
                 [void]$result.Features.Add($feature)
                 $story = $null
                 $section = "feature"
@@ -152,13 +161,14 @@ function Read-Milestones {
                 $fn = [int]$Matches[1]; $sn = [int]$Matches[2]; $title = $Matches[3]
                 if (-not $feature) { [void]$errors.Add("Story $fn.$sn is not under a '## Feature <n>: <title>' heading."); $section = "ignore"; continue }
                 if ($fn -ne $feature.Num) { [void]$errors.Add("Story $fn.$sn is under Feature $($feature.Num). Number it $($feature.Num).<n>.") }
-                $story = [ordered]@{ Ref = "$fn.$sn"; Sub = $sn; Title = $title; Lines = (New-Object System.Collections.ArrayList); Ac = (New-Object System.Collections.ArrayList); Work = (New-Object System.Collections.ArrayList); HasAc = $false; HasWork = $false }
+                $story = [ordered]@{ Ref = "$fn.$sn"; Sub = $sn; Title = $title; Lines = (New-Object System.Collections.ArrayList); Ac = (New-Object System.Collections.ArrayList); Work = (New-Object System.Collections.ArrayList); HasAc = $false }
                 [void]$feature.Stories.Add($story)
                 $section = "story"
                 continue
             }
+            if ($line -match '^####\s+Release notes?\s*$' -and $feature -and -not $story) { $feature.HasRelease = $true; $section = "release"; continue }
             if ($line -match '^####\s+Acceptance criteria\s*$' -and $story) { $story.HasAc = $true; $section = "ac"; continue }
-            if ($line -match '^####\s+Work item\s*$' -and $story) { $story.HasWork = $true; $section = "work"; continue }
+            if ($line -match '^####\s+(Notes for the builder|Work item)\s*$' -and $story) { $section = "work"; continue }
             if ($line -match '^####\s' -and $story) {
                 # Any other level-4 heading stays part of the story description.
                 [void]$story.Lines.Add($line); $section = "story"; continue
@@ -177,6 +187,7 @@ function Read-Milestones {
         switch ($section) {
             "epic"    { [void]$result.EpicLines.Add($line) }
             "feature" { [void]$feature.Lines.Add($line) }
+            "release" { [void]$feature.Release.Add($line) }
             "story"   { [void]$story.Lines.Add($line) }
             "ac"      { [void]$story.Ac.Add($line) }
             "work"    { [void]$story.Work.Add($line) }
@@ -195,19 +206,28 @@ function Read-Milestones {
         $expectF = $f.Num + 1
         if ($f.Title -match '^<.*>$') { [void]$errors.Add("Feature $($f.Num) still has the template title.") }
         if ($f.Stories.Count -eq 0) { [void]$errors.Add("Feature $($f.Num) has no stories. Every feature needs at least one '### Story $($f.Num).<n>: <title>'.") }
+        $fdesc = Join-Block $f.Lines
+        if (-not $fdesc) { [void]$errors.Add("Feature $($f.Num) has no description. Write two or three sentences under its heading.") }
+        elseif ($fdesc -match '(?m)^\s*<[^>]+>\s*$') { [void]$errors.Add("Feature $($f.Num) description still has a template placeholder.") }
+        elseif ($fdesc.Length -gt 600) { [void]$errors.Add("Feature $($f.Num) description is $($fdesc.Length) characters. Keep it to two or three sentences (at most 600 characters); design belongs to engineering.") }
+        $rn = Join-Block $f.Release
+        if (-not $f.HasRelease -or -not $rn) { [void]$errors.Add("Feature $($f.Num) has no '#### Release note' section. Write one or two business-friendly sentences.") }
+        elseif ($rn -match '(?m)^\s*<[^>]+>\s*$') { [void]$errors.Add("Feature $($f.Num) release note still has a template placeholder.") }
+        elseif ($rn.Length -gt 255) { [void]$errors.Add("Feature $($f.Num) release note is $($rn.Length) characters. Keep it to one or two sentences (at most 255 characters).") }
         $expectS = 1
         foreach ($s in $f.Stories) {
             if ($s.Sub -ne $expectS) { [void]$errors.Add("Story $($s.Ref) is out of order. Expected $($f.Num).$expectS.") }
             $expectS = $s.Sub + 1
             if ($s.Title -match '^<.*>$') { [void]$errors.Add("Story $($s.Ref) still has the template title.") }
-            if (-not (Join-Block $s.Lines)) { [void]$errors.Add("Story $($s.Ref) has no 'As a ..., I want ..., so that ...' line.") }
+            $sdesc = Join-Block $s.Lines
+            if (-not $sdesc) { [void]$errors.Add("Story $($s.Ref) has no 'As a ..., I want ..., so that ...' line.") }
+            elseif ($sdesc -match '(?m)^\s*<[^>]+>\s*$') { [void]$errors.Add("Story $($s.Ref) description still has a template placeholder.") }
             $ac = Join-Block $s.Ac
             if (-not $s.HasAc -or -not $ac) { [void]$errors.Add("Story $($s.Ref) has no '#### Acceptance criteria' section.") }
             elseif (($ac -notmatch '(?mi)^\s*Given\b') -or ($ac -notmatch '(?mi)^\s*When\b') -or ($ac -notmatch '(?mi)^\s*Then\b')) {
                 [void]$errors.Add("Story $($s.Ref) acceptance criteria need Gherkin lines starting with Given, When, and Then.")
             }
             if ($ac -match '<context>|<action>|<result>') { [void]$errors.Add("Story $($s.Ref) acceptance criteria still have template placeholders.") }
-            if (-not $s.HasWork -or -not (Join-Block $s.Work)) { [void]$errors.Add("Story $($s.Ref) has no '#### Work item' section.") }
         }
     }
     return $result
@@ -274,16 +294,20 @@ function Get-Items {
     param($Parsed, [string]$ScopeName)
     $items = New-Object System.Collections.ArrayList
     $epicDesc = Join-Block $Parsed.EpicLines
-    [void]$items.Add([ordered]@{ Ref = "Epic"; Kind = "Epic"; Level = 1; Title = $Parsed.EpicTitle; Parent = $null; ExistingId = $Parsed.EpicId; Description = $epicDesc; Acceptance = ""; Markdown = $epicDesc })
+    [void]$items.Add([ordered]@{ Ref = "Epic"; Kind = "Epic"; Level = 1; Title = $Parsed.EpicTitle; Parent = $null; ExistingId = $Parsed.EpicId; Description = $epicDesc; ReleaseNote = ""; Acceptance = ""; Markdown = $epicDesc })
     foreach ($f in $Parsed.Features) {
         $fref = "Feature $($f.Num)"
         $fdesc = Join-Block $f.Lines
-        [void]$items.Add([ordered]@{ Ref = $fref; Kind = "Feature"; Level = 2; Title = $f.Title; Parent = "Epic"; ExistingId = $null; Description = $fdesc; Acceptance = ""; Markdown = $fdesc })
+        $rn = ((@($f.Release) | ForEach-Object { $_.Trim() } | Where-Object { $_ }) -join " ")
+        [void]$items.Add([ordered]@{ Ref = $fref; Kind = "Feature"; Level = 2; Title = $f.Title; Parent = "Epic"; ExistingId = $null; Description = $fdesc; ReleaseNote = $rn; Acceptance = ""; Markdown = $fdesc })
         foreach ($s in $f.Stories) {
+            # ADO gets only the story itself. Builder notes and the scope reference stay local.
             $story = Join-Block $s.Lines
             $work = Join-Block $s.Work
-            $desc = "$story`n`n#### Work item`n`n$work`n`n#### Part of`n`n- Epic: $($Parsed.EpicTitle)`n- Feature $($f.Num): $($f.Title)`n- Scope: ``$ScopeName``, Story $($s.Ref)"
-            [void]$items.Add([ordered]@{ Ref = "Story $($s.Ref)"; Kind = "Story"; Level = 3; Title = $s.Title; Parent = $fref; ExistingId = $null; Description = $desc; Acceptance = (Join-Block $s.Ac); Markdown = $desc })
+            $local = $story
+            if ($work) { $local += "`n`n#### Notes for the builder`n`n$work" }
+            $local += "`n`n#### Part of`n`n- Epic: $($Parsed.EpicTitle)`n- Feature $($f.Num): $($f.Title)`n- Scope: ``$ScopeName``, Story $($s.Ref)"
+            [void]$items.Add([ordered]@{ Ref = "Story $($s.Ref)"; Kind = "Story"; Level = 3; Title = $s.Title; Parent = $fref; ExistingId = $null; Description = $story; ReleaseNote = ""; Acceptance = (Join-Block $s.Ac); Markdown = $local })
         }
     }
     return $items
@@ -362,8 +386,20 @@ if ($parsed.Status -ne "APPROVED") {
 $items = Get-Items $parsed $scopeName
 $typeName = @{ Epic = "Epic"; Feature = "Feature"; Story = $StoryType }
 
+# Release notes go to their own ADO field, named in config.json (optional for -Csv and -Local).
+$config = $null
+if (Test-Path $ConfigPath) {
+    try { $config = Get-Content $ConfigPath -Raw | ConvertFrom-Json }
+    catch { if (-not $Push) { Write-Output "NOTE: could not read $ConfigPath, so no release note field is known. $($_.Exception.Message)" } }
+}
+$hasReleaseNotes = @($items | Where-Object { $_.ReleaseNote }).Count -gt 0
+function Write-ReleaseNoteSkipped([string]$Key) {
+    if ($hasReleaseNotes) { Write-Output "NOTE: feature release notes were left out because ""$Key"" is not set in $ConfigPath. They are still in milestones.md." }
+}
+
 # ------------------------------------------------------------------ CSV
 if ($Csv) {
+    $rnColumn = [string](Get-Prop $config "releaseNoteColumn")
     $skipEpic = [bool]$parsed.EpicId
     $rows = foreach ($it in $items) {
         if ($it.Kind -eq "Epic" -and $skipEpic) { continue }
@@ -373,6 +409,7 @@ if ($Csv) {
         for ($i = 1; $i -le $maxLevel; $i++) { $row["Title $i"] = $(if ($i -eq $level) { $it.Title } else { "" }) }
         $row["Description"] = ConvertTo-Html $it.Description
         $row["Acceptance Criteria"] = ConvertTo-Html $it.Acceptance
+        if ($rnColumn) { $row[$rnColumn] = $it.ReleaseNote }
         $row["Area Path"] = $AreaPath
         $row["Iteration Path"] = $IterationPath
         $row["Tags"] = $scopeName
@@ -383,6 +420,7 @@ if ($Csv) {
     Write-Utf8 $csvPath ($csvText + "`r`n")
     Write-Output "Wrote $(@($rows).Count) row(s): $summary"
     if ($skipEpic) { Write-Output "Epic #$($parsed.EpicId) already exists, so it is not in the file. Link the imported features to it in ADO." }
+    if (-not $rnColumn) { Write-ReleaseNoteSkipped "releaseNoteColumn" }
     Write-Output $csvPath
     exit 0
 }
@@ -417,7 +455,7 @@ if ($Local) {
 
 # ------------------------------------------------------------------ Push
 if (-not (Test-Path $ConfigPath)) { throw "Config not found at $ConfigPath. Set up ADO (see config.example.json), or use -Csv." }
-$config = Get-Content $ConfigPath -Raw | ConvertFrom-Json
+if (-not $config) { $config = Get-Content $ConfigPath -Raw | ConvertFrom-Json }
 
 $connections = [ordered]@{}
 $connSource = Get-Prop $config "connections"
@@ -445,6 +483,7 @@ $apiVersion = $(if (Get-Prop $c "apiVersion") { Get-Prop $c "apiVersion" } elsei
 $auth = $(if (Get-Prop $c "auth") { Get-Prop $c "auth" } elseif (Get-Prop $config "auth") { Get-Prop $config "auth" } else { "pat" })
 $patEnv = $(if (Get-Prop $c "patEnv") { Get-Prop $c "patEnv" } elseif (Get-Prop $config "patEnv") { Get-Prop $config "patEnv" } else { "ADO_PAT" })
 if (-not $Project) { $Project = Get-Prop $c "project" }
+$rnField = $(if (Get-Prop $c "releaseNoteField") { [string](Get-Prop $c "releaseNoteField") } else { [string](Get-Prop $config "releaseNoteField") })
 if (-not $Project) { throw "No ADO project. Add 'project' to connection '$connName' in config.json, or pass -Project." }
 
 $base = "$($serverUrl.TrimEnd('/'))/$collection"
@@ -457,6 +496,7 @@ if ($DryRun) {
     Write-Output "Project    : $Project"
     Write-Output "Area       : $(if ($AreaPath) { $AreaPath } else { '(project default)' })"
     Write-Output "Iteration  : $(if ($IterationPath) { $IterationPath } else { '(project default)' })"
+    Write-Output "Release    : $(if ($rnField) { $rnField } else { '(releaseNoteField not set: release notes left out)' })"
     $n = 0
     foreach ($it in $items) {
         $indent = "  " * ($it.Level - 1)
@@ -496,6 +536,7 @@ foreach ($it in $items) {
     [void]$ops.Add(@{ op = "add"; path = "/fields/System.Title"; value = $it.Title })
     if ($it.Description) { [void]$ops.Add(@{ op = "add"; path = "/fields/System.Description"; value = (ConvertTo-Html $it.Description) }) }
     if ($it.Acceptance) { [void]$ops.Add(@{ op = "add"; path = "/fields/Microsoft.VSTS.Common.AcceptanceCriteria"; value = (ConvertTo-Html $it.Acceptance) }) }
+    if ($it.ReleaseNote -and $rnField) { [void]$ops.Add(@{ op = "add"; path = "/fields/$rnField"; value = $it.ReleaseNote }) }
     if ($AreaPath) { [void]$ops.Add(@{ op = "add"; path = "/fields/System.AreaPath"; value = $AreaPath }) }
     if ($IterationPath) { [void]$ops.Add(@{ op = "add"; path = "/fields/System.IterationPath"; value = $IterationPath }) }
     [void]$ops.Add(@{ op = "add"; path = "/fields/System.Tags"; value = $scopeName })
@@ -523,4 +564,5 @@ foreach ($it in $items) {
 }
 
 Write-Output "Created $made item(s) in ADO: $summary"
+if (-not $rnField) { Write-ReleaseNoteSkipped "releaseNoteField" }
 Write-Output $publishedPath

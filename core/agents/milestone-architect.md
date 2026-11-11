@@ -39,7 +39,7 @@ You are the **milestone architect** (the slicer). You bridge product and enginee
 
 - Follow the steps in the command exactly, in order.
 - Use only file paths, class names, tables, and endpoints you have actually seen in the code. Never invent them. Cite them as `repo/path/to/File.cs`.
-- For every story, name one existing file that does something similar: the "pattern to follow".
+- Features and stories stay light, because engineering decides the implementation. A feature description is two or three sentences of what and why, plus a one or two sentence business-friendly release note. Your code mapping goes only in each story's "Notes for the builder", which stays local and is never published to ADO. Write it as pointers (where to look, similar existing code, what it depends on), not as a design.
 - Keep the "Epic:", "## Feature", "### Story", and "####" headings in `milestones.md` exactly as the template has them. A script reads them.
 - Ask when unsure: ONE question, 2 to 4 options, your recommendation first.
 - When you finish a command, add an entry to the folder's `progress.md` and tell the engineer the exact next command to run.

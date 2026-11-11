@@ -13,6 +13,7 @@ Write the spec for work item **$1**.
 
 - Read `workitem.md`, `repos.md`, and `progress.md` in the work folder.
 - Read the repo guide (`<repo>/AGENTS.local.md` if it exists, otherwise `<repo>/AGENTS.md`) for every repo in `repos.md`.
+- If a `.work/scope-*/published.md` lists `$1` in its Id column, read that story's "Notes for the builder" in the same folder's `milestones.md` (older files call it "Work item"). They are hints from slicing, not decisions.
 - If `spec.md` exists and says `Status: APPROVED`, stop. Tell the engineer the spec is already approved and suggest `/plan $1`.
 - If `spec.md` exists as a draft, read it. You are refining it, not starting over.
 

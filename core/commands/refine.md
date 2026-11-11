@@ -41,8 +41,8 @@ Follow these steps in order. Do not change any code. For anything bigger than on
 
 - Start from `{{ENG_HOME}}/templates/refine.md`. Write it to the folder as `refine.md` (when revising, update it).
 - `Type:` is `Bug` if the request is about something broken, otherwise `User Story`. `Parent:` is `#<id>` when one was named, otherwise `none`.
-- Description: the story sentence, then two to four sentences of context in the user's language. No class names, tables, or file paths.
-- Acceptance criteria: one Gherkin scenario per rule or edge case, each one a tester could run by hand.
+- Description: the story sentence, then one or two sentences of context in the user's language. Say what and why, not how. No class names, tables, or file paths.
+- Acceptance criteria: 2 to 5 Gherkin scenarios, the main outcome and the edge cases a user would notice, each one a tester could run by hand. Outcomes only: no button labels, layouts, field names, or data shapes unless the requester asked for them.
 - Notes for the builder: the file paths you found and what to watch. This section is for the engineer and is not published.
 - Leave `Status: DRAFT`. Only `/approve` changes it.
 

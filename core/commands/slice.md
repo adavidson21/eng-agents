@@ -48,8 +48,10 @@ Write down real paths only. If you cannot find where a story belongs, ask ONE qu
 - Start from `{{ENG_HOME}}/templates/milestones.md`. Write it to the folder as `milestones.md`.
 - Keep `Status: DRAFT`. Never set it to APPROVED.
 - Copy the `Epic:` line and the epic sentences from `epics.md`.
-- Copy each story's "As a ..." line and Gherkin scenarios from `stories.md`, changed only as recorded in "Changes from stories.md".
-- Fill each story's "Work item" section from Step 3. It must be concrete enough for the planner to write a spec and plan from it: name the files, classes, and pattern to follow.
+- Under each feature heading write its description: two or three sentences on what the user can do when it ships and why it matters. No design, screens, fields, or code.
+- Under `#### Release note` write one or two business-friendly sentences for customers (at most 255 characters): what they can do now, with no jargon, ids, or code.
+- Copy each story's "As a ..." line, its context, and its Gherkin scenarios from `stories.md`, changed only as recorded in "Changes from stories.md". Do not add design detail to them.
+- Fill each story's "Notes for the builder" from Step 3: where to look, similar existing code, and what it depends on. These are pointers for the planner, not a design, and they are never published to ADO.
 - Fill "Coverage" so every scenario in `stories.md` maps to a story here.
 
 ## Step 7: Check the format

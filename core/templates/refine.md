@@ -10,9 +10,11 @@ Parent: <#id or none>
 
 As a <role>, I want <capability>, so that <benefit>.
 
-<Two to four sentences of context: what exists today and what changes. User's language, no class names or file paths.>
+<One or two sentences of context: what exists today and what changes. Say what and why, not how. User's language, no class names or file paths.>
 
 ## Acceptance criteria
+
+<!-- 2 to 5 scenarios: the main outcome and the edge cases a user would notice. Outcomes only: no button labels, layouts, field names, or data shapes unless the requester asked for them. -->
 
 ```gherkin
 Scenario: <name>
@@ -23,7 +25,7 @@ Scenario: <name>
 
 ## Notes for the builder
 
-- <Pointers into the code you saw (`repo/path/File.cs`), and anything to watch. Not published to ADO.>
+- <Pointers into the code you saw (`repo/path/File.cs`), and anything to watch. Hints, not decisions. Not published to ADO.>
 
 ## Open questions
 

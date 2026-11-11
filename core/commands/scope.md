@@ -56,7 +56,8 @@ Follow these steps in order. Do not change any code.
 - Keep `Status: DRAFT`. Never set it to APPROVED.
 - One `## Feature <n>: <title>` section per MVP feature, same numbers and titles as `epics.md`. No sections for Icebox features.
 - Every feature has at least one `### Story <n>.<m>: <title>`.
-- Every story has the "As a ..., I want ..., so that ..." line and at least one Gherkin scenario with `Given`, `When`, and `Then`. Cover the edge cases from Step 3 as their own scenarios.
+- Every story has the "As a ..., I want ..., so that ..." line, at most two sentences of context, and 2 to 5 Gherkin scenarios with `Given`, `When`, and `Then`: the main outcome and the edge cases from Step 3 that a user would notice.
+- Say what and why, not how. No button labels, layouts, field names, or data shapes unless the requester asked for them; engineering decides those.
 - No class names, table names, or file paths in this file.
 - Update the "Stories" column of the MVP table in `epics.md` to match.
 

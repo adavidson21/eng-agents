@@ -123,3 +123,4 @@ finally {
 
 if ($failed) { Write-Output "$failed failed."; exit 1 }
 Write-Output "Export-Brief: all checks passed."
+exit 0

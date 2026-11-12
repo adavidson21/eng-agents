@@ -4,6 +4,11 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 2.21.0 (2026-11-12)
+
+- `/spike` answers vague asks ("how hard would it be to add X?") as a brief with three readers. `findings.md` (new template) has header lines `Asked by`, `Size`, `Effort` (a range), `Confidence`, `Lenses` and `Default lens`, sections The ask, Short answer, Questions for the requester, Current state, Options, Risks and dependencies, Recommendation, Next step and Sources, and `### For business`, `### For engineering` and `### For leadership` blocks inside them. `/spike <topic> --for leadership` picks the lens the brief opens on.
+- New `core/scripts/briefs/Export-Brief.ps1`: turns `findings.md` into `brief.html` next to it, one self-contained page to share outside Workshop (email, Teams, SharePoint, Save as PDF). No web requests and no script: the lens switch is plain HTML and CSS, and printing prints the open lens. Older findings without `Lenses:` still export, without the switch. `/spike` runs it as its last step. Self-test `Test-ExportBrief.ps1`, run in CI.
+
 ## Core 2.20.1 (2026-11-12)
 
 - New CI check `core/scripts/dashboard/Test-WorkFormat.ps1`: `New-Dashboard.ps1 -AsJson` must read Workshop's example `.work` workspace the way Workshop's `docs/work-format.md` says. Workshop's Dispatch has its own parser; the `.work` format is the one thing the two repos share. README: "What Workshop relies on".

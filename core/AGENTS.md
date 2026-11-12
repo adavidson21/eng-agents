@@ -80,7 +80,7 @@ Each work item has a folder `.work/<id>-<name>/`. Find it by listing `.work/` an
 | `review.md` | Review findings and verdict. |
 | `pr.md` | PR title and description. |
 | `bug.md` | Bug lane analysis. Has a `Status:` line. |
-| `findings.md` | Spike results. |
+| `findings.md` | Spike results, with `### For business`, `### For engineering` and `### For leadership` blocks. `brief.html` next to it is the shareable export (`Export-Brief.ps1`); never edit it, re-export instead. |
 | `paused.md` | Where a paused item stands and how to pick it up. Has a `Status:` line (`PAUSED` or `RESUMED`). |
 
 Work that is not defined yet is scoped first, in `.work/scope-<name>/`, before it becomes work items:

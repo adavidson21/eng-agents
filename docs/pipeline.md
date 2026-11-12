@@ -76,7 +76,7 @@ Editing the line yourself still works; the next command reads whatever is on dis
 | Feature | New behavior, or more than 3 files of change | Full pipeline |
 | Bug | A defect with a reproducible symptom | `/start` → `/bug` → `/approve` → `/do-task` (repeat) → `/review` → `/pr` |
 | Scope | The work is an idea, not work items yet | `/scope` → `/approve` → `/slice` → `/approve` → `/backlog`. Then each story runs the feature lane. See [Scoping](#scoping-before-work-items). |
-| Spike | You do not know enough to write a spec | `/spike` writes `findings.md`. No code changes. Good input to a later `/spec`. |
+| Spike | You do not know enough to write a spec, or someone asks "how hard would it be to...?" | `/spike` writes `findings.md` and a shareable `brief.html` with Business, Engineering and Leadership views (`--for <lens>` picks the one it opens on). No code changes. Good input to a later `/spec`. |
 | Docs | Writing or updating documentation | `/docs` (writer) → new session → `/check-docs` (reviewer fact-checks every claim) |
 | TSD | A technical spec of a product or repos, told through diagrams | `/tsd` (writer) → new session → `/check-docs` (reviewer checks every box and arrow) → revise → `/publish tsd-<name>` (approves it and moves it to the product docs folder) |
 

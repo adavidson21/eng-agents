@@ -21,6 +21,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: ./core/scripts/notes/Test-ProductNotes.ps1
       - run: ./core/scripts/ado/Test-ExportBacklog.ps1
+      - run: ./core/scripts/briefs/Test-ExportBrief.ps1
   work-format:
     # Tandem writes .work; Workshop's Dispatch reads it. Check this repo's parser against Workshop's contract
     # (docs/work-format.md and its example workspace), on pwsh and on Windows PowerShell 5.1.

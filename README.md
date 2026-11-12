@@ -16,7 +16,7 @@ Open opencode from your workspace root (for example `C:\src\work`).
 | Triage a request before work starts | `/triage <ADO id> [note]` or `/triage <the request in words>`: writes `.work/triage-<id>/triage.md` with a summary, what it touches, questions for the requester, a size and a suggested route (delegate or do it yourself). Never posts. Slate in Workshop runs it from a button. |
 | Define one story or bug | `/refine <title>` → `/approve refine-<name>`. Writes `refine.md` with a description and Gherkin acceptance criteria, ready to publish (Slate publishes it to ADO). For anything epic-sized, use `/scope`. |
 | Hand work to a teammate | `/handoff <ADO id> <name>`: a brief with context, acceptance criteria, where to start and what to watch. Posts nothing. |
-| Question, no code changes | `/spike <id or topic>` |
+| Question or a vague ask, no code changes (writes a shareable `brief.html`) | `/spike <id or topic> [--for business\|engineering\|leadership]` |
 | First pass on a teammate's PR | `/pr-review <PR link>` (or **PR reviews** in Dispatch). Drafts comments in `.work/pr-<id>/review.md`; you post the ones you agree with. Never checks out the PR or posts anything. |
 | Ask or capture from Workshop | Type in the hub on Workshop's Dispatch page. It runs `/hub <request>`: captures become proposals you accept, questions are answered from your repo map, repo guides and code, with sources. It writes nothing but its own two files and never changes ADO or git. |
 | Prep a 1:1 | **Draft talking points** in Workshop's 1:1s app runs `/one-on-one <packet>`. It drafts wins, follow-ups, blockers, growth topics and 3 questions from the app's packet; it never rates or judges anyone. |

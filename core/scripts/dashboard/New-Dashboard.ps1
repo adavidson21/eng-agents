@@ -27,9 +27,10 @@
     The LAST line of output is always the path of the dashboard file.
 
     With -AsJson it writes nothing: it prints the data as one line of JSON (ASCII only,
-    other characters escaped) and exits. Workshop's opencode connector (Dispatch) reads .work
-    with a copy of this script and -AsJson, so the static page and Dispatch share one parser
-    and one set of next-step rules. Change it here first; Workshop syncs its copy.
+    other characters escaped) and exits. This parser is for the static page (/dashboard static).
+    Workshop's Dispatch reads .work with its own parser (connectors/opencode/lib/workparser.mjs);
+    the two meet at Workshop's docs/work-format.md, and Test-WorkFormat.ps1 (in CI) checks this
+    script against that contract's example workspace.
 
     The page links to Dispatch (the address comes from Dispatch.ps1) for the live view.
 
@@ -405,7 +406,7 @@ function Get-PrSections {
         $repo = Get-CleanValue $head
         if (-not $repo) { continue }
         $branch = $null; $target = $null
-        $bm = [regex]::Match($body, '(?mi)^\s*(?:-\s*)?(?:\*\*)?Branch:(?:\*\*)?\s*`?([^`\s]+)`?\s*(?:->|=>|to|→)\s*`?([^`\s]+)`?')
+        $bm = [regex]::Match($body, '(?mi)^\s*(?:-\s*)?(?:\*\*)?Branch:(?:\*\*)?\s*`?([^`\s]+)`?\s*(?:->|=>|to|\u2192)\s*`?([^`\s]+)`?')
         if ($bm.Success) { $branch = Get-CleanValue $bm.Groups[1].Value; $target = Get-CleanValue $bm.Groups[2].Value }
         $title = $null
         $tm = [regex]::Match($body, '(?mi)^\s*(?:\*\*)?Title:(?:\*\*)?[ \t]*(.+?)\s*$')

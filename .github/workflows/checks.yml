@@ -21,6 +21,24 @@ jobs:
       - uses: actions/checkout@v4
       - run: ./core/scripts/notes/Test-ProductNotes.ps1
       - run: ./core/scripts/ado/Test-ExportBacklog.ps1
+  work-format:
+    # Tandem writes .work; Workshop's Dispatch reads it. Check this repo's parser against Workshop's contract
+    # (docs/work-format.md and its example workspace), on pwsh and on Windows PowerShell 5.1.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, shell: pwsh }
+          - { os: windows-latest, shell: powershell }
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with: { repository: adavidson21/workshop, path: workshop }
+      - run: ./core/scripts/dashboard/Test-WorkFormat.ps1 -Workshop workshop
   agent-frontmatter:
     # opencode skips an agent whose frontmatter repeats a key, and Dispatch then says "Agent not found".
     # Install into a scratch folder and check every installed agent for repeated keys.

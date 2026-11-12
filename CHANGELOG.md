@@ -4,6 +4,11 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 2.20.1 (2026-11-12)
+
+- New CI check `core/scripts/dashboard/Test-WorkFormat.ps1`: `New-Dashboard.ps1 -AsJson` must read Workshop's example `.work` workspace the way Workshop's `docs/work-format.md` says. Workshop's Dispatch has its own parser; the `.work` format is the one thing the two repos share. README: "What Workshop relies on".
+- Fixes `/dashboard static` failing in Windows PowerShell 5.1 with a parse error in `New-Dashboard.ps1`: one regex had a non-ASCII arrow, which 5.1 misreads in a file without a byte order mark. It is now `\u2192`. Found by the new check.
+
 ## Core 2.20.0 (2026-11-11)
 
 - Lighter features and stories, so engineering decides the implementation. A feature's description is two or three sentences of what and why, and each feature gets a `#### Release note`: one or two business-friendly sentences (at most 255 characters). Stories keep the "As a ..." line with at most two sentences of context and 2 to 5 outcome-only Gherkin scenarios (no button labels, layouts, field names or data shapes unless asked). `/scope`, `/slice`, `/refine`, product-manager and milestone-architect follow this.

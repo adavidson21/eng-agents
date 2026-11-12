@@ -7,6 +7,7 @@ Format: one `## Core <version> (<date>)` heading per release, newest first, with
 ## Core 2.20.1 (2026-11-12)
 
 - New CI check `core/scripts/dashboard/Test-WorkFormat.ps1`: `New-Dashboard.ps1 -AsJson` must read Workshop's example `.work` workspace the way Workshop's `docs/work-format.md` says. Workshop's Dispatch has its own parser; the `.work` format is the one thing the two repos share. README: "What Workshop relies on".
+- Fixes `/dashboard static` failing in Windows PowerShell 5.1 with a parse error in `New-Dashboard.ps1`: one regex had a non-ASCII arrow, which 5.1 misreads in a file without a byte order mark. It is now `\u2192`. Found by the new check.
 
 ## Core 2.20.0 (2026-11-11)
 

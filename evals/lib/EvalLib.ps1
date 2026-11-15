@@ -167,3 +167,122 @@ function Get-Lift {
     }
     return $out
 }
+
+# ------------------------------------------------------------------ usage (results version 3)
+
+function New-Usage {
+    return [ordered]@{ known = $false; input = 0; output = 0; reasoning = 0; cacheRead = 0; cacheWrite = 0; cost = 0.0; toolCalls = 0; questions = 0 }
+}
+
+function Add-Usage($A, $B) {
+    $o = New-Usage
+    foreach ($k in @("input", "output", "reasoning", "cacheRead", "cacheWrite", "toolCalls", "questions")) { $o[$k] = [int64]$A[$k] + [int64]$B[$k] }
+    $o.cost = [double]$A.cost + [double]$B.cost
+    $o.known = [bool]($A.known -or $B.known)
+    return $o
+}
+
+function Get-UsageTokens($U) { return [int64]($U.input + $U.output + $U.reasoning) }
+
+<#
+  Reads `opencode run --format json` output (one JSON event per line) and adds up what the run used:
+  step_finish events carry tokens (input, output, reasoning, cache read and write) and cost; tool_use events are
+  tool calls, and a tool named "question" is the agent asking. known is false when no step_finish was seen
+  (an older opencode, or a run that never got going), so a missing number is not shown as 0.
+#>
+function Get-RunUsage {
+    param([string]$Stdout)
+    $u = New-Usage
+    if (-not $Stdout) { return $u }
+    foreach ($line in ($Stdout -split "\r?\n")) {
+        $t = $line.Trim()
+        if (-not $t.StartsWith("{")) { continue }
+        try { $e = $t | ConvertFrom-Json } catch { continue }
+        if ($e.type -eq "step_finish" -and $e.part) {
+            $tk = $e.part.tokens
+            if ($tk) {
+                $u.known = $true
+                $u.input += [int64]$tk.input; $u.output += [int64]$tk.output; $u.reasoning += [int64]$tk.reasoning
+                if ($tk.cache) { $u.cacheRead += [int64]$tk.cache.read; $u.cacheWrite += [int64]$tk.cache.write }
+            }
+            if ($null -ne $e.part.cost) { $u.cost += [double]$e.part.cost }
+        }
+        elseif ($e.type -eq "tool_use" -and $e.part) {
+            $u.toolCalls++
+            if ("$($e.part.tool)" -eq "question") { $u.questions++ }
+        }
+    }
+    return $u
+}
+
+# Failed verifies in the run's .work progress logs (do-task's "Verify: ... -> FAIL" or a verify=FAIL Stats value).
+function Get-VerifyFails($Ws) {
+    $work = Join-Path $Ws.Root ".work"
+    if (-not (Test-Path -LiteralPath $work)) { return 0 }
+    $n = 0
+    foreach ($f in (Get-ChildItem -LiteralPath $work -Recurse -File -Filter progress.md -ErrorAction SilentlyContinue)) {
+        $t = [IO.File]::ReadAllText($f.FullName)
+        $n += [regex]::Matches($t, '(?mi)(^\s*-\s*Verify:.*->\s*FAIL\b|\bverify=FAIL\b)').Count
+    }
+    return $n
+}
+
+# Per case and arm: mean tokens, cost, questions and rework per run, and tokens and cost per passing run.
+function Get-CaseUsageSummary($Runs, [int]$Passes) {
+    $runs = @($Runs)
+    $sum = { param($list, $key) $t = 0.0; foreach ($r in $list) { $t += [double]$r[$key] }; $t }
+    $known = @($runs | Where-Object { $_["usageKnown"] })
+    $o = [ordered]@{ usageKnown = ($known.Count -gt 0); meanTokens = $null; meanCost = $null; tokensPerPass = $null; costPerPass = $null; meanQuestions = 0; meanToolCalls = 0; meanVerifyFails = 0 }
+    if ($runs.Count) {
+        $o.meanQuestions = [math]::Round((& $sum $runs "questions") / $runs.Count, 1)
+        $o.meanToolCalls = [math]::Round((& $sum $runs "toolCalls") / $runs.Count, 1)
+        $o.meanVerifyFails = [math]::Round((& $sum $runs "verifyFails") / $runs.Count, 1)
+    }
+    if ($known.Count) {
+        $tok = & $sum $known "tokens"
+        $cost = & $sum $known "cost"
+        $o.meanTokens = [int64][math]::Round($tok / $known.Count)
+        $o.meanCost = [math]::Round($cost / $known.Count, 4)
+        if ($Passes -gt 0) { $o.tokensPerPass = [int64][math]::Round($tok / $Passes); $o.costPerPass = [math]::Round($cost / $Passes, 4) }
+    }
+    return $o
+}
+
+# ------------------------------------------------------------------ prompt size (no model)
+
+<#
+  What each command loads before it does anything: its command file, its agent file and the always-loaded
+  core AGENTS.md. Tokens are estimated at 4 characters each, the same way for every file, so commands compare
+  fairly even though the exact count depends on the model. Files a command reads while it runs (templates,
+  guides, stacks) are not counted here.
+#>
+function Get-PromptSizes {
+    param([string]$Core = (Join-Path $script:RepoRoot "core"))
+    $agentsMd = Join-Path $Core "AGENTS.md"
+    $base = if (Test-Path -LiteralPath $agentsMd) { [IO.File]::ReadAllText($agentsMd).Length } else { 0 }
+    $out = @()
+    foreach ($f in (Get-ChildItem -LiteralPath (Join-Path $Core "commands") -Filter *.md | Sort-Object Name)) {
+        $text = [IO.File]::ReadAllText($f.FullName)
+        $agent = ([regex]::Match($text, '(?m)^agent:\s*([\w-]+)\s*$')).Groups[1].Value
+        $agentChars = 0
+        if ($agent) {
+            $ap = Join-Path $Core "agents/$agent.md"
+            if (Test-Path -LiteralPath $ap) { $agentChars = [IO.File]::ReadAllText($ap).Length }
+        }
+        $total = $text.Length + $agentChars + $base
+        $out += [pscustomobject]@{ command = $f.BaseName; agent = $(if ($agent) { $agent } else { $null }); commandChars = $text.Length; agentChars = $agentChars; baseChars = $base; tokens = [int][math]::Ceiling($total / 4) }
+    }
+    return $out
+}
+
+# Prompt tokens for the commands a case runs in an arm (the baseline loads none of them).
+function Get-CasePromptTokens($Case, [string]$Arm) {
+    if ($Arm -eq "baseline") { return 0 }
+    $cmds = @()
+    if ($Case.steps) { $cmds = @($Case.steps | Where-Object { $_.command } | ForEach-Object { "$($_.command)" }) }
+    elseif ($Case.command) { $cmds = @("$($Case.command)") }
+    if (-not $script:PromptSizes) { $script:PromptSizes = @(Get-PromptSizes) }
+    $sum = 0
+    foreach ($c in ($cmds | Select-Object -Unique)) { $hit = @($script:PromptSizes | Where-Object { $_.command -eq $c })[0]; if ($hit) { $sum += $hit.tokens } }
+    return $sum
+}

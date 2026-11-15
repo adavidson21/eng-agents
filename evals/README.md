@@ -22,7 +22,16 @@ Each case builds a made-up workspace (a repo map and `sample-api`, a small .NET 
 3. Read the summary table. It compares each case with the newest file in `evals/results/`. A drop means read that case's failed checks and log before releasing.
 4. Commit the results file you want later runs compared against (your baseline).
 
-Results files are `version: 2`: each case entry has an `arm` (`tandem` or `baseline`), `passAll` (every run passed) and `meanSeconds`, and each run lists its `steps` with seconds. Older files have no `arm`; read them as `tandem`.
+Results files are `version: 3`:
+
+- Each case entry has an `arm` (`tandem` or `baseline`), `passAll` (every run passed), `meanSeconds`, `promptTokens` (what its commands load up front, see Prompt size), and usage: `usageKnown`, `meanTokens`, `meanCost`, `tokensPerPass`, `costPerPass` (null without a pass), `meanQuestions`, `meanToolCalls`, `meanVerifyFails`.
+- Each run has `tokens` (input, output and reasoning), `cost`, `toolCalls`, `questions` (the agent asked; should be 0 in `auto`), `verifyFails` (failed verifies in its `.work` progress logs), `usageKnown`, and its `steps` with seconds, tokens and cost.
+- Usage comes from `opencode run --format json`, which the runner always passes: `step_finish` events carry tokens and cost, `tool_use` events are tool calls (a `question` tool is the agent asking). `usageKnown` is false when no `step_finish` was seen, so a missing number is never shown as 0. Free models report a cost of 0; compare them on tokens.
+- Version 2 files have no usage; version 1 files also have no `arm` (read them as `tandem`).
+
+## Prompt size
+
+`./evals/Get-PromptSize.ps1` lists what each command loads before it does anything (its command file, its agent and `AGENTS.md`), in estimated tokens, biggest first. No model. Use it to pick what to trim; a trim is kept only if the evals do not drop.
 
 Cases marked `needs: dotnet` are skipped without the .NET 8 SDK.
 
@@ -77,7 +86,8 @@ Runs are unattended. A command that hits an `ask` rule waits for an answer nobod
 | `lib/Graders.ps1` | One grader per case: file and git checks, no model |
 | `goldens/<case>/pass`, `fail` | Hand-written good and bad outputs that prove each grader tells them apart |
 | `Test-Graders.ps1` | CI: every good golden passes, every bad golden fails (no model, no dotnet) |
-| `Test-Harness.ps1` | CI: `Invoke-Evals.ps1` itself, with a fake opencode (`selftest/fake-opencode`): steps in order, gates approved, the baseline's config without Tandem, results with both arms and the lift |
+| `Test-Harness.ps1` | CI: `Invoke-Evals.ps1` itself, with a fake opencode (`selftest/fake-opencode`): steps in order, gates approved, the baseline's config without Tandem, results with both arms, the lift and usage (tokens, cost, questions, failed verifies); the usage reader and prompt sizes |
+| `Get-PromptSize.ps1` | What each command loads up front, in estimated tokens (also printed in CI) |
 | `Test-Fixtures.ps1` | CI with dotnet: the fixtures build, the planted bug is real, the do-task grader works end to end |
 
 ## Adding a case

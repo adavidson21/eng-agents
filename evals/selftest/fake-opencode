@@ -11,20 +11,27 @@ for a in "$@"; do
   prev="$a"
 done
 work=".work/L1-bulk-discount"
+# What opencode run --format json prints: one JSON event per line.
+finish() { echo "{\"type\":\"step_finish\",\"timestamp\":1,\"sessionID\":\"ses_x\",\"part\":{\"type\":\"step-finish\",\"tokens\":{\"input\":$1,\"output\":$2,\"reasoning\":0,\"cache\":{\"read\":10,\"write\":0}},\"cost\":$3}}"; }
+tool() { echo "{\"type\":\"tool_use\",\"timestamp\":1,\"sessionID\":\"ses_x\",\"part\":{\"type\":\"tool\",\"tool\":\"$1\",\"state\":{\"status\":\"completed\"}}}"; }
+echo "not json, ignored"
 case "$cmd" in
-  spec) printf 'Status: DRAFT\n\n# Spec\n' > "$work/spec.md" ;;
+  spec) printf 'Status: DRAFT\n\n# Spec\n' > "$work/spec.md"; tool question; finish 100 50 0.01 ;;
   plan)
     grep -q '^Status: APPROVED' "$work/spec.md" || { echo "spec not approved" >&2; exit 3; }
-    printf 'Status: DRAFT\n\n# Plan\n' > "$work/plan.md" ;;
+    printf 'Status: DRAFT\n\n# Plan\n' > "$work/plan.md"; finish 100 50 0.01 ;;
   tasks)
     grep -q '^Status: APPROVED' "$work/plan.md" || { echo "plan not approved" >&2; exit 3; }
-    printf '# Tasks\n\n## [ ] Task 1: Settings\n\n- Repo: sample-api\n\n---\n\n## [ ] Task 2: Rule\n\n- Repo: sample-api\n' > "$work/tasks.md" ;;
+    printf '# Tasks\n\n## [ ] Task 1: Settings\n\n- Repo: sample-api\n\n---\n\n## [ ] Task 2: Rule\n\n- Repo: sample-api\n' > "$work/tasks.md"; finish 100 50 0.01 ;;
   do-task)
     last="${!#}"; n=$(echo "$last" | awk '{print $2}')
     echo "task $n" >> "$work/done.txt"
+    if [ "$n" = "1" ]; then printf '\n## 2026-11-15 | /do-task | implementer\n\n- Stats: verify=FAIL full=PASS\n' >> "$work/progress.md"; fi
+    finish 100 50 0.01
     if [ "$n" = "2" ]; then cp "$FAKE_CORRECT"/src/Orders/*.cs sample-api/src/Orders/; fi ;;
   "")
     # Plain prompt: Tandem must be out of the config folder opencode reads.
+    tool read; finish 300 100 0
     if grep -q '"instructions"' "${XDG_CONFIG_HOME:-/nonexistent}/opencode/opencode.json" 2>/dev/null; then echo "Tandem rules leaked" >&2; exit 4; fi
     cat > sample-api/src/Orders/OrderTotals.cs <<'CS'
 namespace Orders;

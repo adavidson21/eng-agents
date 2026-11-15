@@ -1,0 +1,9 @@
+{
+  "description": "/bug finds the null Lines root cause, states confidence, and writes at most 3 tasks starting with a failing test.",
+  "command": "bug",
+  "arguments": "L2 auto",
+  "workItem": "L2-total-crashes-no-lines",
+  "branch": "dev/bug/L2-total-crashes-no-lines",
+  "work": [{"from":"L2/start","to":"L2-total-crashes-no-lines"}],
+  "grader": "Test-BugLane"
+}

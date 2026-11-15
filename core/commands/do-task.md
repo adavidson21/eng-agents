@@ -1,9 +1,11 @@
 ---
-description: "Implement ONE task from tasks.md with TDD, verify, and commit. Run in a fresh session. Usage: /do-task <id> <n>"
+description: "Implement ONE task from tasks.md with TDD, verify, and commit. Run in a fresh session. Usage: /do-task <id> <n> [auto]"
 agent: implementer
 ---
 
-Do task **$2** of work item **$1**. Do only this task.
+Do task **$2** of work item **$1**. Do only this task. Mode: **$3**
+
+If the mode above is `auto`, nobody is watching (autopilot or an eval run). Never ask and never wait. Wherever a step below says to ask or wait, stop instead: do not commit, add a blocked `progress.md` entry (Step 6) that says what you would have asked, and end.
 
 ## Step 1: Find the work folder and check the gate
 

@@ -1,0 +1,11 @@
+{
+  "description": "/review passes a correct branch without inventing Blockers.",
+  "command": "review",
+  "arguments": "L1 auto",
+  "workItem": "L1-bulk-discount",
+  "branch": "dev/feature/L1-bulk-discount",
+  "repoCommits": [{"from":"L1-correct","message":"Apply the bulk discount"}],
+  "work": [{"from":"L1/start","to":"L1-bulk-discount"}, {"from":"L1/spec-approved","to":"L1-bulk-discount"}, {"from":"L1/plan-approved","to":"L1-bulk-discount"}, {"from":"L1/tasks","to":"L1-bulk-discount"}, {"from":"L1/built","to":"L1-bulk-discount"}],
+  "grader": "Test-ReviewClean",
+  "needs": ["dotnet"]
+}

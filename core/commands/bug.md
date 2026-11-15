@@ -1,9 +1,11 @@
 ---
-description: "Fast lane: reproduce and root-cause a bug, write bug.md and up to 3 tasks. Usage: /bug <id>"
+description: "Fast lane: reproduce and root-cause a bug, write bug.md and up to 3 tasks. Usage: /bug <id> [auto]"
 agent: investigator
 ---
 
-Investigate bug **$1**.
+Investigate bug **$1**. Mode: **$2**
+
+If the mode above is `auto`, nobody is watching. Ask nothing: where Step 2 says to ask, use what the work item and the code give you, write each gap under the root cause section as an assumption, and lower the confidence if a gap matters.
 
 ## Step 1: Find the work folder
 

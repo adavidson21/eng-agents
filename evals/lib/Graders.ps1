@@ -208,7 +208,7 @@ function Test-ReviewPlanted($Ws, [switch]$NoExec) {
         $p1 = Get-MdSection $t "Pass 1"
         $acRow = [regex]::Match($p1, '(?m)^\|\s*AC-1\s*\|\s*([^|]+)\|')
         $acFlag = $acRow.Success -and $acRow.Groups[1].Value -match '(?i)not met|partly'
-        $rows = Get-FindingRows $t
+        $rows = @(Get-FindingRows $t)
         $hit = @($rows | Where-Object { $_.Severity -eq "Blocker" -and $_.Rest -match '(?i)\b10\b|threshold|>=|at least|AC-1|exactly ten|boundary' })
         Add-Check $c "caught the planted off-by-one (AC-1 not met, or a Blocker on the threshold)" ($acFlag -or $hit.Count -gt 0) "AC-1: $($acRow.Groups[1].Value.Trim()); Blockers: $(@($rows | Where-Object { $_.Severity -eq 'Blocker' }).Count)"
         $badCat = @($rows | Where-Object { $script:AllowedCategories -notcontains $_.Category })
@@ -225,7 +225,7 @@ function Test-ReviewClean($Ws, [switch]$NoExec) {
     Add-Check $c "review.md exists" ($null -ne $t)
     if ($t) {
         Add-Check $c "verdict is READY" ($t -match '(?mi)^\s*Verdict:\s*READY')
-        $rows = Get-FindingRows $t
+        $rows = @(Get-FindingRows $t)
         $bl = @($rows | Where-Object { $_.Severity -eq "Blocker" })
         Add-Check $c "no false Blockers" ($bl.Count -eq 0) "$($bl.Count) Blockers: $(@($bl | ForEach-Object { $_.Rest }) -join ' | ')"
         $badCat = @($rows | Where-Object { $script:AllowedCategories -notcontains $_.Category })

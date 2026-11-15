@@ -454,6 +454,8 @@ Plus **global memory** in `%USERPROFILE%\.config\eng-agents\memory.md` (`/memory
 
 It reads the `- Stats:` lines commands add to `progress.md` (Core 2.22.0+), the `Status:` and verdict lines, and `tasks.md`. Older items still show, with `n/a` where the data was never written. `-AsJson` prints the same data for Workshop's Dispatch.
 
+Workshop shows the same numbers in Loom's **Health > Tandem**, with repeating review findings, your latest eval results and setup checks (Workshop's `docs/tandem-health.md`). Workshop computes them with its own port of these scripts; `Test-HealthFormat.ps1` (in CI) checks both read Workshop's example workspace the same way.
+
 Read it after about 10 items. A gate approved as written almost every time, with no rise in review problems, is a candidate for the small lane or for merging. A rising second-review rate means problems are found late.
 
 ## Recovering from problems

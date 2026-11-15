@@ -218,7 +218,7 @@ Verdict: READY
     $r = Run $stats @("-WorkRoot", $wr)
     Check "stats: markdown exits 0" ($r.Code -eq 0) $r.Out
     Check "stats: markdown has gate and item tables" ($r.Out -match '\| plan \| 1 \| 1 \| 0 \| 0 \| 100% \|' -and $r.Out -match '\| 101-export-retry \| feature \| 4 \|') $r.Out
-    Check "stats: missing values show n/a" ($r.Out -match '\| L3-old-item \| n/a \| 2 \|') $r.Out
+    Check "stats: missing values show n/a" ($r.Out -match '\| L3-old-item \| feature \| 2 \| 0/0/0 \| 0 \| n/a \|') $r.Out
 
     $r = Run $stats @("-WorkRoot", (Join-Path $root "nope"))
     Check "stats: missing .work -> exit 1" ($r.Code -eq 1)

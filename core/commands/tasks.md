@@ -37,5 +37,5 @@ Rules for every task:
 
 ## Step 5: Log and hand off
 
-- Add a `progress.md` entry for `/tasks`.
+- Add a `progress.md` entry for `/tasks` with a `- Stats: tasks=<number of tasks>` line. `/stats` uses it to count tasks added later (mostly review fixes).
 - Tell the engineer how many tasks there are per repo, then: "Skim `tasks.md`. If a task looks too big, split it. Then start a NEW session and run `/do-task $1 1`."

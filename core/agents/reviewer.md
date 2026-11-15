@@ -3,6 +3,7 @@ description: Reviews changes in two passes, spec compliance then code quality. R
 mode: primary
 temperature: 0.1
 permission:
+  webfetch: ask
   edit:
     "*": deny
     ".work/**": allow

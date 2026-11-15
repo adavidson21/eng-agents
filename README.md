@@ -26,6 +26,7 @@ Open opencode from your workspace root (for example `C:\src\work`).
 | Drive it from the browser | Dispatch in [Workshop](https://github.com/adavidson21/workshop): it runs each step in opencode (see [Dashboard](docs/pipeline.md#dashboard)) |
 | Hands-off build after the plan | Dispatch: **Approve and build**. It runs tasks, review, and PR text, each step in a new session, and stops only when it needs you (see [Autopilot](docs/pipeline.md#autopilot)) |
 | End of day | `/shutdown`: writes `.work/runway.md` with where you left off, tomorrow's first step, and open loops. Next morning, `/status` shows it first. |
+| Is the pipeline helping? | `/stats [--since yyyy-MM-dd]`: days to PR, review rounds, rework, and which gates you approve as written (see [Measuring the pipeline](docs/pipeline.md#measuring-the-pipeline)) |
 | Standup update | `/standup [days back]` (default 1, or 3 on a Monday) |
 | Switch to something urgent | `/pause <id> [reason]`, later `/resume <id>` |
 | New repo in the workspace | `/onboard-repo <folder>` |

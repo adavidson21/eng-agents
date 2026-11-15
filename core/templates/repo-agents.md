@@ -38,6 +38,7 @@ Run from the workspace root unless stated otherwise. One command per line.
 |---|---|
 | Build | `<command>` |
 | All unit tests | `<command>` |
+| Pre-commit check (optional) | `<faster command /do-task runs before every commit instead of All unit tests, for example one test project; leave the row out to use All unit tests>` |
 | One test class | `<command with --filter example>` |
 | Lint | `<command>` |
 | Format check | `<command>` |

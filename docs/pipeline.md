@@ -66,6 +66,7 @@ flowchart LR
 - It refuses a plan while the spec is still DRAFT, and refuses anything on a paused item.
 - If "Open questions" still has items, it shows them and asks. Yes marks each one `(accepted risk)`; no stops so you can answer them first.
 - It changes only the `Status:` line, logs to `progress.md`, and gives the next command (`/plan`, `/tasks`, or `/do-task <id> 1` in a new session).
+- Before approving, it checks the file's `Draft-hash:` line (written by `Set-DraftHash.ps1` when the drafting command finished) and logs whether you approved the draft as written, edited it first, or it had no hash. It never blocks. `/stats` turns this into an as-written rate per gate, which shows the gates you never change.
 
 Editing the line yourself still works; the next command reads whatever is on disk. Agents never set `APPROVED` in any other command. To send a draft back, leave it as DRAFT, add notes under "Open questions", and re-run the same command. It refines the draft instead of starting over.
 
@@ -181,6 +182,7 @@ Better input gives better diagrams: fill in "External systems" and "Business pro
 - The likely files are guesses from file names and commit messages that match words in the title. `/start` opens no files to find them, so it stays fast.
 - `-Parents` on `Get-WorkItem.ps1` adds the parent Feature and Epic to `workitem.md`. If they cannot be fetched, the brief says "Parents unknown".
 - `/start <id> <lane> --cold` skips the brief.
+- Records a test baseline in `baseline.md`: each repo's Pre-commit check (or All unit tests) result right after branching, before any change, with the failing test names. `/do-task` uses it to tell old failures from new ones. `--no-baseline` skips it, for example when a suite is very slow.
 
 **/spec**
 - Questions come one at a time with options and a recommendation, so you can reply "A" or "yes".
@@ -198,6 +200,7 @@ Better input gives better diagrams: fill in "External systems" and "Business pro
 **/do-task**
 - Always in a new session. Checks the gate, the branch, and that the repo has no unrelated changes.
 - .NET is strict TDD: both the failing and the passing run go in `progress.md`. If the "failing" run passed, the test does not test the change.
+- Before committing, runs the repo's Build and its Pre-commit check (or All unit tests), because the task's verify command only runs the new tests. A failure listed in `baseline.md` is noted, not chased; a new one counts toward the 3-attempt limit and blocks the commit.
 - Stages only the task's files and commits with a short summary. You approve the commit.
 - Ends with a Manual Validation Checklist: exact URL, exact click or command, exact result. It is saved in `progress.md`, and `/review` blocks on a missing or vague one and collects them all into `review.md`.
 
@@ -219,6 +222,7 @@ All state lives in the workspace, outside every git repo, and never leaves the w
 .work/<id>-<short-name>/
   workitem.md   brief.md   repos.md  spec.md   plan.md       tasks.md
   progress.md   review.md  pr.md     bug.md    findings.md   paused.md
+  baseline.md
 
 .work/scope-<short-name>/                scoping: epics.md, stories.md, milestones.md, progress.md,
                                          backlog.csv or published.md
@@ -418,6 +422,20 @@ Plus **global memory** in `%USERPROFILE%\.config\eng-agents\memory.md` (`/memory
 - It checks for a duplicate or contradicting line first, and offers to fix a wrong command or path in the repo guide instead of adding a memory line.
 - Run it in the session where the rule came up, so "remember that" can be resolved to the real thing.
 - Edit or delete memory lines by hand any time. Re-running `/onboard-repo` keeps the `## Remembered` section.
+
+## Measuring the pipeline
+
+`/stats [--since yyyy-MM-dd]` (planner, read-only) runs `scripts/stats/Get-PipelineStats.ps1` over every work item in `.work` and prints:
+
+- Days from `/start` to `/pr`, review rounds, and how often an item needs a second review.
+- Questions asked versus assumptions written.
+- `/do-task` verify failure rate, and full-suite failures caught before review.
+- Tasks added after `/tasks` (mostly review fixes) and review findings by severity.
+- Per gate: approvals, how many were approved as written versus edited first, and the as-written rate.
+
+It reads the `- Stats:` lines commands add to `progress.md` (Core 2.22.0+), the `Status:` and verdict lines, and `tasks.md`. Older items still show, with `n/a` where the data was never written. `-AsJson` prints the same data for Workshop's Dispatch.
+
+Read it after about 10 items. A gate approved as written almost every time, with no rise in review problems, is a candidate for the small lane or for merging. A rising second-review rate means problems are found late.
 
 ## Recovering from problems
 

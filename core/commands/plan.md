@@ -37,5 +37,6 @@ Write the implementation plan for work item **$1**.
 
 ## Step 6: Log and hand off
 
-- Add a `progress.md` entry for `/plan`.
+- Stamp the draft as your last change to `plan.md`: run exactly `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/work/Set-DraftHash.ps1" -Path "<work folder>/plan.md"`. It adds a `Draft-hash:` line so `/approve` can tell whether the engineer edited the draft. If you change the file again, run it again.
+- Add a `progress.md` entry for `/plan` with a `- Stats: questions=<n> assumptions=<n>` line (how many questions you asked the engineer, and how many assumptions you wrote instead).
 - Tell the engineer: "Review `plan.md`. When it is correct, run `/approve $1` (or change the line to `Status: APPROVED` yourself), then `/tasks $1`."

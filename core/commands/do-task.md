@@ -45,13 +45,27 @@ Do task **$2** of work item **$1**. Do only this task.
 
 - If the repo `AGENTS.md` has a lint or format check command for this project, run it. Fix any problems in the files you changed.
 
+## Step 5b: Check nothing else broke
+
+The verify command only runs this task's tests. Before committing, check the whole project.
+
+- From the repo guide's Commands table, run the **Build** command if there is one, then the **Pre-commit check** command if there is one, otherwise **All unit tests**. If the table has none of these, write `full=skipped` in Step 6 and go on.
+- If it passes, write `full=PASS` in Step 6.
+- If a test fails, read `baseline.md` in the work folder:
+  - The test is one this task added and its "Done when" line says it must fail (bug lane Task 1): that is expected. Go on.
+  - The test is listed there as failing before this work item: it is not yours. Write it under "Notes" and `full=PASS` (pre-existing failures noted). Go on.
+  - Otherwise this task broke it. If the fix is in a file the task lists, fix it and run the check again. This counts toward the 3-attempt limit (Step 4). If the fix needs a file the task does not list, stop and ask. Do not commit.
+  - If there is no `baseline.md` (an item started before Core 2.22.0, or with `--no-baseline`), ask the engineer whether the failure was there before. Wait.
+- If it still fails after 3 attempts, write `full=FAIL`, log the task as blocked in Step 6, and do not commit.
+
 ## Step 6: Record
 
 - In `tasks.md`, change `## [ ] Task $2` to `## [x] Task $2`. Only if it passed.
-- Add a `progress.md` entry using the template format. Paste the real last lines of the verify output. For .NET, include both the failing and the passing run. If it passed, include the Manual Validation Checklist (see your agent instructions), built from the task's "Human interface" line. If blocked, write what you tried and what failed, and skip the checklist.
+- Add a `progress.md` entry using the template format. Paste the real last lines of the verify output. For .NET, include both the failing and the passing run. If it passed, include the Manual Validation Checklist (see your agent instructions), built from the task's "Human interface" line. If blocked, write what you tried and what failed, and skip the checklist. Add a `- Stats: verify=<PASS or FAIL> full=<PASS, FAIL or skipped> attempts=<runs of the verify command>` line.
 
 ## Step 7: Commit
 
+- Only if the verify command and Step 5b passed.
 - Stage only the files you changed: `git -C <repo> add <file> <file>`.
 - Commit with a short plain summary: `git -C <repo> commit -m "<short summary>"`. No work item number, no prefix.
 

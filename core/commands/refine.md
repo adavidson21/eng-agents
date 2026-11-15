@@ -48,5 +48,6 @@ Follow these steps in order. Do not change any code. For anything bigger than on
 
 ## Step 5: Hand off
 
-- Add a `progress.md` entry for `/refine`.
+- Stamp the draft as your last change to `refine.md`: run exactly `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/work/Set-DraftHash.ps1" -Path "<work folder>/refine.md"`. It adds a `Draft-hash:` line so `/approve` can tell whether the engineer edited the draft. If you change the file again, run it again.
+- Add a `progress.md` entry for `/refine` with a `- Stats: questions=<n> assumptions=<n>` line (how many questions you asked the engineer, and how many assumptions you wrote instead).
 - Reply in 3 lines or fewer: the story sentence, the number of scenarios, open questions if any, and the next step: `/approve refine-<short name>`.

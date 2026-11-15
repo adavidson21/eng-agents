@@ -57,7 +57,7 @@ Check every changed file against this list and the repo `AGENTS.md`:
 
 ## Step 8: Hand off
 
-- Add a `progress.md` entry for `/review`.
+- Add a `progress.md` entry for `/review` with a `- Stats: blockers=<n> should_fix=<n> nits=<n> verdict=<READY or CHANGES_NEEDED>` line.
 - Summarize for the engineer: verdict, number of findings by severity, and the Blockers in one line each.
 - `auto`: if the verdict is not READY, append one fix task for each `Blocker` finding to the end of `tasks.md`, numbered after the last task, in the normal task format (one repo, at most 3 files, one verify command from the repo `AGENTS.md`). Do not add tasks for `Should fix` or `Nit`. Do not add tasks for checklist Blockers either: they change no code. Name those tasks in the `progress.md` entry so the engineer can add the checklists. Name the added tasks in the `progress.md` entry. Do not ask anything, and stop.
 - If there are checklist Blockers, list the tasks that need one and tell the engineer to add each checklist as a new `progress.md` entry for that task (by hand, or by asking the implementer), then run `/review $1` again. These never become fix tasks.

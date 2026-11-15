@@ -223,6 +223,50 @@ Verdict: READY
     $r = Run $stats @("-WorkRoot", (Join-Path $root "nope"))
     Check "stats: missing .work -> exit 1" ($r.Code -eq 1)
 
+    Check "stats: retro flag and count" ($a.retro -eq $false -and $j.summary.retros -eq 0)
+
+    # ---------------------------------------------------------------- review findings
+    $find = Join-Path $PSScriptRoot "Get-ReviewFindings.ps1"
+    Put "101-export-retry/history/review-2026-11-04-1.md" @'
+Verdict: CHANGES NEEDED
+
+| # | Severity | Category | Location | Problem | Suggested fix |
+|---|---|---|---|---|---|
+| 1 | Blocker | correctness | `api/src/Export.cs:12` | null order not handled | guard it |
+'@
+    Put "102-null-crash/review.md" @'
+Verdict: CHANGES NEEDED
+
+| # | Severity | Category | Location | Problem | Suggested fix |
+|---|---|---|---|---|---|
+| 1 | Should fix | correctness | `api\src\Orders.cs:40` | null customer | guard it |
+| 2 | Nit | <category> | `ui/app/x.ts:1` | placeholder category | x |
+'@
+    Put "L3-old-item/review.md" @'
+Verdict: READY
+
+| # | Severity | Location | Problem | Suggested fix |
+|---|---|---|---|---|
+| 1 | Nit | `ui/app/list.component.ts:9` | unused import | remove it |
+'@
+    $r = Run $find @("-WorkRoot", $wr, "-AsJson")
+    Check "findings: -AsJson exits 0" ($r.Code -eq 0) $r.Out
+    $f = $r.Out | ConvertFrom-Json
+    Check "findings: all rounds and items read" (@($f.findings).Count -eq 6 -and $f.itemsReviewed -eq 3) "got $(@($f.findings).Count) findings, $($f.itemsReviewed) items"
+    $old = @($f.findings | Where-Object { $_.id -eq "L3" })[0]
+    Check "findings: older table without category" ($old.category -eq "uncategorized" -and $old.repo -eq "ui" -and $old.problem -eq "unused import")
+    $ph = @($f.findings | Where-Object { $_.problem -eq "placeholder category" })[0]
+    Check "findings: placeholder category -> uncategorized" ($ph.category -eq "uncategorized")
+    $top = @($f.patterns)[0]
+    Check "findings: api correctness repeats across 2 items (rounds count once)" ($top.repo -eq "api" -and $top.category -eq "correctness" -and $top.itemCount -eq 2 -and $top.findings -eq 3 -and $top.blockers -eq 1 -and $top.repeats) ($top | ConvertTo-Json -Compress)
+    $rep = @($f.patterns | Where-Object { $_.repeats })
+    Check "findings: only patterns in 2+ items repeat (api correctness, ui uncategorized)" ($rep.Count -eq 2 -and @($rep | Where-Object { $_.repo -eq "ui" -and $_.category -eq "uncategorized" }).Count -eq 1 -and @($f.patterns | Where-Object { $_.category -eq "leftovers" -and -not $_.repeats }).Count -eq 1)
+    $r = Run $find @("-WorkRoot", $wr, "-Id", "101", "-AsJson")
+    $f1 = $r.Out | ConvertFrom-Json
+    Check "findings: -Id keeps one item" (@($f1.findings).Count -eq 3 -and $f1.itemsReviewed -eq 1)
+    $r = Run $find @("-WorkRoot", $wr)
+    Check "findings: markdown lists the repeating pattern" ($r.Code -eq 0 -and $r.Out -match '\| api \| correctness \| 2 \| 3 \| 1 \|') $r.Out
+
     $empty = Join-Path $root "empty"
     New-Item -ItemType Directory -Path $empty -Force | Out-Null
     $r = Run $stats @("-WorkRoot", $empty, "-AsJson")

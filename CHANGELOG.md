@@ -4,6 +4,14 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 2.23.0 (2026-11-14)
+
+- New `/retro <id>` (planner): reads every review round, blocked and failed entries, and edited gates, and writes `retro.md` (new template) with what caused rework and at most 5 candidate rules. Each rule names the finding it would have prevented and comes with the exact `/memory` line to save it; `/retro` never writes memory itself. Existing rules that were broken are listed instead of repeated. `/retro --since <date>` finds patterns across items (same repo and category in 2+ items) and writes `.work/_retro/<date>.md`.
+- New `core/scripts/stats/Get-ReviewFindings.ps1` (`-Since`, `-Id`, `-AsJson`): every finding from `review.md` and `history/review-*.md`, grouped by repo and category. Older tables without a category read as `uncategorized`. Tested in `Test-PipelineStats.ps1`.
+- Review findings have a category. The findings table in `review.md` gets a `Category` column (the `/review` checklist word, or `spec`, `scope`, `checklist`, `tdd`), and Pass 1 problems go in the same table. `/review` copies an earlier round to `history/review-<date>-<n>.md` before writing a new one. `/stats` shows findings by category and how many items that reached `/pr` have a retro.
+- Checkable TDD: `/do-task` puts the failing run under `Red run` and the passing run under `Green run` in `progress.md` (template updated), with `red=<test>` on the Stats line. The reviewer checks the Red run shows the new test failing for the expected reason; missing or wrong is `Should fix` (category `tdd`), or a Blocker through a Personal or Company rule.
+- `/pr` ends with a reminder to run `/retro` after merge; `/shutdown` adds an open loop for items that reached `/pr` today without a retro.
+
 ## Core 2.22.0 (2026-11-14)
 
 - Measure the pipeline. New `/stats [--since yyyy-MM-dd]` (planner, read-only) and `core/scripts/stats/Get-PipelineStats.ps1` (`-AsJson` for Workshop): days from `/start` to `/pr`, review rounds, items needing a second review, questions versus assumptions, `/do-task` verify failures, full-suite failures caught, tasks added after `/tasks`, review findings by severity (and by category when `review.md` has one), and per gate how often you approve the draft as written. Local and read-only; older items show `n/a` where data was never written. Self-test `Test-PipelineStats.ps1`, run in CI.

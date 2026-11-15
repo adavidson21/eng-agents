@@ -19,9 +19,11 @@ Scope creep (changes no criterion or task asked for):
 
 ## Pass 2: Code quality
 
-| # | Severity | Location | Problem | Suggested fix |
-|---|---|---|---|---|
-| 1 | <Blocker / Should fix / Nit> | `<repo/path/File.cs:42>` | <what is wrong> | <how to fix> |
+Every finding goes in this table, including Pass 1 problems and missing checklists. Category is one word from the `/review` checklist (`architecture`, `consistency`, `correctness`, `efcore`, `security`, `tests`, `angular`, `playwright`, `leftovers`, `tdd`) or `spec`, `scope`, `checklist`. `/retro` groups findings by it.
+
+| # | Severity | Category | Location | Problem | Suggested fix |
+|---|---|---|---|---|---|
+| 1 | <Blocker / Should fix / Nit> | <category> | `<repo/path/File.cs:42>` | <what is wrong> | <how to fix> |
 
 ## Manual validation
 

@@ -199,7 +199,7 @@ Better input gives better diagrams: fill in "External systems" and "Business pro
 
 **/do-task**
 - Always in a new session. Checks the gate, the branch, and that the repo has no unrelated changes.
-- .NET is strict TDD: both the failing and the passing run go in `progress.md`. If the "failing" run passed, the test does not test the change.
+- .NET is strict TDD: the failing run goes under `Red run` and the passing run under `Green run` in `progress.md`, with `red=<test name>` on the Stats line. If the "failing" run passed, the test does not test the change. `/review` checks the Red run.
 - Before committing, runs the repo's Build and its Pre-commit check (or All unit tests), because the task's verify command only runs the new tests. A failure listed in `baseline.md` is noted, not chased; a new one counts toward the 3-attempt limit and blocks the commit.
 - Stages only the task's files and commits with a short summary. You approve the commit.
 - Ends with a Manual Validation Checklist: exact URL, exact click or command, exact result. It is saved in `progress.md`, and `/review` blocks on a missing or vague one and collects them all into `review.md`.
@@ -209,6 +209,8 @@ Better input gives better diagrams: fill in "External systems" and "Business pro
 - Pass 1 (spec) and pass 2 (quality) are separate, so spec checks are not skipped in favor of style comments.
 - Verdict is `READY` only if tests pass, every criterion is `Met`, and there are no Blockers. Findings you accept are appended to `tasks.md`.
 - `/review <id> auto` (used by autopilot) asks nothing: it turns every Blocker into a fix task and stops.
+- Every finding has a category (`correctness`, `security`, `tests`, `spec`, `tdd`, ...), so `/retro` and `/stats` can group them. An earlier round's `review.md` is copied to `history/` before a new round, so no findings are lost.
+- TDD evidence: for each .NET task, the reviewer checks the `Red run` in `progress.md` shows the new test failing for the expected reason. Missing or wrong is `Should fix` (category `tdd`); a Personal or Company rule can make it a Blocker.
 
 **/pr**
 - Title under 70 characters, one or two sentences, up to 4 bullets, a testing line, the work item link.
@@ -422,6 +424,14 @@ Plus **global memory** in `%USERPROFILE%\.config\eng-agents\memory.md` (`/memory
 - It checks for a duplicate or contradicting line first, and offers to fix a wrong command or path in the repo guide instead of adding a memory line.
 - Run it in the session where the rule came up, so "remember that" can be resolved to the real thing.
 - Edit or delete memory lines by hand any time. Re-running `/onboard-repo` keeps the `## Remembered` section.
+
+## Retros
+
+`/retro <id>` (planner) after an item's review: it reads every review round, the blocked and failed entries in `progress.md`, and gates you edited, then writes `retro.md` with what caused rework and at most 5 candidate rules. Each rule names the finding it would have prevented and comes with the exact `/memory` line to save it (repo, `-global` or `-product`, by the split rule). It never writes memory itself, and it lists existing rules that were broken instead of repeating them. Problems with the pipeline itself go in a separate "For Tandem itself" list.
+
+`/retro --since yyyy-MM-dd` looks across items with `scripts/stats/Get-ReviewFindings.ps1`: a repo and category that showed up in 2 or more items is a repeating pattern, and gets one proposed rule (or a clearer wording for a rule that keeps being broken). It writes `.work/_retro/<date>.md`.
+
+`/pr` reminds you to run `/retro` once the PR is merged, and `/shutdown` adds a loop for items that reached `/pr` today without one.
 
 ## Measuring the pipeline
 

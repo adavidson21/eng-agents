@@ -233,6 +233,7 @@ foreach ($dir in (Get-ChildItem -LiteralPath $WorkRoot -Directory | Sort-Object 
         tasksTotal      = $tasksTotal
         tasksDone       = $tasksDone
         tasksAdded      = $tasksAdded
+        retro           = (Test-Path -LiteralPath (Join-Path $dir.FullName "retro.md"))
         verdict         = $verdict
         findings        = $findings
         categories      = $categories
@@ -288,6 +289,7 @@ $summary = [ordered]@{
     tasksAddedByReview    = [int](($all | Where-Object { $null -ne $_.tasksAdded } | ForEach-Object { [int]$_.tasksAdded } | Measure-Object -Sum).Sum)
     blockers              = [int](($all | Where-Object { $null -ne $_.findings.blocker } | ForEach-Object { $_.findings.blocker } | Measure-Object -Sum).Sum)
     findingCategories     = $catTotals
+    retros                = @($all | Where-Object { $_.retro }).Count
 }
 
 $result = [ordered]@{
@@ -333,6 +335,7 @@ $out.Add("| /do-task runs, verify failure rate | $($summary.doTaskRuns), $(Show 
 $out.Add("| Full-suite failures caught in /do-task | $($summary.fullSuiteFails) |")
 $out.Add("| Tasks added after /tasks (mostly review fixes) | $($summary.tasksAddedByReview) |")
 $out.Add("| Review Blockers (current review.md files) | $($summary.blockers) |")
+$out.Add("| Items with a /retro | $($summary.retros) of $($summary.reachedPr) that reached /pr |")
 $out.Add("")
 $out.Add("## Gates")
 $out.Add("")

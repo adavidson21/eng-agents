@@ -60,6 +60,8 @@ function Copy-Overlay {
 function New-EvalWorkspace {
     param($Case, [string]$Root)
     Copy-Item -Path (Join-Path $script:EvalsRoot "workspace/*") -Destination $Root -Recurse -Force
+    # Extra input files for a case (a doc with planted mistakes, a request note), before the first commit.
+    foreach ($x in (Get-CaseList $Case.files)) { Copy-Overlay (Join-Path $script:EvalsRoot "fixtures/extra/$($x.from)") (Join-Path $Root $x.to) }
     $repo = Join-Path $Root "sample-api"
     Invoke-EvalGit $repo @("init", "-q", "-b", "main") | Out-Null
     Invoke-EvalGit $repo @("config", "user.email", "evals@example.invalid") | Out-Null
@@ -83,7 +85,21 @@ function New-EvalWorkspace {
         Repo = $repo
         Work = $work
         Base = (Invoke-EvalGit $repo @("rev-parse", "HEAD"))
+        Case = $Case
+        WorkSnapshot = (Get-TreeSnapshot (Join-Path $Root ".work"))
     }
+}
+
+# Every file under a folder with a hash of its contents, one line each, sorted ("" when the folder is missing).
+function Get-TreeSnapshot([string]$Dir) {
+    if (-not (Test-Path -LiteralPath $Dir)) { return "" }
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    $root = (Resolve-Path -LiteralPath $Dir).Path
+    $lines = foreach ($f in (Get-ChildItem -LiteralPath $root -Recurse -File | Sort-Object FullName)) {
+        $h = ($sha.ComputeHash([IO.File]::ReadAllBytes($f.FullName)) | ForEach-Object { $_.ToString("x2") }) -join ""
+        "$($f.FullName.Substring($root.Length).Replace('\', '/')) $h"
+    }
+    return ($lines -join "`n")
 }
 
 # Applies a golden output (what a good or bad agent run would leave behind) to a workspace.
@@ -148,7 +164,7 @@ function Approve-GateFile {
     return $true
 }
 
-# Lift per case that ran in both arms: Tandem's pass rate minus the baseline's, in points.
+# Lift per case (and model) that ran in both arms: Tandem's pass rate minus the baseline's, in points.
 function Get-Lift {
     param($Results)
     $out = @()
@@ -156,13 +172,14 @@ function Get-Lift {
     foreach ($r in $Results) {
         if ($r.skipped -or $null -eq $r.rate) { continue }
         $a = if ($r.arm) { "$($r.arm)" } else { "tandem" }
-        if (-not $byCase.ContainsKey($r.case)) { $byCase[$r.case] = @{} }
-        $byCase[$r.case][$a] = [int]$r.rate
+        $k = "$($r.case)|$($r.model)"
+        if (-not $byCase.ContainsKey($k)) { $byCase[$k] = @{ case = "$($r.case)"; model = $r.model } }
+        $byCase[$k][$a] = [int]$r.rate
     }
     foreach ($k in ($byCase.Keys | Sort-Object)) {
         $v = $byCase[$k]
         if ($v.ContainsKey("tandem") -and $v.ContainsKey("baseline")) {
-            $out += [pscustomobject]@{ case = $k; tandem = $v["tandem"]; baseline = $v["baseline"]; lift = ($v["tandem"] - $v["baseline"]) }
+            $out += [pscustomobject]@{ case = $v.case; model = $v.model; tandem = $v["tandem"]; baseline = $v["baseline"]; lift = ($v["tandem"] - $v["baseline"]) }
         }
     }
     return $out
@@ -251,28 +268,140 @@ function Get-CaseUsageSummary($Runs, [int]$Passes) {
 # ------------------------------------------------------------------ prompt size (no model)
 
 <#
-  What each command loads before it does anything: its command file, its agent file and the always-loaded
-  core AGENTS.md. Tokens are estimated at 4 characters each, the same way for every file, so commands compare
-  fairly even though the exact count depends on the model. Files a command reads while it runs (templates,
-  guides, stacks) are not counted here.
+  What each command loads and reads. Up front: its command file, its agent file and the always-loaded core
+  AGENTS.md (`tokens`, estimated at 4 characters each so commands compare fairly). While it runs: the guides,
+  templates and stacks its command and agent files name as {{ENG_HOME}}/<folder>/<file> (`readTokens`).
+  `files` lists everything above plus named scripts, relative to the repo; `hash` (12 hex) changes when any of
+  them does, so a result can tell it is stale after a prompt change (results version 4, -Affected).
 #>
-function Get-PromptSizes {
+function Get-CommandInfos {
     param([string]$Core = (Join-Path $script:RepoRoot "core"))
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    $read = { param($p) if (Test-Path -LiteralPath $p) { [IO.File]::ReadAllText($p) } else { "" } }
+    $repo = Split-Path -Parent ([IO.Path]::GetFullPath($Core))
     $agentsMd = Join-Path $Core "AGENTS.md"
-    $base = if (Test-Path -LiteralPath $agentsMd) { [IO.File]::ReadAllText($agentsMd).Length } else { 0 }
+    $base = & $read $agentsMd
     $out = @()
     foreach ($f in (Get-ChildItem -LiteralPath (Join-Path $Core "commands") -Filter *.md | Sort-Object Name)) {
         $text = [IO.File]::ReadAllText($f.FullName)
         $agent = ([regex]::Match($text, '(?m)^agent:\s*([\w-]+)\s*$')).Groups[1].Value
-        $agentChars = 0
+        $agentText = ""
+        $files = New-Object System.Collections.Generic.List[string]
+        $files.Add("core/commands/$($f.Name)")
+        $files.Add("core/AGENTS.md")
         if ($agent) {
-            $ap = Join-Path $Core "agents/$agent.md"
-            if (Test-Path -LiteralPath $ap) { $agentChars = [IO.File]::ReadAllText($ap).Length }
+            $agentText = & $read (Join-Path $Core "agents/$agent.md")
+            if ($agentText) { $files.Add("core/agents/$agent.md") }
         }
-        $total = $text.Length + $agentChars + $base
-        $out += [pscustomobject]@{ command = $f.BaseName; agent = $(if ($agent) { $agent } else { $null }); commandChars = $text.Length; agentChars = $agentChars; baseChars = $base; tokens = [int][math]::Ceiling($total / 4) }
+        $refs = New-Object System.Collections.Generic.HashSet[string]
+        $queue = New-Object System.Collections.Generic.Queue[string]
+        $queue.Enqueue($text); $queue.Enqueue($agentText)
+        $readChars = 0
+        while ($queue.Count) {
+            $t = $queue.Dequeue()
+            foreach ($m in [regex]::Matches($t, '\{\{ENG_HOME\}\}/((?:guides|templates|stacks|scripts)/[A-Za-z0-9_./-]+\.(?:md|ps1|json))')) {
+                $rel = $m.Groups[1].Value
+                if (-not $refs.Add($rel)) { continue }
+                $full = Join-Path $Core $rel
+                if (-not (Test-Path -LiteralPath $full)) { continue }
+                $files.Add("core/$rel")
+                $body = [IO.File]::ReadAllText($full)
+                if ($rel -notlike "scripts/*") { $readChars += $body.Length; $queue.Enqueue($body) }
+            }
+        }
+        $sorted = @($files | Select-Object -Unique | Sort-Object)
+        $all = ($sorted | ForEach-Object { "$_`n" + (& $read (Join-Path $repo $_)) }) -join "`n"
+        $hash = (($sha.ComputeHash([Text.Encoding]::UTF8.GetBytes(($all -replace "`r`n", "`n"))) | ForEach-Object { $_.ToString("x2") }) -join "").Substring(0, 12)
+        $out += [pscustomobject]@{
+            command = $f.BaseName; agent = $(if ($agent) { $agent } else { $null })
+            commandChars = $text.Length; agentChars = $agentText.Length; baseChars = $base.Length
+            tokens = [int][math]::Ceiling(($text.Length + $agentText.Length + $base.Length) / 4)
+            readTokens = [int][math]::Ceiling($readChars / 4)
+            files = $sorted; hash = $hash
+        }
     }
     return $out
+}
+
+# Kept for callers from Core 3.2.0: the same rows without the read list.
+function Get-PromptSizes {
+    param([string]$Core = (Join-Path $script:RepoRoot "core"))
+    return @(Get-CommandInfos -Core $Core)
+}
+
+# The commands a case runs in its tandem arm.
+function Get-CaseCommands($Case) {
+    if ($Case.steps) { return @($Case.steps | Where-Object { $_.command } | ForEach-Object { "$($_.command)" } | Select-Object -Unique) }
+    if ($Case.command) { return @("$($Case.command)") }
+    return @()
+}
+
+# One hash for everything a case's commands load and read (12 hex), or $null when it runs none.
+function Get-CaseFilesHash($Case) {
+    if (-not $script:CommandInfos) { $script:CommandInfos = @(Get-CommandInfos) }
+    $hs = @(Get-CaseCommands $Case | ForEach-Object { $n = $_; @($script:CommandInfos | Where-Object { $_.command -eq $n })[0].hash } | Where-Object { $_ })
+    if (-not $hs.Count) { return $null }
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    return (($sha.ComputeHash([Text.Encoding]::UTF8.GetBytes(($hs -join ","))) | ForEach-Object { $_.ToString("x2") }) -join "").Substring(0, 12)
+}
+
+<#
+  Which cases to run after a prompt change: those whose files hash differs from the newest results file that
+  ran them in the tandem arm, plus those never run. Returns @{ Run = names; Why = @{ name = reason } }.
+#>
+function Get-AffectedCases {
+    param([object[]]$CaseFiles, [string]$ResultsDir)
+    $last = @{}
+    foreach ($f in @(Get-ChildItem -LiteralPath $ResultsDir -Filter *.json -ErrorAction SilentlyContinue | Sort-Object LastWriteTime)) {
+        try { $j = Get-Content -Raw -LiteralPath $f.FullName | ConvertFrom-Json } catch { continue }
+        foreach ($r in @($j.cases)) {
+            if ($r.skipped -or ($r.arm -and $r.arm -ne "tandem")) { continue }
+            $last["$($r.case)"] = [pscustomobject]@{ hash = $r.filesHash; file = $f.Name }
+        }
+    }
+    $run = @(); $why = @{}
+    foreach ($cf in $CaseFiles) {
+        $c = Read-Case $cf.FullName
+        $h = Get-CaseFilesHash $c
+        $prev = $last[$cf.BaseName]
+        if (-not $prev) { $run += $cf.BaseName; $why[$cf.BaseName] = "never run" }
+        elseif (-not $prev.hash) { $run += $cf.BaseName; $why[$cf.BaseName] = "no files hash in $($prev.file)" }
+        elseif ($prev.hash -ne $h) { $run += $cf.BaseName; $why[$cf.BaseName] = "prompts changed since $($prev.file)" }
+    }
+    return @{ Run = $run; Why = $why }
+}
+
+<#
+  An experiment's Tandem: a scratch copy of this repo with the overlay's files laid over core/ (an overlay
+  folder mirrors core/, for example <overlay>/commands/plan.md), installed into a scratch opencode config
+  folder with your own opencode.json copied in first (model, providers). Returns the XDG_CONFIG_HOME to run
+  the tandem arm with. Your real Tandem is not touched.
+#>
+function New-ExperimentConfig {
+    param([string]$Overlay, [string]$UserDir)
+    if (-not (Test-Path -LiteralPath $Overlay)) { throw "Overlay folder not found: $Overlay" }
+    $scratch = New-TempDir "eval-experiment-repo"
+    foreach ($item in @("core", "personal", "install.ps1", "update.ps1")) {
+        $src = Join-Path $script:RepoRoot $item
+        if (Test-Path -LiteralPath $src) { Copy-Item -LiteralPath $src -Destination $scratch -Recurse -Force }
+    }
+    $root = (Resolve-Path -LiteralPath $Overlay).Path
+    foreach ($f in (Get-ChildItem -LiteralPath $root -Recurse -File)) {
+        $rel = $f.FullName.Substring($root.Length).TrimStart('\', '/')
+        if ($rel -match '(^|[\\/])\.\.([\\/]|$)') { throw "Bad overlay path: $rel" }
+        $dest = Join-Path (Join-Path $scratch "core") $rel
+        New-Item -ItemType Directory -Path (Split-Path $dest) -Force | Out-Null
+        Copy-Item -LiteralPath $f.FullName -Destination $dest -Force
+    }
+    $xdg = New-TempDir "eval-experiment-config"
+    $target = Join-Path $xdg "opencode"
+    New-Item -ItemType Directory -Path $target -Force | Out-Null
+    foreach ($n in @("opencode.json", "opencode.jsonc")) {
+        $u = Join-Path $UserDir $n
+        if (Test-Path -LiteralPath $u) { Copy-Item -LiteralPath $u -Destination $target -Force }
+    }
+    $null = & (Join-Path $scratch "install.ps1") -Target $target 6>&1 2>&1
+    return [pscustomobject]@{ XdgConfigHome = $xdg; Repo = $scratch }
 }
 
 # Prompt tokens for the commands a case runs in an arm (the baseline loads none of them).
@@ -281,8 +410,8 @@ function Get-CasePromptTokens($Case, [string]$Arm) {
     $cmds = @()
     if ($Case.steps) { $cmds = @($Case.steps | Where-Object { $_.command } | ForEach-Object { "$($_.command)" }) }
     elseif ($Case.command) { $cmds = @("$($Case.command)") }
-    if (-not $script:PromptSizes) { $script:PromptSizes = @(Get-PromptSizes) }
+    if (-not $script:CommandInfos) { $script:CommandInfos = @(Get-CommandInfos) }
     $sum = 0
-    foreach ($c in ($cmds | Select-Object -Unique)) { $hit = @($script:PromptSizes | Where-Object { $_.command -eq $c })[0]; if ($hit) { $sum += $hit.tokens } }
+    foreach ($c in ($cmds | Select-Object -Unique)) { $hit = @($script:CommandInfos | Where-Object { $_.command -eq $c })[0]; if ($hit) { $sum += $hit.tokens } }
     return $sum
 }

@@ -1,0 +1,27 @@
+{
+  "description": "/triage turns a request in words into triage.md: what it is, which repo it touches, what is missing, a message for the requester and a suggested route. No code changes.",
+  "command": "triage",
+  "arguments": "Customers want to see how many items are in their order before they pay. Asked by the checkout team.",
+  "expect": {
+    "files": [
+      {
+        "path": ".work/triage-*/triage.md",
+        "headings": [
+          "## Summary",
+          "## Products and repos",
+          "## Message to the requester",
+          "## Suggested route"
+        ],
+        "matches": [
+          "sample-api"
+        ]
+      }
+    ],
+    "repo": "unchanged",
+    "judge": {
+      "rubric": "triage",
+      "path": ".work/triage-*/triage.md"
+    }
+  },
+  "grader": "Test-Expect"
+}

@@ -94,6 +94,24 @@ foreach ($v in @("pass", "planted")) {
     finally { Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue }
 }
 
+# bug-outcome and quick-outcome: the correct fix passes the hidden outcome tests, the starting code does not.
+foreach ($oc in @(@{ case = "bug-outcome"; fix = "L2-correct" }, @{ case = "quick-outcome"; fix = "L3-correct" })) {
+    foreach ($v in @("fix", "start")) {
+        $root = New-TempDir "fixtures"
+        try {
+            $case = Read-Case (Join-Path $PSScriptRoot "cases/$($oc.case).json")
+            $ws = New-EvalWorkspace $case $root
+            if ($v -eq "fix") { Copy-Overlay (Join-Path $PSScriptRoot "fixtures/repo/$($oc.fix)") $ws.Repo }
+            else { Add-Content -LiteralPath (Join-Path $ws.Repo "tests/Orders.Tests/OrderTotalsTests.cs") -Value "`n// touched" }
+            $checks = @(Test-Outcome $ws)
+            $testsOk = @($checks | Where-Object { $_.Check -like "all tests pass*" -and $_.Pass }).Count -eq 1
+            if ($v -eq "fix") { Check "$($oc.case): the correct fix passes the hidden outcome tests" $testsOk (@($checks | Where-Object { -not $_.Pass } | ForEach-Object { "$($_.Check): $($_.Detail)" }) -join " | ") }
+            else { Check "$($oc.case): the starting code fails the hidden outcome tests" (-not $testsOk) }
+        }
+        finally { Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue }
+    }
+}
+
 if ($failed) { Write-Output "$failed check(s) failed."; exit 1 }
 Write-Output "Eval fixtures: all checks passed."
 exit 0  # the last dotnet run (the planted bug) failed on purpose; do not pass its exit code on

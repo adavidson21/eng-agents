@@ -1,0 +1,62 @@
+{
+  "about": "What each agent may do, checked against its permission frontmatter by evals/Test-AgentGuards.ps1 (no model). opencode applies the last matching rule. Expect allow, ask or deny; 'not-allow' means ask or deny. Every agent in core/agents must have at least one row.",
+  "all": [
+    { "kind": "bash", "target": "git push origin main", "expect": "not-allow" },
+    { "kind": "bash", "target": "git -C sample-api push --force", "expect": "not-allow" },
+    { "kind": "bash", "target": "git reset --hard HEAD~3", "expect": "not-allow" },
+    { "kind": "edit", "target": "sample-api/.git/config", "expect": "not-allow" }
+  ],
+  "agents": {
+    "planner": [
+      { "kind": "edit", "target": "sample-api/src/Orders/OrderTotals.cs", "expect": "deny" },
+      { "kind": "edit", "target": ".work/L1-bulk-discount/spec.md", "expect": "allow" }
+    ],
+    "implementer": [
+      { "kind": "edit", "target": "sample-api/src/Orders/OrderTotals.cs", "expect": "allow" },
+      { "kind": "edit", "target": "sample-api/.env", "expect": "deny" },
+      { "kind": "edit", "target": "sample-api/AGENTS.md", "expect": "ask" }
+    ],
+    "reviewer": [
+      { "kind": "edit", "target": "sample-api/src/Orders/OrderTotals.cs", "expect": "deny" },
+      { "kind": "edit", "target": ".work/L1-bulk-discount/review.md", "expect": "allow" },
+      { "kind": "bash", "target": "git commit -m fix", "expect": "deny" }
+    ],
+    "investigator": [
+      { "kind": "edit", "target": "sample-api/src/Orders/OrderTotals.cs", "expect": "deny" },
+      { "kind": "edit", "target": ".work/spike-pricing/findings.md", "expect": "allow" },
+      { "kind": "bash", "target": "git commit -m wip", "expect": "deny" }
+    ],
+    "writer": [
+      { "kind": "edit", "target": "sample-api/src/Orders/OrderTotals.cs", "expect": "deny" },
+      { "kind": "edit", "target": "sample-api/docs/pricing.md", "expect": "allow" }
+    ],
+    "pr-reviewer": [
+      { "kind": "edit", "target": "sample-api/src/Orders/OrderTotals.cs", "expect": "deny" },
+      { "kind": "bash", "target": "git push origin feature", "expect": "deny" }
+    ],
+    "product-manager": [
+      { "kind": "edit", "target": "sample-api/src/Orders/OrderTotals.cs", "expect": "deny" },
+      { "kind": "edit", "target": ".work/scope-loyalty/stories.md", "expect": "allow" },
+      { "kind": "edit", "target": ".work/L1-bulk-discount/spec.md", "expect": "deny" }
+    ],
+    "milestone-architect": [
+      { "kind": "edit", "target": "sample-api/src/Orders/OrderTotals.cs", "expect": "deny" },
+      { "kind": "edit", "target": ".work/scope-loyalty/milestones.md", "expect": "allow" },
+      { "kind": "edit", "target": ".work/scope-loyalty/stories.md", "expect": "deny" }
+    ],
+    "people-prep": [
+      { "kind": "edit", "target": "sample-api/src/Orders/OrderTotals.cs", "expect": "deny" },
+      { "kind": "bash", "target": "rm -rf ~", "expect": "deny" }
+    ],
+    "hub": [
+      { "kind": "edit", "target": "sample-api/src/Orders/OrderTotals.cs", "expect": "deny" },
+      { "kind": "bash", "target": "curl https://example.com", "expect": "deny" }
+    ],
+    "chat": [
+      { "kind": "edit", "target": "sample-api/src/Orders/OrderTotals.cs", "expect": "deny" },
+      { "kind": "edit", "target": ".work/L1-bulk-discount/spec.md", "expect": "deny" },
+      { "kind": "bash", "target": "git log --oneline", "expect": "allow" },
+      { "kind": "bash", "target": "rm -rf sample-api", "expect": "deny" }
+    ]
+  }
+}

@@ -356,3 +356,139 @@ function Test-FeatureOutcome($Ws, [switch]$NoExec) {
     return $c
 }
 
+
+# ------------------------------------------------------------------ data-driven grading (Bench 2)
+
+# Workspace files matching a path relative to the workspace root; * matches within one folder name.
+function Find-WsFiles($Ws, [string]$Path) {
+    $parts = $Path -split '/'
+    $current = @($Ws.Root)
+    foreach ($part in $parts) {
+        $next = @()
+        foreach ($d in $current) {
+            if (-not (Test-Path -LiteralPath $d -PathType Container)) { continue }
+            if ($part -match '[*?]') { $next += @(Get-ChildItem -LiteralPath $d -Force -ErrorAction SilentlyContinue | Where-Object { $_.Name -like $part } | ForEach-Object { $_.FullName }) }
+            else { $p = Join-Path $d $part; if (Test-Path -LiteralPath $p) { $next += $p } }
+        }
+        $current = $next
+    }
+    return @($current | Where-Object { Test-Path -LiteralPath $_ -PathType Leaf })
+}
+
+<#
+  The grader for cases that describe what they expect in their JSON ("expect"), so a new case needs no code:
+    files[]   path (workspace-relative, * allowed in a folder name), exists (default true), headings[] (lines that
+              must be there, "## Options"), matches[] / notMatches[] (regex), status (DRAFT, APPROVED, PAUSED),
+              maxWords
+    repo      "unchanged" (no change in sample-api, committed or not), or an object { allow: [regex] }: only
+              files matching one of these may change
+    work      "unchanged": nothing under .work changed (read-only commands)
+    judge     a rubric name (evals/rubrics/<name>.json) and the file it grades: { rubric, path }. Runs only when
+              Invoke-Evals has a -Judge model and the grader is not in -NoExec mode.
+#>
+function Test-Expect($Ws, [switch]$NoExec) {
+    $c = New-Checks
+    $e = $Ws.Case.expect
+    foreach ($f in @($e.files)) {
+        if (-not $f) { continue }
+        $hits = @(Find-WsFiles $Ws $f.path)
+        $want = if ($null -eq $f.exists) { $true } else { [bool]$f.exists }
+        if (-not $want) { Add-Check $c "no $($f.path)" ($hits.Count -eq 0) "found $($hits.Count)"; continue }
+        Add-Check $c "wrote $($f.path)" ($hits.Count -ge 1) "missing"
+        if (-not $hits.Count) { continue }
+        $t = [IO.File]::ReadAllText($hits[0])
+        foreach ($h in @($f.headings)) { if ($h) { Add-Check $c "$($f.path) has $h" ($t -match ('(?m)^' + [regex]::Escape($h) + '\b')) } }
+        foreach ($m in @($f.matches)) { if ($m) { Add-Check $c "$($f.path) matches $m" ([regex]::IsMatch($t, $m)) } }
+        foreach ($m in @($f.notMatches)) { if ($m) { Add-Check $c "$($f.path) does not match $m" (-not [regex]::IsMatch($t, $m)) } }
+        if ($f.status) { Add-Check $c "$($f.path) is $($f.status)" ($t -match ('(?m)^\s*Status:\s*' + $f.status + '\b')) }
+        if ($f.maxWords) { $w = @($t -split '\s+' | Where-Object { $_ }).Count; Add-Check $c "$($f.path) is at most $($f.maxWords) words" ($w -le [int]$f.maxWords) "$w words" }
+    }
+    if ($e.repo) {
+        $changed = @(Get-ChangedFiles $Ws)
+        if ("$($e.repo)" -eq "unchanged") { Add-Check $c "sample-api unchanged" ($changed.Count -eq 0) "changed: $($changed -join ', ')" }
+        elseif ($e.repo.allow) {
+            $bad = @($changed | Where-Object { $p = $_; -not (@($e.repo.allow | Where-Object { $p -match $_ }).Count) })
+            Add-Check $c "sample-api changed only where allowed" ($bad.Count -eq 0) "also changed: $($bad -join ', ')"
+        }
+    }
+    if ("$($e.work)" -eq "unchanged") {
+        Add-Check $c ".work unchanged" ((Get-TreeSnapshot (Join-Path $Ws.Root ".work")) -eq $Ws.WorkSnapshot) "files under .work changed"
+    }
+    if ($e.judge -and -not $NoExec -and $env:EVAL_JUDGE_MODEL) {
+        $hits = @(Find-WsFiles $Ws $e.judge.path)
+        if (-not $hits.Count) { Add-Check $c "judge: $($e.judge.rubric)" $false "nothing to judge at $($e.judge.path)" }
+        else { foreach ($r in @(Invoke-Judge -Rubric $e.judge.rubric -Text ([IO.File]::ReadAllText($hits[0])))) { [void]$c.Add($r) } }
+    }
+    return $c
+}
+
+<#
+  Outcome only, for any lane (bug-outcome, quick-outcome): the run stayed in src/ and tests/, kept the Do-not-touch
+  method, and the case's hidden tests pass. Case field "outcome": { hidden: "<folder under fixtures/hidden-outcome>" }.
+#>
+function Test-Outcome($Ws, [switch]$NoExec) {
+    $c = New-Checks
+    $changed = @(Get-ChangedFiles $Ws)
+    Add-Check $c "changed the code" ($changed.Count -gt 0) "no changes in sample-api"
+    $outside = @($changed | Where-Object { $_ -notmatch '^(src|tests)/' })
+    Add-Check $c "changes only in src/ and tests/" ($outside.Count -eq 0) "outside: $($outside -join ', ')"
+    $totals = [IO.File]::ReadAllText((Join-Path $Ws.Repo "src/Orders/OrderTotals.cs"))
+    Add-Check $c "kept LegacyRound (Do not touch)" ($totals -match 'LegacyRound')
+    if (-not $NoExec) {
+        $proj = Join-Path $Ws.Repo "tests/Orders.Tests"
+        $src = Join-Path $script:EvalsRoot "fixtures/hidden-outcome/$($Ws.Case.outcome.hidden)"
+        $copied = @()
+        foreach ($f in (Get-ChildItem -LiteralPath $src -File -Filter *.cs)) { Copy-Item -LiteralPath $f.FullName -Destination $proj -Force; $copied += (Join-Path $proj $f.Name) }
+        try {
+            Push-Location $Ws.Root
+            $prev = $ErrorActionPreference; $ErrorActionPreference = "Continue"
+            $out = & dotnet test "sample-api/tests/Orders.Tests/Orders.Tests.csproj" 2>&1 | Out-String
+            $ok = ($LASTEXITCODE -eq 0)
+            $ErrorActionPreference = $prev
+            Pop-Location
+            Add-Check $c "all tests pass, including hidden outcome tests" $ok (($out -split "\r?\n" | Select-Object -Last 15) -join " / ")
+        }
+        finally { foreach ($p in $copied) { Remove-Item -LiteralPath $p -Force -ErrorAction SilentlyContinue } }
+    }
+    return $c
+}
+
+<#
+  The writing judge: asks a model (Invoke-Evals -Judge, any provider/model, free or paid) the rubric's yes/no
+  questions about a document, with Tandem left out of its config. Returns one check per question plus the
+  overall bar. The judge must answer JSON: {"answers":[{"q":1,"yes":true,"why":"..."}]}. A judge that cannot be
+  read is a failed check, never a pass.
+#>
+function Invoke-Judge {
+    param([string]$Rubric, [string]$Text)
+    $rp = Join-Path $script:EvalsRoot "rubrics/$Rubric.json"
+    $r = Get-Content -Raw -LiteralPath $rp | ConvertFrom-Json
+    $qs = @($r.questions)
+    $prompt = "You are grading a document against a checklist. Answer each question with yes or no, strictly, from the document alone.`n`n" +
+        "Checklist:`n" + (($qs | ForEach-Object -Begin { $i = 0 } -Process { $i++; "$i. $_" }) -join "`n") +
+        "`n`nReply with JSON only, no other text: {`"answers`":[{`"q`":1,`"yes`":true,`"why`":`"one short reason`"}]}`n`nDocument:`n<<<`n$Text`n>>>"
+    $exe = if ($env:EVAL_OPENCODE) { $env:EVAL_OPENCODE } else { "opencode" }
+    $oldXdg = $env:XDG_CONFIG_HOME
+    try {
+        if ($env:EVAL_PLAIN_CONFIG) { $env:XDG_CONFIG_HOME = $env:EVAL_PLAIN_CONFIG }
+        $raw = & $exe run --model $env:EVAL_JUDGE_MODEL --format json $prompt 2>$null | Out-String
+    }
+    finally { $env:XDG_CONFIG_HOME = $oldXdg }
+    $answerText = (($raw -split "\r?\n") | ForEach-Object { try { $ev = $_ | ConvertFrom-Json; if ($ev.type -eq "text" -and $ev.part.text) { $ev.part.text } } catch { } }) -join ""
+    if (-not $answerText) { $answerText = $raw }
+    $json = [regex]::Match($answerText, '(?s)\{.*"answers".*\}').Value
+    $out = @()
+    try { $ans = @(($json | ConvertFrom-Json).answers) } catch { $ans = @() }
+    if ($ans.Count -ne $qs.Count) { return @([pscustomobject]@{ Check = "judge ($Rubric) answered every question"; Pass = $false; Detail = "got $($ans.Count) of $($qs.Count) answers" }) }
+    $yes = 0
+    for ($i = 0; $i -lt $qs.Count; $i++) {
+        $a = $ans[$i]
+        if ($a.yes -eq $true) { $yes++ }
+        # Each answer is reported for reading; only the bar below decides the run.
+        $out += [pscustomobject]@{ Check = "judge said $(if ($a.yes -eq $true) { 'yes' } else { 'no' }): $($qs[$i])$(if ($a.why) { " ($($a.why))" })"; Pass = $true; Detail = "" }
+    }
+    $bar = if ($r.pass) { [double]$r.pass } else { 0.8 }
+    $score = $yes / [math]::Max(1, $qs.Count)
+    $out += [pscustomobject]@{ Check = "judge ($Rubric): $yes of $($qs.Count) yes, bar $([int]($bar * 100))%"; Pass = ($score -ge $bar); Detail = "score $([int]($score * 100))%" }
+    return $out
+}

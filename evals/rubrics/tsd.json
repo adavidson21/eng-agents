@@ -1,0 +1,10 @@
+{
+  "about": "Writing judge for /tsd tsd.md.",
+  "pass": 0.75,
+  "questions": [
+    "Does the overview say what the system is for in two or three sentences?",
+    "Does every diagram use names that appear in the code?",
+    "Does at least one key flow walk through what happens step by step?",
+    "Does it avoid inventing components the code does not have?"
+  ]
+}

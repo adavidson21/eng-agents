@@ -1,5 +1,5 @@
 ---
-description: "Start a work item: fetch or describe it, create its .work folder, pick repos, create branches, write a brief. Usage: /start <id|new> <feature|bug|quick> [repo folder or ADO connection] [--cold] [--no-baseline]"
+description: "Start a work item: fetch or describe it, create its .work folder, pick repos, create branches, write a brief. Usage: /start <id|owner/repo#n|new> <feature|bug|quick> [repo folder or ADO connection] [--cold] [--no-baseline]"
 agent: planner
 ---
 
@@ -13,13 +13,14 @@ Follow these steps in order. Do not skip any step, except the ones marked "only 
 
 - `$1` is one of:
   - a number: a work item in ADO.
+  - a GitHub issue, `owner/repo#<number>` (for example `acme/web#12`): it is fetched into a new local work item (Step 3c). A bare `#12` is a GitHub issue too; then the third argument must be the repo folder it belongs to.
   - a local id, `L` and a number (for example `L12`): work with no tracker item, already described. Dispatch creates its folder before it runs `/start`.
   - `new`: work with no tracker item that is not described yet.
 - `$2` must be `feature`, `bug` or `quick`. `quick` is the small lane: one repo, at most 2 tasks, no schema or API contract change (see `/quick`).
-- If either is wrong, stop and reply: `Usage: /start <id|new> <feature|bug|quick> [repo folder or ADO connection] [--cold] [--no-baseline]`.
+- If either is wrong, stop and reply: `Usage: /start <id|owner/repo#n|new> <feature|bug|quick> [repo folder or ADO connection] [--cold] [--no-baseline]`.
 - `--no-baseline` is optional and can come anywhere after the lane. If any argument is `--no-baseline`, remember it: Step 7b is skipped. Like `--cold`, it is never the third argument.
 - `--cold` is optional and can come anywhere after the lane. If any argument is `--cold`, remember it: Step 8b is skipped. `--cold` is never the third argument, so if `$3` is `--cold`, there is no third argument.
-- `$3` is optional and only for a number. It is a repo folder in the workspace or an ADO connection name. It tells the script which ADO server or collection holds the work item. If the third argument above is empty, there is none.
+- `$3` is optional and only for a number or a bare `#<number>`. For `#<number>` it is the repo folder whose GitHub remote holds the issue. It is a repo folder in the workspace or an ADO connection name. It tells the script which ADO server or collection holds the work item. If the third argument above is empty, there is none.
 
 ## Step 2: Check for existing work
 
@@ -29,6 +30,7 @@ Follow these steps in order. Do not skip any step, except the ones marked "only 
   - If it has a `repos.md`, it is already started: stop and suggest `/status $1`.
   - Otherwise use that folder, skip Steps 3a and 3b, and go to Step 4.
 - If `$1` is a number and a folder starting with `$1-` already exists, stop. Tell the engineer it exists and suggest `/status $1`.
+- If `$1` is a GitHub issue, go to Step 3c: its script finds an existing folder for that issue.
 
 ## Step 3a: Describe new local work (only when `$1` is `new`)
 
@@ -69,6 +71,23 @@ If there is a third argument, run exactly this command instead:
 ```
 
   This creates the folder with an empty `workitem.md`. Fill it in yourself from their answer: replace each `<...>` placeholder with what they gave, in their words, or `None provided`. Do not add requirements they did not give. Do not ask them to edit the file.
+
+## Step 3c: Get the GitHub issue (only when `$1` is a GitHub issue)
+
+For `owner/repo#<number>`, run exactly this command:
+
+```
+{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/github/Get-GitHubIssue.ps1" -Id "$1" -WorkRoot ".work" -IncludeComments
+```
+
+For a bare `#<number>`, add `-From "$3"` at the end.
+
+- It makes a local work item (`L<n>-<name>`) from the issue. `workitem.md` keeps the issue as `- GitHub: owner/repo#<number>` and its link. Use the new local id (the folder name before the first `-`) in place of `$1` from here on, and tell the engineer: "GitHub issue $1 is local work item `L<n>`."
+- If it succeeds, the last line of output is the new folder path. Remember it.
+- If the first line starts with `ALREADY:`, the issue is already started: stop and suggest `/status <the L id in the folder name>`.
+- If the error contains `NOTOKEN:`, tell the engineer to set a GitHub token (`workshop pat GITHUB_PAT`, or `gh auth login`) and stop.
+- If the error contains `BADID:` or `NOTFOUND:`, show it in one line and stop.
+- If it fails for any other reason, show the error in one line, then do Step 3a instead (describe it as local work), using the issue's title as the title.
 
 ## Step 4: Read the work item
 

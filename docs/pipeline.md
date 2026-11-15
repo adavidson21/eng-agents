@@ -253,6 +253,20 @@ All state lives in the workspace, outside every git repo, and never leaves the w
 
 `<short-name>` is the first 5 words of the work item title, lowercase, filler words dropped, at most 40 characters.
 
+## GitHub issues
+
+`/start owner/repo#12 <lane>` starts a GitHub issue. `scripts/github/Get-GitHubIssue.ps1` fetches it (GET calls only) and makes it a **local work item** (`L<n>`), so every later command, the dashboard and Dispatch treat it like any other local item. `workitem.md` keeps `- GitHub: owner/repo#12` and the link, so the PR text can say `Fixes owner/repo#12`.
+
+| GitHub | In `workitem.md` |
+|---|---|
+| Labels `bug`, `story`, `feature`, `epic`, `task` | `Type:` (no label: Issue) |
+| Body sections `## Acceptance criteria`, `## Repro steps` | Those sections; the rest is the Description |
+| Sub-issue parent | Parents: the Feature |
+| Milestone (a major version) | Parents: the Epic |
+| Comments | Comments |
+
+A bare `#12` works with the repo folder as the third argument: `/start #12 feature web`. The token comes from `GITHUB_PAT` (Workshop's GitHub connector uses the same one), `GH_TOKEN`, `GITHUB_TOKEN`, or `gh auth token`; `GITHUB_API_URL` points at GitHub Enterprise Server.
+
 ## Reviewing teammates' PRs
 
 `/pr-review <PR link>` (agent: **pr-reviewer**) does a first pass on someone else's Azure DevOps pull request, so your own review starts from a short list instead of a blank diff. Dispatch has the same thing under **PR reviews**, with your review queue next to it.
@@ -260,6 +274,8 @@ All state lives in the workspace, outside every git repo, and never leaves the w
 1. `scripts/ado/Get-PullRequest.ps1` reads the PR, its linked work items, and its comment threads (GET calls only), finds the repo among your workspace folders, and fetches the PR's branches into private refs (`refs/eng-agents/pr/<id>/source` and `/target`). Nothing is checked out: your working tree and branches stay as they are. A PR from a fork is read from ADO's merge ref.
 2. The agent reads the diff and, where it needs more, whole files at the PR's commit with `git show`, plus your repo guide. Pass 1 checks the linked acceptance criteria; pass 2 looks for real problems (correctness, security, contracts, error handling, data, patterns, tests, build, leftovers). It skips anything already raised on the PR.
 3. It writes `.work/pr-<id>/review.md`: a recommendation, a risk level, and numbered draft comments (file, line, severity `blocking` / `should-fix` / `optional`, why, and the comment as you would post it).
+
+**GitHub PRs** work the same way: paste a `.../pull/<number>` link and `scripts/github/Get-GitHubPullRequest.ps1` does step 1 (it fetches `refs/pull/<number>/head`, so forks work too, and lists the issues the PR closes as its linked work items). It needs a GitHub token (`GITHUB_PAT`, `GH_TOKEN`, `GITHUB_TOKEN`, or `gh auth login`).
 
 **It never posts.** No comments, votes, approvals, or rejections. The agent cannot check out, fetch, push, or make web requests. You read the drafts, edit them, and post the ones you agree with.
 

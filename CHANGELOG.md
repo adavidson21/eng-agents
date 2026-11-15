@@ -2,7 +2,9 @@
 
 Core has one version (`core/VERSION`). `update.ps1` reads this file to show what is new. Until Core 2.11.0 the dashboard had its own version; its `## Dashboard` entries below are history.
 
-Format: one `## Core 4.1.0 (2026-11-15)
+Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
+
+## Core 4.1.0 (2026-11-15)
 
 Evals become the test suite for all of Tandem (Workshop's Bench 2):
 - Smarter runs: `-Affected` (only cases whose prompts changed, from `evals/commands.json` hashes), `-Release` (every case, 3 runs, exits 1 on a drop), `-Gate`, `-MaxRuns` (default 30), `-Models` (model matrix).
@@ -12,8 +14,6 @@ Evals become the test suite for all of Tandem (Workshop's Bench 2):
 - Improve loop: `Suggest-Fix.ps1` (one prompt edit from failed runs, by a model you pick), `Suggest-Trim.ps1` (one experiment per section, no model), `-Overlay` runs an experiment on a scratch install, `Keep-Experiment.ps1` keeps or drops it.
 - `Get-PromptSize.ps1` adds what a command reads while it runs; `-Write` saves `evals/commands.json`, checked in CI.
 - Results `version: 4`: `models`, `kind`, `label`, `overlay`, `judge`, `compareTo`; per case `model` and `filesHash`.
-
-## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
 ## Core 4.0.1 (2026-11-15)
 

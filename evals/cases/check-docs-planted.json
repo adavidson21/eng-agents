@@ -1,0 +1,26 @@
+{
+  "description": "/check-docs finds the planted wrong facts in a pricing doc (3 decimals, banker's rounding, LegacyRound called by Calculate) and writes check.md; it never edits the doc or the code.",
+  "command": "check-docs",
+  "arguments": "sample-api/docs/pricing.md",
+  "files": [
+    {
+      "from": "docs-planted",
+      "to": "."
+    }
+  ],
+  "expect": {
+    "files": [
+      {
+        "path": ".work/docs-*/check.md",
+        "matches": [
+          "(?i)wrong",
+          "(?i)decimal",
+          "(?i)(AwayFromZero|ToEven|midpoint|rounding)",
+          "(?i)LegacyRound"
+        ]
+      }
+    ],
+    "repo": "unchanged"
+  },
+  "grader": "Test-Expect"
+}

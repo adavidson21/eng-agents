@@ -1,0 +1,26 @@
+{
+  "description": "/spike answers a question without changing code: findings.md with a short answer, at most 3 options and one recommendation.",
+  "command": "spike",
+  "arguments": "Should the bulk discount stack with coupon codes we may add later? --for engineering",
+  "expect": {
+    "files": [
+      {
+        "path": ".work/spike-*/findings.md",
+        "headings": [
+          "## Short answer",
+          "## Options",
+          "## Recommendation"
+        ],
+        "matches": [
+          "(?i)coupon"
+        ]
+      }
+    ],
+    "repo": "unchanged",
+    "judge": {
+      "rubric": "spike",
+      "path": ".work/spike-*/findings.md"
+    }
+  },
+  "grader": "Test-Expect"
+}

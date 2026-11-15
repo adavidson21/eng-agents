@@ -15,6 +15,20 @@ work=".work/L1-bulk-discount"
 finish() { echo "{\"type\":\"step_finish\",\"timestamp\":1,\"sessionID\":\"ses_x\",\"part\":{\"type\":\"step-finish\",\"tokens\":{\"input\":$1,\"output\":$2,\"reasoning\":0,\"cache\":{\"read\":10,\"write\":0}},\"cost\":$3}}"; }
 tool() { echo "{\"type\":\"tool_use\",\"timestamp\":1,\"sessionID\":\"ses_x\",\"part\":{\"type\":\"tool\",\"tool\":\"$1\",\"state\":{\"status\":\"completed\"}}}"; }
 echo "not json, ignored"
+last="${!#}"
+text() { python3 -c 'import json,sys; print(json.dumps({"type":"text","timestamp":1,"sessionID":"ses_x","part":{"type":"text","text":sys.argv[1]}}))' "$1"; }
+# The writing judge: answer yes to every numbered question.
+if [ -z "$cmd" ] && printf '%s' "$last" | grep -q 'You are grading a document'; then
+  n=$(printf '%s\n' "$last" | grep -cE '^[0-9]+\. ')
+  ans=$(python3 -c 'import json,sys; n=int(sys.argv[1]); print(json.dumps({"answers":[{"q":i+1,"yes":True,"why":"fake"} for i in range(n)]}))' "$n")
+  text "$ans"; finish 50 20 0; exit 0
+fi
+# Suggest-Fix: propose renaming the file's first ## heading.
+if [ -z "$cmd" ] && printf '%s' "$last" | grep -q 'You improve prompts'; then
+  h=$(printf '%s\n' "$last" | grep -m1 '^## ')
+  ans=$(python3 -c 'import json,sys; print(json.dumps({"find":sys.argv[1],"replace":sys.argv[1]+" (clearer)","reason":"fake suggestion"}))' "$h")
+  text "$ans"; finish 80 40 0; exit 0
+fi
 case "$cmd" in
   spec)
     # One gate: /spec drafts spec, plan and tasks together.
@@ -28,7 +42,7 @@ case "$cmd" in
     echo "task $n" >> "$work/done.txt"
     if [ "$n" = "1" ]; then printf '\n## 2026-11-15 | /do-task | implementer\n\n- Stats: verify=FAIL full=PASS\n' >> "$work/progress.md"; fi
     finish 100 50 0.01
-    if [ "$n" = "2" ]; then cp "$FAKE_CORRECT"/src/Orders/*.cs sample-api/src/Orders/; fi ;;
+    if [ "$n" = "2" ] && [ -z "${FAKE_BREAK:-}" ]; then cp "$FAKE_CORRECT"/src/Orders/*.cs sample-api/src/Orders/; fi ;;
   "")
     # Plain prompt: Tandem must be out of the config folder opencode reads.
     tool read; finish 300 100 0

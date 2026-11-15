@@ -1,0 +1,11 @@
+{
+  "about": "Writing judge for /spike findings.md. Yes/no questions; pass when at least the bar is yes. good.md must pass and bad.md must fail before the judge's scores are trusted (Test-Judge.ps1).",
+  "pass": 0.8,
+  "questions": [
+    "Does the short answer answer the question asked in one or two sentences?",
+    "Are there at most 3 options, each with an effort (S, M or L) and a risk?",
+    "Is there exactly one recommendation, and does it say why?",
+    "Does it name real code (files, classes or methods) instead of generic advice?",
+    "Is the next step a concrete action someone could take this week?"
+  ]
+}

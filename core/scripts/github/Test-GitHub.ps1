@@ -46,10 +46,11 @@ try {
     $folder = @($out)[-1]
     Check "last line is the folder" (Test-Path (Join-Path $folder "workitem.md")) $folder
     Check "it is a local work item" ((Split-Path -Leaf $folder) -like "L1-*") (Split-Path -Leaf $folder)
+    # Windows checks out the script with CRLF, so lines may end in \r: the line checks allow it.
     $md = [IO.File]::ReadAllText((Join-Path $folder "workitem.md"))
-    Check "title line" ($md -match '(?m)^# Work item L1: Fix login timeout$')
-    Check "GitHub source line" ($md -match '(?m)^- GitHub: acme/web#12$')
-    Check "type from the bug label" ($md -match '(?m)^- Type: Bug$')
+    Check "title line" ($md -match '(?m)^# Work item L1: Fix login timeout\s*$')
+    Check "GitHub source line" ($md -match '(?m)^- GitHub: acme/web#12\s*$')
+    Check "type from the bug label" ($md -match '(?m)^- Type: Bug\s*$')
     Check "link" ($md -match [regex]::Escape("- Link: https://github.com/acme/web/issues/12"))
     Check "description" ($md -match "(?s)## Description\s+The login page times out\.\s+## Acceptance criteria\s+- No timeout")
     Check "repro" ($md -match "(?s)## Repro steps \(bugs only\)\s+1\. Open login")

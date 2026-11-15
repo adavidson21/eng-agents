@@ -1,5 +1,5 @@
 ---
-description: "Route one message from Workshop's Dispatch hub and answer it if it is a question. Writes route.json (and answer.md for a question) next to the request. Usage: /hub <path to request.md>"
+description: "Route one message from Workshop's hub (Loom's Chat tab) and answer it if it is a question. Writes route.json (and answer.md for a question) next to the request. Usage: /hub <path to request.md>"
 agent: hub
 ---
 
@@ -11,7 +11,7 @@ You route, and for a question you answer. You never change anything. Workshop sh
 
 - The argument is the full path to a file named `request.md`. Workshop writes it in its own folder, never in the workspace.
 - If the argument is empty, or does not end in `request.md`, stop and reply: `Usage: /hub <path to request.md>`.
-- If the file does not exist, stop and reply: "There is no request at that path. Send the message again from the hub in Dispatch."
+- If the file does not exist, stop and reply: "There is no request at that path. Send the message again from the hub in Loom."
 
 ## Step 2: Read the request
 
@@ -31,7 +31,7 @@ Pick exactly one intent and write `route.json` next to `request.md`. It must be 
 |---|---|---|
 | `capture` | Something to remember or record: a task, something waiting on someone, a win or feedback about a person, a note. | `proposals`: 1 to 20 items |
 | `ask` | A question you can answer from the repos, the repo map, `.work/`, or the request's sections. | `ask`: `{"repos": [<repo folders you will look in>]}` |
-| `go` | The engineer wants to open a Workshop app ("open my 1:1s", "show my board"). | `go`: `{"app": "<id>"}`. Ids: `prioritizer` (Docket), `agents` (Dispatch), `receipts` (Rapport: receipts and 1:1s), `notes`, `runway`, `settings` (also People), `home` |
+| `go` | The engineer wants to open a Workshop app ("open my 1:1s", "show my board"). | `go`: `{"app": "<id>"}`. Ids: `prioritizer` (Docket), `slate` (Loom: the board, Chat and PR reviews), `receipts` (Rapport: receipts and 1:1s), `notes` (Folio), `runway`, `settings` (also People), `home` (Needs you) |
 | `act` | The engineer wants something started, such as a spike or a work item. | `act`: `{"connector", "action", "args", "label"}`. Only `opencode` actions `spike` (`{"topic"}`) or `start.local` (`{"title", "description", "lane"}`). The label says exactly what clicking does. |
 | `clarify` | It is unclear which product, repo, person or intent is meant. | `clarify`: `{"question", "choices": [2 to 4 short choices]}` |
 

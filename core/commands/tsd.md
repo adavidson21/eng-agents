@@ -55,9 +55,7 @@ Where to look, section by section. Use `Select-String` or `rg` to search, then r
 ## Step 4: Pick the flows and processes
 
 - Under "Candidates" in `inventory.md`, list up to 8 **flows** (a request or job worth a sequence diagram, with its entry point) and up to 5 **business processes** (a lifecycle across people and systems, usually a status field plus the product block's "Business processes"). Number them.
-- Ask: "Which flows should get a sequence diagram? Pick 3 to 5 numbers. (Recommended: <your picks and one reason>.)" Wait.
-- Ask: "Which business processes should get a BPMN-style diagram? Pick 1 to 3 numbers, or none. (Recommended: <your picks>.)" Wait.
-- Write the picks into `inventory.md`.
+- Do not ask. Pick 3 to 5 flows and 0 to 3 business processes yourself: the ones a new engineer or the business most needs to see. Write the picks, with one reason each, into `inventory.md`, and list them in Step 8 so the engineer can swap any and re-run `/tsd`.
 - For each pick, trace the code path from the entry point to the database or external call. Read at most 8 files per pick. Write each step into "Traced flows" with its source file.
 
 ## Step 5: Write tsd.md
@@ -96,6 +94,7 @@ Read the last line of the output:
 Tell the engineer:
 - The path to `tsd.md` and the result line from Step 6.
 - If it passed: "SVG copies of every diagram are in `.work/tsd-<short-name>/render/`. Use them if your doc editor does not render Mermaid."
+- The flows and processes you picked, one line each with the reason. To swap one, the engineer edits the picks in `inventory.md` and runs `/tsd` again.
 - Every open question, one line each.
 - The next steps, exactly:
   1. "Start a new session and run `/check-docs .work/tsd-<short-name>/tsd.md` to fact-check every diagram against the code."

@@ -34,6 +34,8 @@ If the mode above is `auto`, nobody is watching. Ask nothing: where Step 2 says 
 ## Step 5: Write bug.md
 
 - Start from `{{ENG_HOME}}/templates/bug.md`. Write it to the work folder as `bug.md`. Keep `Status: DRAFT`.
+- **Impact:** one plain sentence a stakeholder could read: who is affected and how badly. No file or class names.
+- **Same flaw elsewhere:** run one `git -C <repo> grep` for the pattern behind the root cause. List other places with the same flaw, at most 5, with file and line. Do not fix them or add tasks for them; the engineer decides.
 
 ## Step 6: Write tasks.md
 
@@ -48,4 +50,4 @@ If the mode above is `auto`, nobody is watching. Ask nothing: where Step 2 says 
 
 - Stamp the draft as your last change to `bug.md`: run exactly `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/work/Set-DraftHash.ps1" -Path "<work folder>/bug.md"`. It adds a `Draft-hash:` line so `/approve` can tell whether the engineer edited the draft. If you change the file again, run it again.
 - Add a `progress.md` entry for `/bug` with a `- Stats: questions=<n> assumptions=<n> tasks=<number of tasks in tasks.md>` line.
-- Tell the engineer the root cause in one sentence and the confidence level, then: "Review `bug.md` and `tasks.md`. If correct, run `/approve $1` (or change `bug.md` to `Status: APPROVED` yourself), start a new session, and run `/do-task $1 1`."
+- Tell the engineer the impact in one sentence, the root cause in one sentence and the confidence level, how many other places have the same flaw (if any), then: "Review `bug.md` and `tasks.md`. If correct, run `/approve $1` (or change `bug.md` to `Status: APPROVED` yourself), start a new session, and run `/do-task $1 1`."

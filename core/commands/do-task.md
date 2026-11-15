@@ -41,8 +41,8 @@ If the mode above is `auto`, nobody is watching (autopilot or an eval run). Neve
   3. Write the smallest code change that makes it pass.
   4. Run the verify command. It must PASS. Save the output (the Green run).
 - **Any other stack (Core: `angular`, `playwright`):** write the code and tests in the order its testing rules allow, then run the verify command. It must PASS.
-- Change only the files the task lists. If another file must change, stop and ask.
-- If the verify command fails 3 times in a row, stop. Go to Step 6 and log it as blocked.
+- Change only the files the task lists, plus the test file for a listed code file (it still counts toward the 3-file cap). If any other file must change, stop and ask.
+- If the verify step fails 3 times, even with a different fix each time, stop. Go to Step 6 and log it as blocked.
 
 ## Step 5: Lint
 
@@ -70,7 +70,7 @@ The verify command only runs this task's tests. Before committing, check the who
 
 - Only if the verify command and Step 5b passed.
 - Stage only the files you changed: `git -C <repo> add <file> <file>`.
-- Commit with a short plain summary: `git -C <repo> commit -m "<short summary>"`. No work item number, no prefix.
+- Commit with a short plain summary: `git -C <repo> commit -m "<short summary>"`, following the commit message convention in `{{ENG_HOME}}/guides/pipeline.md` unless a Personal or Company rule in `AGENTS.md` says otherwise (for example `AB#<id>`).
 
 ## Step 8: Hand off
 

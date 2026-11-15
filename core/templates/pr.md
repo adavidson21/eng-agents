@@ -12,11 +12,14 @@ Branch: `<branch>` -> `<target: the base from repos.md without origin/>`
 
 **Description:**
 
-<One or two sentences: what changed and why.>
+<One or two sentences: why this change, then what changed.>
 
 - <key change>
 - <key change>
 
-Testing: <the command(s) run and the result, in one or two lines>
+Testing: <how to test it, then the command(s) run and the result, in one or two lines>
 
-Work item: #<id>
+<Only when the change touches UI:>
+Screenshots: <add before and after screenshots>
+
+<ADO work item: AB#<id>. GitHub issue: Closes owner/repo#<n>. Local item: leave this line out.>

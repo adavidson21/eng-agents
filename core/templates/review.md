@@ -19,11 +19,17 @@ Scope creep (changes no criterion or task asked for):
 
 ## Pass 2: Code quality
 
-Every finding goes in this table, including Pass 1 problems and missing checklists. Category is one word from the `/review` checklist (`architecture`, `consistency`, `correctness`, `efcore`, `security`, `tests`, `angular`, `playwright`, `leftovers`, `tdd`) or `spec`, `scope`, `checklist`. `/retro` groups findings by it.
+Every finding goes in this table, including Pass 1 problems and missing checklists. Category is one word from the `/review` checklist (`architecture`, `consistency`, `correctness`, `efcore`, `security`, `tests`, `angular`, `playwright`, `leftovers`, `overbuild`, `tdd`) or `spec`, `scope`, `checklist`. `/retro` groups findings by it.
 
 | # | Severity | Category | Location | Problem | Suggested fix |
 |---|---|---|---|---|---|
 | 1 | <Blocker / Should fix / Nit> | <category> | `<repo/path/File.cs:42>` | <what is wrong> | <how to fix> |
+
+## Questions for you
+
+Things the reviewer was not sure are problems. Not findings: they do not change the verdict.
+
+- <`repo/path/File.cs:42`: question, or "None">
 
 ## Manual validation
 
@@ -36,6 +42,6 @@ Every task's checklist from `progress.md`, in order. Walk through these before `
 
 ## Proposed fix tasks
 
-Only for findings the engineer accepts. These get added to `tasks.md`.
+Every Blocker (except checklist Blockers), plus the other findings the engineer picks. These get added to `tasks.md`.
 
 - <Finding #1 -> one-line task>

@@ -12,7 +12,7 @@ Follow these steps in order. Do not change any code. For anything bigger than on
 - If the request above is empty, stop and reply: `Usage: /refine <title>, /refine shape-<name>, or /refine refine-<name> to revise a draft`.
 - **Revise:** if the request is one word that starts with `refine-`, it is an existing folder.
   - The folder is `.work/<that word>/`. If it does not exist, list the `.work/refine-*` folders and stop.
-  - If `refine.md` says `Status: APPROVED`, stop and say it is approved: publish it from Slate, or `/start <id> feature` once it is in ADO.
+  - If `refine.md` says `Status: APPROVED`, stop and say it is approved: publish it from Loom, or `/start <id> feature` once it is in ADO.
   - Read `refine.md` and `progress.md`. The engineer's notes under "Open questions", and any edits they made, are what to change. Keep everything else. Go to Step 2, and in Step 3 ask only about the open questions.
 - **From a shape:** if the request is one word that starts with `shape-`, it is a shaped idea (`/shape`).
   - If `.work/<that word>/brief.md` does not exist, stop and reply: "No brief yet. Finish the interview first: `/shape <that word> brief`."
@@ -42,7 +42,8 @@ Follow these steps in order. Do not change any code. For anything bigger than on
 - Start from `{{ENG_HOME}}/templates/refine.md`. Write it to the folder as `refine.md` (when revising, update it).
 - `Type:` is `Bug` if the request is about something broken, otherwise `User Story`. `Parent:` is `#<id>` when one was named, otherwise `none`.
 - Description: the story sentence, then one or two sentences of context in the user's language. Say what and why, not how. No class names, tables, or file paths.
-- Acceptance criteria: 2 to 5 Gherkin scenarios, the main outcome and the edge cases a user would notice, each one a tester could run by hand. Outcomes only: no button labels, layouts, field names, or data shapes unless the requester asked for them.
+- Acceptance criteria: 1 to 3 Gherkin scenarios, the main outcome and the edge cases a user would really notice, each one a tester could run by hand. Outcomes only: no button labels, layouts, field names, or data shapes unless the requester asked for them.
+- Release note: one or two plain, business-friendly sentences a customer-facing person could read. No class names or jargon.
 - Notes for the builder: the file paths you found and what to watch. This section is for the engineer and is not published.
 - Leave `Status: DRAFT`. Only `/approve` changes it.
 

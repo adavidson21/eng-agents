@@ -68,7 +68,7 @@ For a number, run exactly this command, adding `-From "<repo folder or connectio
 - Run the "Changed files" command.
 - For each changed file, run the "One file's diff" command. Skip generated files, lock files (`package-lock.json`, `*.lock`), migrations' `Designer` and snapshot files, and binary files; list them under "Checked and fine" as skipped.
 - When a change only makes sense with more of the file (a method's callers, a class's fields), run "A whole file as of the PR" for that file, or "Find text in the PR's code" for the callers. Never open the file from disk.
-- Stop reading more context for a file once you can judge it. Do not read more than about 30 extra files in total.
+- Stop reading more context for a file once you can judge it. Do not read more than about 15 extra files in total.
 
 ## Step 5: Pass 1, intent
 

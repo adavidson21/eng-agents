@@ -1,5 +1,5 @@
 ---
-description: "Start a work item: fetch or describe it, create its .work folder, pick repos, create branches, write a brief. Usage: /start <id|owner/repo#n|new> <feature|bug|quick> [repo folder or ADO connection] [--cold] [--no-baseline]"
+description: "Start a work item: fetch or describe it, create its .work folder, pick repos, create branches (and a brief with --brief). Usage: /start <id|owner/repo#n|new> [feature|bug|quick] [repo folder or ADO connection] [--brief] [--no-baseline]"
 agent: planner
 ---
 
@@ -14,12 +14,13 @@ Follow these steps in order. Do not skip any step, except the ones marked "only 
 - `$1` is one of:
   - a number: a work item in ADO.
   - a GitHub issue, `owner/repo#<number>` (for example `acme/web#12`): it is fetched into a new local work item (Step 3c). A bare `#12` is a GitHub issue too; then the third argument must be the repo folder it belongs to.
-  - a local id, `L` and a number (for example `L12`): work with no tracker item, already described. Dispatch creates its folder before it runs `/start`.
+  - a local id, `L` and a number (for example `L12`): work with no tracker item, already described. Workshop's Loom creates its folder before it runs `/start`.
   - `new`: work with no tracker item that is not described yet.
-- `$2` must be `feature`, `bug` or `quick`. `quick` is the small lane: one repo, at most 2 tasks, no schema or API contract change (see `/quick`).
-- If either is wrong, stop and reply: `Usage: /start <id|owner/repo#n|new> <feature|bug|quick> [repo folder or ADO connection] [--cold] [--no-baseline]`.
-- `--no-baseline` is optional and can come anywhere after the lane. If any argument is `--no-baseline`, remember it: Step 7b is skipped. Like `--cold`, it is never the third argument.
-- `--cold` is optional and can come anywhere after the lane. If any argument is `--cold`, remember it: Step 8b is skipped. `--cold` is never the third argument, so if `$3` is `--cold`, there is no third argument.
+- The lane is optional. If `$2` is `feature`, `bug` or `quick`, that is the lane. Otherwise there is no lane argument: every argument after `$1` moves up one place (what this command calls the third argument is `$2`), and Step 4 takes the lane from the work item's type: `bug` if the type is Bug, otherwise `feature`. `quick` is never inferred; the engineer types it. `quick` is the small lane: one repo, at most 2 tasks, no schema or API contract change (see `/quick`).
+- For `new` with no lane, ask for the lane with the description in Step 3a (`feature`, `bug` or `quick`; recommend `feature`).
+- If `$1` is wrong, stop and reply: `Usage: /start <id|owner/repo#n|new> [feature|bug|quick] [repo folder or ADO connection] [--brief] [--no-baseline]`.
+- `--no-baseline` is optional and can come anywhere after `$1`. If any argument is `--no-baseline`, remember it: Step 7b is skipped. Like `--brief`, it is never the third argument.
+- `--brief` is optional and can come anywhere after `$1`. Only with `--brief` does Step 8b write the brief; without it Step 8b is skipped. `--brief` is never the third argument. (`--cold`, from older versions, is accepted and changes nothing: no brief is the default.)
 - `$3` is optional and only for a number or a bare `#<number>`. For `#<number>` it is the repo folder whose GitHub remote holds the issue. It is a repo folder in the workspace or an ADO connection name. It tells the script which ADO server or collection holds the work item. If the third argument above is empty, there is none.
 
 ## Step 2: Check for existing work
@@ -34,7 +35,7 @@ Follow these steps in order. Do not skip any step, except the ones marked "only 
 
 ## Step 3a: Describe new local work (only when `$1` is `new`)
 
-- Ask the engineer, in one message: "What is the work? Give a short title, then describe it: what should change and why. For a bug, also the steps to reproduce it." Wait for the answer.
+- Ask the engineer, in one message: "What is the work? Give a short title, then describe it: what should change and why. For a bug, also the steps to reproduce it." If no lane was given, add: "Which lane: feature, bug or quick? (Recommended: feature.)" Wait for the answer.
 - Pick a title of at most 10 words from the answer. The type is `Bug` if `$2` is `bug`, otherwise `Feature`.
 - Run exactly this command, with the title in place of `<title>`:
 
@@ -92,12 +93,13 @@ For a bare `#<number>`, add `-From "$3"` at the end.
 ## Step 4: Read the work item
 
 - Read `workitem.md` in the new folder.
-- If the type is Bug but `$2` is `feature` or `quick` (or the other way around), ask the engineer which lane is correct. Use their answer as the lane.
+- If no lane was given, take it from the type now: `bug` if the type is Bug, otherwise `feature`. Say which lane you picked in Step 9.
+- If a lane was given and the type is Bug but the lane is `feature` or `quick` (or the other way around), ask the engineer which lane is correct. Use their answer as the lane.
 
 ## Step 5: Choose repos
 
 - List the repo folders in the workspace root (folders with a `.git` folder).
-- If there are none, stop and tell the engineer: "There are no repos in this workspace yet. Add one (Dispatch: Add a repo, or `git clone <url>` in the workspace folder), then run `/start $1 $2` again." The work item folder stays, so nothing is lost.
+- If there are none, stop and tell the engineer: "There are no repos in this workspace yet. Add one (Workshop Settings > Repos, or `git clone <url>` in the workspace folder), then run `/start $1 $2` again." The work item folder stays, so nothing is lost.
 - If there is exactly one repo, use it. Skip the rest of this step's matching, but still show it and ask in the last bullet.
 - Read the repo map (the workspace root `AGENTS.md`). If there is none, choose from the folder names and the work item, and say the repo map is missing.
 - Match words in the work item against the repo map's **Products** and **Glossary** tables. Pick the product first, then use that product's repo table and change order.
@@ -138,9 +140,9 @@ For each repo in `repos.md`, in order:
 
 - Copy `{{ENG_HOME}}/templates/progress.md` into the work folder as `progress.md`. Fill in the header and add the first entry for `/start`.
 
-## Step 8b: Write the brief (skip with `--cold`)
+## Step 8b: Write the brief (only with `--brief`)
 
-Skip this step if `--cold` was given. Otherwise write a short brief, so the engineer does not start from a blank screen. Keep it light: this step reads no file contents in any repo.
+Skip this step unless `--brief` was given. Otherwise write a short brief, so the engineer does not start from a blank screen. Keep it light: this step reads no file contents in any repo.
 
 - Copy `{{ENG_HOME}}/templates/brief.md` into the work folder as `brief.md`.
 - Fill it in from `workitem.md` and `repos.md` only:
@@ -162,5 +164,5 @@ Skip this step if `--cold` was given. Otherwise write a short brief, so the engi
 Reply with:
 - The folder path.
 - The repos and branches created, and any that were skipped.
-- The brief: print `brief.md` as it is (or say it was skipped with `--cold`).
+- If a brief was written: its path, and its Goal and First tiny step lines. Do not print the whole brief.
 - The next command: `/spec $1` for a feature, `/bug $1` for a bug, or `/quick $1` for the quick lane.

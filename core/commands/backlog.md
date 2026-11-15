@@ -26,7 +26,8 @@ Work that is not defined yet is scoped first, in `.work/scope-<name>/`, before i
 
 Skip this step for `local`.
 
-- Ask in one message: "Which area path and iteration path? Leave either empty to use the project default. Story type: `User Story` (Recommended for the Agile process; use `Product Backlog Item` for Scrum)."
+- Find a suggested area path: the last `/backlog` entry in any `.work/scope-*/progress.md` that names one, else the product's `areas` in Workshop's `<dataDir>/settings/products.json` (`Get-Content ~/.workshop/config.json` gives `dataDir` (default `~/Workshop`)), else the first of `areas` in `<dataDir>/settings/teams.json`. Suggest the iteration path from the last `/backlog` entry too. If nothing is found, there is no suggestion.
+- Ask in one message: "Area path: `<suggestion>`. Iteration path: `<suggestion>`. Story type: `User Story`. Reply `ok` to use these, or give the ones to change. (Leave either path empty to use the project default; use `Product Backlog Item` for Scrum.)" Without a suggestion, ask for that path as before.
 - Wait. Use their answers as `<area>`, `<iteration>`, and `<story type>`. An empty answer means leave that argument out.
 
 ## Step 3: Export
@@ -59,6 +60,6 @@ If the command fails, show the error in one line. For `ado`, offer `/backlog $1 
 
 ## Step 4: Log and hand off
 
-- Add a `progress.md` entry for `/backlog` with the last lines of the output.
+- Add a `progress.md` entry for `/backlog` with an `- Area: <area>` and an `- Iteration: <iteration>` line (when they were set; the next `/backlog` suggests them) and the last lines of the output.
 - **csv:** "The import file is `.work/$1/backlog.csv`. In ADO, open Boards > Work Items, choose Import Work Items, and upload it. After the import, start with the first story: `/start <its id> feature`." If the `Epic:` line names an existing epic (`#<id>`), add: "The features import without a parent. Link them to epic #<id> in ADO after the import."
 - **ado** and **local:** show the table from `.work/$1/published.md` and say: "Start with the first story: `/start <id of Story 1.1> feature`. Work top to bottom."

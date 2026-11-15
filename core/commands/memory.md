@@ -38,6 +38,7 @@ If the scope is one repo or global but the rule is a product fact (it would stil
 - Do not add anything the engineer did not say.
 - Never save secrets, tokens, passwords, connection strings, or personal data. If the rule contains any, stop and say why.
 - Global scope only: if the rule names a path or a name that exists in only one repo, ask: "This looks specific to `<repo>`. Save it for that repo instead?" Wait.
+- Show the engineer the exact line and where it goes, and ask: "Save this? Reply `yes`, or give the wording you want." Wait, and use their wording if they give one. Skip this when `/retro` sent the rule: the engineer already picked and worded it there.
 
 ## Step 3: Find the memory file
 

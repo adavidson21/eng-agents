@@ -33,7 +33,7 @@ If the mode above is `auto`, autopilot is running this review and nobody is watc
 
 - For each acceptance criterion, mark `Met`, `Partly met`, or `Not met`. Give the test and file that prove it.
 - List changes that no criterion or task asked for.
-- For each checked task, find its Manual Validation Checklist in `progress.md`: in its `/do-task` entry, or in a later entry for that task. If it is missing or vague (no exact URL, click, value, or command), add a `Blocker` finding for that task (category `checklist`).
+- For each checked task, find its Manual Validation Checklist in `progress.md`: in its `/do-task` entry, or in a later entry for that task. A task whose "Human interface" line is `none, covered by <test command>` needs only the line `Covered by tests: <test command>`. If it is missing or vague (no exact URL, click, value, or command), add a `Blocker` finding for that task (category `checklist`).
 - **TDD evidence.** For each checked task that changed .NET code, find its `Red run` and `Green run` output blocks in `progress.md` (or the failing and passing runs in entries older than Core 2.23.0). The Red run must show the named test failing on an assertion or the expected exception, not a compile error elsewhere. If the Red run is missing, or shows something other than the new test failing for the expected reason, add a `Should fix` finding (category `tdd`), unless a Personal or Company rule makes it a `Blocker`. Bug lane Task 1 (a test that must fail) counts as its own Red run.
 
 ## Step 6: Pass 2, code quality
@@ -46,14 +46,16 @@ Check every changed file against this list, the repo `AGENTS.md`, and the "Revie
 - **Security:** input validated, authorization not bypassed, no secrets, no personal data in logs.
 - **Tests:** test behavior, not implementation details. No skipped or commented-out tests. No real database, backend or shared environment.
 - **Leftovers:** no debug logging, commented-out code, or TODO comments added.
+- **Overbuild:** no abstractions, interfaces, options or layers that nobody asked for and only one caller uses (core rule 8). `Should fix`.
 
-Give every finding a category: the bold word of the checklist item it falls under, in lower case (`architecture`, `consistency`, `correctness`, `security`, `tests`, `leftovers`, or the category a stack file's item names, such as `efcore`, `angular` or `playwright`), or `spec`, `scope`, `checklist` or `tdd` for Pass 1 findings. If none fits, use the closest one; do not invent new categories.
+Give every finding a category: the bold word of the checklist item it falls under, in lower case (`architecture`, `consistency`, `correctness`, `security`, `tests`, `leftovers`, `overbuild`, or the category a stack file's item names, such as `efcore`, `angular` or `playwright`), or `spec`, `scope`, `checklist` or `tdd` for Pass 1 findings. If none fits, use the closest one; do not invent new categories.
 
 ## Step 7: Write review.md
 
 - If `review.md` already exists (an earlier review round), first copy it unchanged to `history/review-<yyyy-mm-dd>-<n>.md` in the work folder (`<n>` = 1, 2, ... so nothing is overwritten). `/retro` reads every round.
 - Start from `{{ENG_HOME}}/templates/review.md`. Write it to the work folder as `review.md`.
 - Put every finding, from both passes, in the findings table with its category.
+- Anything you are not sure is a problem goes under "Questions for you" as one line with its location, not in the findings table. Questions do not change the verdict.
 - Copy every task's Manual Validation Checklist into the "Manual validation" section, in task order, so the engineer has one list to walk through.
 - Verdict is `READY` only if all tests pass, every criterion is `Met`, and there are no Blockers.
 
@@ -63,5 +65,5 @@ Give every finding a category: the bold word of the checklist item it falls unde
 - Summarize for the engineer: verdict, number of findings by severity, and the Blockers in one line each.
 - `auto`: if the verdict is not READY, append one fix task for each `Blocker` finding to the end of `tasks.md`, numbered after the last task, in the normal task format (one repo, at most 3 files, one verify command from the repo `AGENTS.md`). Do not add tasks for `Should fix` or `Nit`. Do not add tasks for checklist Blockers either: they change no code. Name those tasks in the `progress.md` entry so the engineer can add the checklists. Name the added tasks in the `progress.md` entry. Do not ask anything, and stop.
 - If there are checklist Blockers, list the tasks that need one and tell the engineer to add each checklist as a new `progress.md` entry for that task (by hand, or by asking the implementer), then run `/review $1` again. These never become fix tasks.
-- Not `auto`: if there are other findings, ask: "Which findings should become fix tasks?" When they answer, append those tasks to the end of `tasks.md`, numbered after the last task, in the normal task format. Then tell them to run `/do-task $1 <n>` for each in a new session, then `/review $1` again.
+- Not `auto`: append one fix task for each `Blocker` finding (except checklist Blockers) to the end of `tasks.md`, numbered after the last task, in the normal task format, without asking. Then, if there are `Should fix` or `Nit` findings or Questions, list them and ask: "Which of these should also become fix tasks?" Append the ones they pick the same way. Then tell them to run `/do-task $1 <n>` for each in a new session, then `/review $1` again.
 - If the verdict is READY, tell them to run `/pr $1`.

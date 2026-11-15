@@ -4,6 +4,28 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 4.0.0 (2026-11-15)
+
+Breaking: the feature lane has one gate, and `/start` writes no brief unless asked. Items started before this keep working: `/plan` and `/tasks` still run on their own, and `/approve` approves a spec alone when there is no plan yet.
+
+- One feature gate: `/spec` drafts `spec.md`, then `plan.md` and `tasks.md` from it in the same run (three `progress.md` entries, so `/stats` still counts each). One `/approve` approves the spec and the plan together, then `/do-task`. `/plan` and `/tasks` now redo a plan or tasks on their own; `/tasks auto` keeps tasks `/spec` already drafted. `/status` and docs follow. Evals: `feature-outcome` runs `/spec`, the one gate, then `/do-task`.
+- `/spec` keeps clear acceptance criteria from the work item in its words, marked `(from work item)`; only new ones are Given / When / Then (the `spec-basic` grader allows both).
+- `/approve` shows three lines first: what is approved, how many criteria, tasks and assumptions, and the one thing to watch.
+- `/start`: the lane is optional (a Bug starts in `bug`, anything else in `feature`; `quick` is typed). No brief by default; `--brief` adds it (`--cold` is accepted and does nothing). A shorter final reply.
+- Shorter `AGENTS.md` (about 2,900 to 2,100 tokens): the work folder files, gates, paused items and conventions move to `guides/pipeline.md`, read only by commands that use `.work/`. Chat, hub, people prep and PR review no longer load them. Rule 6 counts failed tries at the same step, even when the fix changes.
+- Reviewer: a new `overbuild` category (abstractions, options or layers nobody asked for, `Should fix`), and a "Questions for you" section in `review.md` for things it is not sure are problems (not findings; the verdict ignores them). `/review` turns Blockers into fix tasks without asking and asks only about the rest.
+- Implementer: may change the test file for a listed code file without stopping (still within the 3-file cap). A task whose Human interface is `none, covered by <test command>` gets `Covered by tests: <command>` instead of a manual checklist; the planner may write that line.
+- Planner: prefers 4 to 6 tasks and suggests splitting past 8; calls out shared-repo impact at the top of a plan. Milestone architect and `/slice` size stories the same way.
+- Product manager, `/scope`, `/refine`: 1 to 3 scenarios per story, and less pull toward V2 / Icebox. `/refine` adds a Release note section.
+- Investigator: spikes give at most 3 options with effort and risk and end with one recommendation. `/spike` defaults to the leadership lens and may answer "None." for requester questions. `/bug` adds an Impact line for stakeholders and lists the same flaw elsewhere (not fixed).
+- The engineer's voice: the writer follows Personal and Company writing rules for anything the engineer sends (PR text, handoffs, briefs); the PR reviewer drafts comments that way, often as questions; `/triage` adds a ready-to-paste message to the requester; `/one-on-one` and `/handoff` read as the manager wrote them. Chat is casual and pushes back when something simpler would do.
+- `/pr`: leads with why, adds a screenshots placeholder for UI changes, and links with `AB#<id>` (ADO) or `Closes owner/repo#<n>` (GitHub). `/do-task` commits follow the convention unless a Personal or Company rule says otherwise (for example `AB#<id>`).
+- `/retro` (now the writer) shows candidate rules as a checklist and saves the ones the engineer picks, the way `/memory` does; `auto` saves nothing (the `retro-repeat` eval uses it). `/memory` confirms the wording before saving. `/shutdown` asks about "tomorrow morning" and nudges a cross-item retro once a sprint.
+- `/standup` adds Docket tasks done and planned for today (read only from Workshop's data folder) and spikes, shapes and scopes in progress. `/triage` suggests the owning area path and `/backlog` suggests area and iteration paths, from Workshop's products and teams.
+- Fewer questions: `/shape` asks at most 3 per round with the brief by round 3; `/tsd` and `/docs` pick for themselves and show their picks; `/pause` always makes a WIP commit; `/onboard-repo` runs the build and test commands without asking; `/pr-review` reads at most 15 extra files; `/resume` replies in 5 lines or fewer.
+- Stacks: `dotnet` checks for secrets and personal data in logs; `angular` checks OnPush and signals, logic in templates and accessibility basics.
+- Names follow Workshop: Dispatch and Slate are Loom, the 1:1s app is Rapport. `/hub` `go` ids are Workshop's current app ids (`slate` for Loom; `agents` no longer exists).
+
 ## Core 3.3.0 (2026-11-15)
 
 - GitHub issues: `/start owner/repo#12 <lane>` (or `/start #12 <lane> <repo folder>`) fetches the issue with the new `scripts/github/Get-GitHubIssue.ps1` and makes it a local work item (`L<n>`), so the rest of the pipeline and Dispatch work unchanged. `workitem.md` keeps the issue as `- GitHub: owner/repo#12` and its link, splits the body into Description, Acceptance criteria and Repro steps by their `##` headings, types it from its labels (`bug`, `story`, `feature`, `epic`, `task`), and lists its sub-issue parent (the Feature) and milestone (the Epic) under Parents. Starting the same issue twice says `ALREADY:`.

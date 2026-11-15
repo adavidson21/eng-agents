@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # A stand-in for opencode, used only by evals/Test-Harness.ps1. It never calls a model.
-# Tandem arm: writes the files each command would (spec, plan, tasks), checks gates were approved, and the last task
+# Tandem arm: writes the files /spec would (spec, plan, tasks), checks the gate was approved, and the last task
 # lays down a correct implementation. Plain prompt: writes an implementation with the rate inline (a bad outcome).
 # Every call is logged to $FAKE_LOG with its arguments and XDG_CONFIG_HOME.
 set -u
@@ -16,14 +16,14 @@ finish() { echo "{\"type\":\"step_finish\",\"timestamp\":1,\"sessionID\":\"ses_x
 tool() { echo "{\"type\":\"tool_use\",\"timestamp\":1,\"sessionID\":\"ses_x\",\"part\":{\"type\":\"tool\",\"tool\":\"$1\",\"state\":{\"status\":\"completed\"}}}"; }
 echo "not json, ignored"
 case "$cmd" in
-  spec) printf 'Status: DRAFT\n\n# Spec\n' > "$work/spec.md"; tool question; finish 100 50 0.01 ;;
-  plan)
-    grep -q '^Status: APPROVED' "$work/spec.md" || { echo "spec not approved" >&2; exit 3; }
-    printf 'Status: DRAFT\n\n# Plan\n' > "$work/plan.md"; finish 100 50 0.01 ;;
-  tasks)
-    grep -q '^Status: APPROVED' "$work/plan.md" || { echo "plan not approved" >&2; exit 3; }
-    printf '# Tasks\n\n## [ ] Task 1: Settings\n\n- Repo: sample-api\n\n---\n\n## [ ] Task 2: Rule\n\n- Repo: sample-api\n' > "$work/tasks.md"; finish 100 50 0.01 ;;
+  spec)
+    # One gate: /spec drafts spec, plan and tasks together.
+    printf 'Status: DRAFT\n\n# Spec\n' > "$work/spec.md"
+    printf 'Status: DRAFT\n\n# Plan\n' > "$work/plan.md"
+    printf '# Tasks\n\n## [ ] Task 1: Settings\n\n- Repo: sample-api\n\n---\n\n## [ ] Task 2: Rule\n\n- Repo: sample-api\n' > "$work/tasks.md"
+    tool question; finish 100 50 0.01 ;;
   do-task)
+    grep -q '^Status: APPROVED' "$work/spec.md" && grep -q '^Status: APPROVED' "$work/plan.md" || { echo "gate not approved" >&2; exit 3; }
     last="${!#}"; n=$(echo "$last" | awk '{print $2}')
     echo "task $n" >> "$work/done.txt"
     if [ "$n" = "1" ]; then printf '\n## 2026-11-15 | /do-task | implementer\n\n- Stats: verify=FAIL full=PASS\n' >> "$work/progress.md"; fi

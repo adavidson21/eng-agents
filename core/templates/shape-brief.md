@@ -5,7 +5,7 @@ Repos: <repo, repo>
 Level: <Epic | Feature | User Story | Bug>
 Size: <S | M | L | XL>
 
-<!-- Written by /shape when the idea is understood. /scope shape-<name> and /refine shape-<name> start from it. The engineer may edit it. Workshop's Slate reads the Level and Size lines. -->
+<!-- Written by /shape when the idea is understood. /scope shape-<name> and /refine shape-<name> start from it. The engineer may edit it. Workshop's Loom reads the Level and Size lines. -->
 
 ## Problem
 

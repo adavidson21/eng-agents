@@ -4,7 +4,7 @@ Date: <yyyy-mm-dd>
 Route: <delegate | myself | undecided>
 Size: <S | M | L | XL>
 
-<!-- Written by /triage. Slate (Workshop) reads the Route and Size lines and the "Questions for the requester" list, so keep their shapes. -->
+<!-- Written by /triage. Loom (Workshop) reads the Route and Size lines and the "Questions for the requester" list, so keep their shapes. -->
 
 ## Summary
 
@@ -28,7 +28,16 @@ Size: <S | M | L | XL>
 
 - <question>
 
+## Message to the requester
+
+<!-- The questions above as one short message, ready to paste, in the engineer's voice. Leave this section out when there are no questions. -->
+
+<message>
+
 ## Suggested route
+
+Area: <ADO area path that owns it, or unknown>
+
 
 <Delegate or do it myself, and why in one or two sentences. For delegate, name the area or product owner from the repo map, never a judgment about a person.>
 

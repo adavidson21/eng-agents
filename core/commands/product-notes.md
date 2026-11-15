@@ -5,7 +5,7 @@ agent: writer
 
 Product notes: **$ARGUMENTS**
 
-Product notes are explained in the core rules (Product notes). This command writes product notes only through `Set-ProductNote.ps1`, and changes repo guides only by removing lines the engineer agreed to move. It changes no code.
+Product notes are explained in the core rules (Product notes) and in `{{ENG_HOME}}/guides/product-notes.md`. This command writes product notes only through `Set-ProductNote.ps1`, and changes repo guides only by removing lines the engineer agreed to move. It changes no code.
 
 If the first word is `list` or there are no arguments, go to "List". If it is `move`, go to "Move". Anything else: reply `Usage: /product-notes [move | list]` and stop.
 

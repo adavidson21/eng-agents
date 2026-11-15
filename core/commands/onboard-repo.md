@@ -43,7 +43,8 @@ Read only what you need. Record the file each fact came from.
 8. **Playwright:** `playwright.config.*` (testDir, baseURL, webServer), existing helpers or fixtures that call `page.route`, folders of mock data, and the selector style the tests use (for example `getByTestId`).
 9. **Lint and format:** `.editorconfig`, ESLint and Prettier config, `dotnet format` usage.
 10. **Patterns to follow:** one good example file for each row in the template's "Patterns to follow" table.
-11. **Team guide check:** for each command or rule from Step 2, check it against what you found. If they disagree, write down both and which one the code supports.
+11. **Stack:** list the stack files in `{{ENG_HOME}}/stacks/` (except `README.md`). A stack applies when the repo has its files: `dotnet` for `*.csproj`, `angular` for `angular.json`, `playwright` for `playwright.config.*`, and for any other stack file, what its first lines say it is for. If you cannot tell, ask the engineer in the Step 4 message.
+12. **Team guide check:** for each command or rule from Step 2, check it against what you found. If they disagree, write down both and which one the code supports.
 
 ## Step 4: Ask how to use the team guides
 
@@ -64,13 +65,14 @@ Wait for the answer. The engineer can choose differently per file.
 ## Step 6: Write the draft
 
 - Start from `{{ENG_HOME}}/templates/repo-agents.md`.
+- Fill the `Stack:` line from Step 3 item 11. Every stack named there must have a file in `{{ENG_HOME}}/stacks/`.
 - Mark every item you inferred but did not confirm with `(inferred, verify)`.
 - Write `TODO(you)` for anything that should exist but you could not find.
 - If a section or table row does not apply to this repo, **delete it**. Do not write "n/a" and do not explain why it does not apply. Examples: Angular and Playwright rows in a .NET-only repo, the Clean Architecture table in a repo with no layers, the EF Core section in a repo without EF Core.
 - **Team guides section:** one row per team guide the engineer did not choose to ignore. Delete the section if there are none.
   - `link` rows: do not repeat what the team guide already says. Write only facts it is missing.
   - `copy` rows: copy the team guide's rules into the matching sections of the draft and end each copied line with `(from <file>)`. Fill in "Synced at" with the output of `git -C $1 log -1 --format=%h -- <file>`.
-  - Every disagreement from Step 3 item 11 goes under "Gotchas" as: `<file> says <X>. The code shows <Y>. Follow <Y>.`
+  - Every disagreement from Step 3 item 12 goes under "Gotchas" as: `<file> says <X>. The code shows <Y>. Follow <Y>.`
 - Keep the `## Remembered` section from the template (empty) or from the existing guide (Step 1).
 - Write it to the location chosen in Step 1. Ask the engineer to approve the write if prompted.
 

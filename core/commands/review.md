@@ -16,7 +16,7 @@ If the mode above is `auto`, autopilot is running this review and nobody is watc
 
 ## Step 2: Read the rules
 
-- Read the repo guide (`<repo>/AGENTS.local.md` if it exists, otherwise `<repo>/AGENTS.md`) for every repo in `repos.md`.
+- Read the repo guide (`<repo>/AGENTS.local.md` if it exists, otherwise `<repo>/AGENTS.md`) for every repo in `repos.md`, and the stack files its `Stack:` line names.
 
 ## Step 3: Run the tests
 
@@ -38,19 +38,16 @@ If the mode above is `auto`, autopilot is running this review and nobody is watc
 
 ## Step 6: Pass 2, code quality
 
-Check every changed file against this list and the repo `AGENTS.md`:
+Check every changed file against this list, the repo `AGENTS.md`, and the "Review checklist" of each stack file the repo guide names (`{{ENG_HOME}}/stacks/<stack>.md`, see Testing rules in `AGENTS.md`):
 
 - **Architecture:** layer references follow the repo's allowed-references table. Business logic is not in controllers or components.
 - **Consistency:** matches the "pattern to follow" files in naming, structure, and error handling.
-- **Correctness:** null handling, edge cases, off-by-one, async/await used correctly (no `.Result` or `.Wait()`, `CancellationToken` passed through where the pattern does).
-- **EF Core:** no queries inside loops, read-only queries use `AsNoTracking()` if the repo does, no unexpected migration changes.
+- **Correctness:** null handling, edge cases, off-by-one, errors handled the way the pattern does.
 - **Security:** input validated, authorization not bypassed, no secrets, no personal data in logs.
-- **Tests:** test behavior, not implementation details. No skipped or commented-out tests. .NET tests use mocks, no real database.
-- **Angular:** subscriptions are cleaned up, no `any` unless the code already uses it, follows existing component patterns.
-- **Playwright:** every API call mocked with `page.route`, no fixed waits (`waitForTimeout`), stable selectors.
+- **Tests:** test behavior, not implementation details. No skipped or commented-out tests. No real database, backend or shared environment.
 - **Leftovers:** no debug logging, commented-out code, or TODO comments added.
 
-Give every finding a category: the bold word of the checklist item it falls under, in lower case (`architecture`, `consistency`, `correctness`, `efcore`, `security`, `tests`, `angular`, `playwright`, `leftovers`), or `spec`, `scope`, `checklist` or `tdd` for Pass 1 findings. If none fits, use the closest one; do not invent new categories.
+Give every finding a category: the bold word of the checklist item it falls under, in lower case (`architecture`, `consistency`, `correctness`, `security`, `tests`, `leftovers`, or the category a stack file's item names, such as `efcore`, `angular` or `playwright`), or `spec`, `scope`, `checklist` or `tdd` for Pass 1 findings. If none fits, use the closest one; do not invent new categories.
 
 ## Step 7: Write review.md
 

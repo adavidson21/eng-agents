@@ -4,6 +4,15 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 3.0.0 (2026-11-14)
+
+Breaking: repo guides name their tech stacks. A guide without a `Stack:` line still works (agents read every stack file and say so once); run `/onboard-repo <repo>` to add it.
+
+- Stack rules move out of Core's always-loaded rules. New `core/stacks/` (installed to `eng-agents/stacks/`): `dotnet.md`, `angular.md`, `playwright.md`, each with `## Testing` and `## Review checklist`. A repo guide's new `Stack:` line (repo guide template, filled by `/onboard-repo` from the repo's files) says which apply. `/plan`, `/tasks`, `/do-task`, `/review`, the implementer and the reviewer read them. The `/review` checklist keeps the stack-free items (architecture, consistency, correctness, security, tests, leftovers) and adds each stack's items. Personal and Company layers can add or replace stacks (`stacks/<name>.md`), for example a team's Python rules.
+- A shorter `AGENTS.md` (146 to 116 lines), loaded in every session: the scope and PR review file tables move into `/scope`, `/slice`, `/backlog` and `/pr-review`; product note writing rules move to `guides/product-notes.md` (installed to `eng-agents/guides/`), read before an agent changes a note; Testing rules point to the stack files.
+- `install.ps1` installs `stacks/` and `guides/` from every layer, like `templates/`.
+- Evals: the sample repo guide has `Stack: dotnet`.
+
 ## Core 2.26.0 (2026-11-14)
 
 - Workshop's Loom shows Tandem health (Health > Tandem: pipeline, learning loop, prompts, setup) from Workshop's opencode connector 1.12.0. It ports `Get-PipelineStats.ps1` and `Get-ReviewFindings.ps1`; the two meet at Workshop's `docs/tandem-health.md` and `docs/examples/work/expected-health.json`.

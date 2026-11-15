@@ -1,0 +1,35 @@
+{
+  "description": "Outcome only, for the lift: the empty-order crash is fixed (hidden outcome tests pass, Do-not-touch kept, changes only in src and tests). The Tandem arm runs the bug lane (/bug, the script approves bug.md, /do-task per task); the baseline arm gets the same bug as one plain prompt.",
+  "workItem": "L2-total-crashes-no-lines",
+  "branch": "dev/bug/L2-total-crashes-no-lines",
+  "work": [
+    {
+      "from": "L2/start",
+      "to": "L2-total-crashes-no-lines"
+    }
+  ],
+  "steps": [
+    {
+      "command": "bug",
+      "arguments": "L2 auto"
+    },
+    {
+      "approve": "bug.md"
+    },
+    {
+      "command": "do-task",
+      "arguments": "L2 {n} auto",
+      "eachTask": true
+    }
+  ],
+  "baseline": {
+    "prompt": "Fix this bug in the sample-api repo (you are on its branch dev/bug/L2-total-crashes-no-lines). Pricing a brand-new order (before any item is added) throws instead of returning 0. Repro: create new Order { Id = \"o-1\" } with Lines not set, call OrderTotals.Calculate(order); expected 0, actual ArgumentNullException. Acceptance criteria: an order with no lines yet has a total of 0. Add a test, make sure every test passes, and commit. Nobody is watching: do not ask questions, make reasonable choices and finish."
+  },
+  "outcome": {
+    "hidden": "L2"
+  },
+  "grader": "Test-Outcome",
+  "needs": [
+    "dotnet"
+  ]
+}

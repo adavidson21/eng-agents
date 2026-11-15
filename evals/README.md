@@ -29,6 +29,52 @@ Results files are `version: 3`:
 - Usage comes from `opencode run --format json`, which the runner always passes: `step_finish` events carry tokens and cost, `tool_use` events are tool calls (a `question` tool is the agent asking). `usageKnown` is false when no `step_finish` was seen, so a missing number is never shown as 0. Free models report a cost of 0; compare them on tokens.
 - Version 2 files have no usage; version 1 files also have no `arm` (read them as `tandem`).
 
+## Bench 2: the whole suite
+
+Workshop's Bench reads everything below; each part also works from the terminal.
+
+### Run kinds
+
+| Run | Command | What |
+| --- | --- | --- |
+| Affected | `./evals/Invoke-Evals.ps1 -Affected -Runs 1` | Only cases whose prompts changed since the newest results file that ran them (or never ran). Uses `evals/commands.json` hashes. |
+| Release | `./evals/Invoke-Evals.ps1 -Release` | Every case, tandem arm, 3 runs; exits 1 when a case dropped against the newest non-experiment results file. |
+| Lift | `./evals/Invoke-Evals.ps1 -Arm both -Case feature-outcome,bug-outcome,quick-outcome` | Tandem against a plain prompt on the outcome cases. |
+| Models | `-Models a/one,b/two` | The model matrix: every case and arm on each model; each case entry records its `model`. |
+| Budget | `-MaxRuns 30` (default) | Refuses to start more model runs than this; raise it on purpose. |
+
+### Case kinds
+
+- **Behavior and writing** cases need no code: `"grader": "Test-Expect"` and an `expect` block in the case (files with headings, regex matches, a Status line, word limits; `repo: "unchanged"` or `{ "allow": [regex] }`; `work: "unchanged"`). Writing cases add `"judge": { "rubric", "path" }`.
+- **Outcome** cases (`Test-Outcome`, or `Test-FeatureOutcome`) have a `baseline.prompt` and hidden behavior-only tests in `fixtures/hidden-outcome/`.
+- **Guard** cases need no model: `evals/guards/expected.json` says what each agent may edit and run; `Test-AgentGuards.ps1` reads every agent's permission frontmatter (tiers expanded as `install.ps1` does) and checks each row. A new agent without rows fails CI.
+- A case can lay down extra input files with `"files": [{ "from": "<fixtures/extra folder>", "to": "<workspace path>" }]`.
+
+### The writing judge
+
+- `-Judge <provider/model>` turns on rubric grading for writing cases; any model, free or paid, recorded as `judge` in results. Without it, writing cases are graded on structure only.
+- Each rubric (`evals/rubrics/<name>.json`) is 3 to 8 yes/no questions and a pass bar, with `good.md` and `bad.md`. Before trusting a judge model, run `./evals/Test-Judge.ps1 -Model <provider/model>`: it must pass every good.md and fail every bad.md. CI checks the rubrics' shape without a model.
+- The judge runs with Tandem left out, like the baseline. An answer it cannot read is a failed check, never a pass.
+
+### The improve loop
+
+| Step | Command |
+|---|---|
+| Suggest a fix from failed runs | `./evals/Suggest-Fix.ps1 -Results <results file> -Case <case> -Model <provider/model>` |
+| Trim experiments (no model) | `./evals/Suggest-Trim.ps1 -Command <name>` (one experiment per `##` section) |
+| Test an experiment | `./evals/Invoke-Evals.ps1 -Case <case> -Overlay evals/experiments/<id>/overlay -Label <id>` |
+| Keep or drop | `./evals/Keep-Experiment.ps1 -Id <id>` (copies the file into `core/`; you commit) or `-Drop` |
+
+Experiments live in `evals/experiments/<id>/` (not committed): `experiment.json` and `overlay/<file under core/>`. An experiment run uses a scratch copy of this repo installed into a scratch opencode folder (`-Overlay`); your real Tandem is untouched, and the results file is listed in `experiment.json`. Experiment runs are never the baseline later runs compare against.
+
+### Results version 4
+
+Adds to version 3: top-level `models`, `kind` (`custom`, `affected`, `release`, `lift`, `experiment`), `label`, `overlay`, `judge`, `compareTo`; per case entry `model` and `filesHash` (tandem arm). Lift rows are per case and model.
+
+### commands.json
+
+`./evals/Get-PromptSize.ps1 -Write` saves `evals/commands.json`: per command its agent, up-front and while-running tokens, the files it loads and reads, and their hash. CI fails when it is out of date (`-Check`); run `-Write` and commit after changing a command, agent, guide, template or stack.
+
 ## Prompt size
 
 `./evals/Get-PromptSize.ps1` lists what each command loads before it does anything (its command file, its agent and `AGENTS.md`), in estimated tokens, biggest first. No model. Use it to pick what to trim; a trim is kept only if the evals do not drop.

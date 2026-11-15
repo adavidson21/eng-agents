@@ -48,6 +48,8 @@ param(
     [int]$Runs = 3,
     # provider/model, passed to opencode as --model. Default: your opencode default model.
     [string]$Model,
+    # Several models in one run (the model matrix): every case and arm runs on each. Overrides -Model.
+    [string[]]$Models,
     [string]$Opencode = "opencode",
     [ValidateSet("tandem", "baseline", "both")]
     [string]$Arm = "tandem",
@@ -57,6 +59,21 @@ param(
     [switch]$SetupOnly,
     # Self-test only (evals/Test-Harness.ps1): graders skip their dotnet checks, and cases that need dotnet run anyway.
     [switch]$NoExec,
+    # Only the cases whose prompts changed since the newest results file that ran them (or never ran).
+    [switch]$Affected,
+    # Every case, tandem arm, compared with the newest results file; exits 1 when a case dropped.
+    [switch]$Release,
+    # Exit 1 when a tandem case dropped against the newest results file (on by default with -Release).
+    [switch]$Gate,
+    # Refuse to start more than this many model runs (cases x arms x runs x models). Raise it on purpose.
+    [int]$MaxRuns = 30,
+    # An experiment: a folder that mirrors core/ (for example <folder>/commands/plan.md). The tandem arm runs a
+    # scratch install with these files laid over core/; your real Tandem is not touched.
+    [string]$Overlay,
+    # A short name for this run, kept in the results file (an experiment's id, for example).
+    [string]$Label,
+    # The writing judge's model (provider/model, free or paid). Without it, writing cases skip their rubric.
+    [string]$Judge,
     [string]$OutDir = (Join-Path $PSScriptRoot "results")
 )
 
@@ -64,6 +81,7 @@ $ErrorActionPreference = "Stop"
 if ($PSVersionTable.PSVersion.Major -lt 6) { Remove-TypeData System.Array -ErrorAction SilentlyContinue }
 . (Join-Path $PSScriptRoot "lib/EvalLib.ps1")
 . (Join-Path $PSScriptRoot "lib/Graders.ps1")
+. (Join-Path $PSScriptRoot "lib/Experiments.ps1")
 
 $version = ([IO.File]::ReadAllText((Join-Path $script:RepoRoot "core/VERSION"))).Trim()
 $caseFiles = @(Get-ChildItem -LiteralPath (Join-Path $PSScriptRoot "cases") -Filter *.json | Sort-Object Name)
@@ -73,6 +91,16 @@ if ($Case) {
     if ($unknown) { throw "Unknown case(s): $($unknown -join ', '). Known: $(@($caseFiles | ForEach-Object { $_.BaseName }) -join ', ')" }
     $caseFiles = @($caseFiles | Where-Object { $Case -contains $_.BaseName })
 }
+if ($Release -and $Case) { throw "-Release runs every case; leave out -Case." }
+if ($Release -and $Arm -ne "tandem") { throw "-Release runs the tandem arm; use -Arm both separately for the lift." }
+if ($Release) { $Gate = $true }
+if ($Affected) {
+    $aff = Get-AffectedCases -CaseFiles $caseFiles -ResultsDir $OutDir
+    if (-not $aff.Run.Count) { Write-Output "Nothing changed since the last results: every selected case is up to date."; exit 0 }
+    foreach ($n in $aff.Run) { Write-Output "affected: $n ($($aff.Why[$n]))" }
+    $caseFiles = @($caseFiles | Where-Object { $aff.Run -contains $_.BaseName })
+}
+$modelList = if ($Models) { @($Models | ForEach-Object { $_ -split ',' } | ForEach-Object { $_.Trim() } | Where-Object { $_ }) } else { @($Model) }
 
 # The arms a case runs in: tandem always; baseline only when the case has a baseline prompt.
 function Get-CaseArms($c) {
@@ -100,6 +128,10 @@ function New-BaselineWorkspace($c, [string]$Root) {
     $plain = $c | Select-Object * -ExcludeProperty work
     return New-EvalWorkspace $plain $Root
 }
+
+$planned = 0
+foreach ($cf in $caseFiles) { $planned += @(Get-CaseArms (Read-Case $cf.FullName)).Count * $Runs * $modelList.Count }
+if (-not $SetupOnly -and $planned -gt $MaxRuns) { throw "This would start $planned model runs, more than -MaxRuns $MaxRuns. Pick fewer cases, runs or models, or raise -MaxRuns." }
 
 if ($SetupOnly) {
     foreach ($cf in $caseFiles) {
@@ -151,6 +183,31 @@ if ($Arm -ne "tandem") {
     Write-Output "Baseline arm: opencode config without Tandem in $plainDir ($($plainConfig.Note))"
 }
 
+# The writing judge runs with Tandem left out, like the baseline.
+if ($Judge) {
+    $env:EVAL_JUDGE_MODEL = $Judge
+    $env:EVAL_OPENCODE = $oc.Source
+    if (-not $baselineConfig) {
+        $judgeXdg = New-TempDir "eval-judge-config"
+        $jd = Join-Path $judgeXdg "opencode"; New-Item -ItemType Directory -Path $jd -Force | Out-Null
+        $userDirJ = if ($env:XDG_CONFIG_HOME) { Join-Path $env:XDG_CONFIG_HOME "opencode" } else { Join-Path $home2 ".config/opencode" }
+        $pcJ = New-PlainOpencodeConfig -UserDir $userDirJ
+        [IO.File]::WriteAllText((Join-Path $jd $pcJ.Name), $pcJ.Text, $script:Utf8)
+        $env:EVAL_PLAIN_CONFIG = $judgeXdg
+    }
+    else { $env:EVAL_PLAIN_CONFIG = $baselineConfig }
+}
+
+# An experiment's Tandem: a scratch install with the overlay laid over core/.
+$experiment = $null
+if ($Overlay -and $Arm -ne "baseline") {
+    $userDir2 = if ($env:XDG_CONFIG_HOME) { Join-Path $env:XDG_CONFIG_HOME "opencode" } else { Join-Path $home2 ".config/opencode" }
+    $experiment = New-ExperimentConfig -Overlay $Overlay -UserDir $userDir2
+    $script:CommandInfos = @(Get-CommandInfos -Core (Join-Path $experiment.Repo "core"))
+    Write-Output "Experiment: Tandem with $Overlay laid over core/, installed in $($experiment.XdgConfigHome)"
+}
+$tandemEnv = if ($experiment) { @{ XDG_CONFIG_HOME = $experiment.XdgConfigHome } } else { @{} }
+
 # opencode may be a .cmd shim on Windows; Process.Start needs cmd.exe for those.
 function Start-Opencode([string]$WorkDir, [string[]]$OcArgs, [string]$Log, [hashtable]$Env = @{}) {
     # Raw JSON events, so tokens, cost, tool calls and questions can be counted (Get-RunUsage).
@@ -197,7 +254,7 @@ function Invoke-Step($step, $c, $ws, [string]$Log) {
         if ($Model) { $ocArgs += @("--model", $Model) }
         if ($AutoApprove) { $ocArgs += "--auto" }
         $ocArgs += $a
-        $proc = Start-Opencode $ws.Root $ocArgs $Log
+        $proc = Start-Opencode $ws.Root $ocArgs $Log $tandemEnv
         $usage = Add-Usage $usage $proc.Usage
         if ($proc.TimedOut) { $timedOut = $true; break }
         if ($proc.ExitCode) { $exit = $proc.ExitCode }
@@ -210,6 +267,9 @@ function Invoke-Step($step, $c, $ws, [string]$Log) {
 $script:MaxTasks = 8
 $logs = New-TempDir "eval-logs"
 $results = New-Object System.Collections.ArrayList
+foreach ($Model in $modelList) {
+$modelName = if ($Model) { $Model } else { "opencode default" }
+if ($modelList.Count -gt 1) { Write-Output ""; Write-Output "== model $modelName" }
 foreach ($cf in $caseFiles) {
     $c = Read-Case $cf.FullName
     $name = $cf.BaseName
@@ -221,7 +281,7 @@ foreach ($cf in $caseFiles) {
     $needs = @(Get-CaseList $c.needs)
     if (($needs -contains "dotnet") -and -not $hasDotnet -and -not $NoExec) {
         Write-Output "skip $name (needs dotnet)"
-        foreach ($a in $arms) { [void]$results.Add([ordered]@{ case = $name; arm = $a; skipped = "needs dotnet"; runs = @() }) }
+        foreach ($a in $arms) { [void]$results.Add([ordered]@{ case = $name; arm = $a; model = $modelName; skipped = "needs dotnet"; runs = @() }) }
         continue
     }
     foreach ($a in $arms) {
@@ -230,7 +290,7 @@ foreach ($cf in $caseFiles) {
         for ($i = 1; $i -le $Runs; $i++) {
             $root = New-TempDir "eval-$name-$a"
             $started = Get-Date
-            $log = Join-Path $logs "$name-$a-$i.log"
+            $log = Join-Path $logs "$name-$a-$(($modelName -replace '[^\w.-]', '_'))-$i.log"
             $steps = @()
             if ($a -eq "baseline") {
                 $ws = New-BaselineWorkspace $c $root
@@ -274,7 +334,8 @@ foreach ($cf in $caseFiles) {
         }
         $passes = @($runList | Where-Object { $_.pass }).Count
         $entry = [ordered]@{
-            case = $name; arm = $a; passes = $passes; total = $runList.Count
+            case = $name; arm = $a; model = $modelName; filesHash = $(if ($a -eq "tandem") { Get-CaseFilesHash $c } else { $null })
+            passes = $passes; total = $runList.Count
             rate = [math]::Round(100.0 * $passes / [math]::Max(1, $runList.Count))
             passAll = ($runList.Count -gt 0 -and $passes -eq $runList.Count)
             meanSeconds = $(if ($runList.Count) { $t = 0; foreach ($rr in $runList) { $t += [int]$rr.seconds }; [int]($t / $runList.Count) } else { 0 })
@@ -286,37 +347,53 @@ foreach ($cf in $caseFiles) {
         [void]$results.Add($entry)
     }
 }
+}
+if ($Judge) { if ($judgeXdg) { Remove-Item -LiteralPath $judgeXdg -Recurse -Force -ErrorAction SilentlyContinue }; Remove-Item Env:EVAL_JUDGE_MODEL, Env:EVAL_OPENCODE, Env:EVAL_PLAIN_CONFIG -ErrorAction SilentlyContinue }
+if ($experiment) { Remove-Item -LiteralPath $experiment.XdgConfigHome, $experiment.Repo -Recurse -Force -ErrorAction SilentlyContinue }
 if ($baselineConfig) { Remove-Item -LiteralPath $baselineConfig -Recurse -Force -ErrorAction SilentlyContinue }
 
 # ------------------------------------------------------------------ save and compare
 
 New-Item -ItemType Directory -Path $OutDir -Force | Out-Null
 $stamp = (Get-Date).ToString("yyyyMMdd-HHmmss")
-$previousFile = @(Get-ChildItem -LiteralPath $OutDir -Filter *.json -ErrorAction SilentlyContinue | Sort-Object LastWriteTime | Select-Object -Last 1)
+# Compare with the newest results file that was not an experiment.
+$previousFile = @(Get-ChildItem -LiteralPath $OutDir -Filter *.json -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Where-Object {
+    try { -not ((Get-Content -Raw -LiteralPath $_.FullName | ConvertFrom-Json).overlay) } catch { $false } } | Select-Object -First 1)
 $previous = @{}
 if ($previousFile.Count -eq 1) {
     $pj = Get-Content -Raw $previousFile[0].FullName | ConvertFrom-Json
     foreach ($r in $pj.cases) {
         $pa = if ($r.arm) { "$($r.arm)" } else { "tandem" }
-        if ($null -ne $r.rate) { $previous["$($r.case)|$pa"] = [int]$r.rate }
+        $pm = if ($r.model) { "$($r.model)" } else { "$($pj.model)" }
+        if ($null -ne $r.rate) { $previous["$($r.case)|$pa|$pm"] = [int]$r.rate }
     }
 }
 $armsRun = @($results | ForEach-Object { $_.arm } | Select-Object -Unique)
+$modelNames = @($modelList | ForEach-Object { if ($_) { $_ } else { "opencode default" } })
 $doc = [ordered]@{
-    version = 3; tandem = $version; installed = $installed; model = $(if ($Model) { $Model } else { "opencode default" })
+    version = 4; tandem = $version; installed = $installed; model = $modelNames[0]; models = @($modelNames)
     runsPerCase = $Runs; autoApprove = [bool]$AutoApprove; arms = @($armsRun); date = (Get-Date).ToString("yyyy-MM-ddTHH:mm:ss")
+    kind = $(if ($Overlay) { "experiment" } elseif ($Release) { "release" } elseif ($Affected) { "affected" } elseif ($Arm -ne "tandem") { "lift" } else { "custom" })
+    judge = $(if ($Judge) { $Judge } else { $null })
+    label = $(if ($Label) { $Label } else { $null }); overlay = $(if ($Overlay) { $Overlay } else { $null })
+    compareTo = $(if ($previousFile.Count -eq 1) { $previousFile[0].Name } else { $null })
     cases = @($results)
 }
 $outFile = Join-Path $OutDir "$version-$stamp.json"
 [IO.File]::WriteAllText($outFile, ($doc | ConvertTo-Json -Depth 10), $script:Utf8)
+# An experiment run is listed in its experiment.json, so Bench can show before and after.
+if ($Overlay) {
+    $em = [regex]::Match(([IO.Path]::GetFullPath($Overlay) -replace '\\', '/'), '/experiments/([a-z]+-[a-z0-9-]+)/overlay/?$')
+    if ($em.Success) { try { Set-ExperimentStatus $em.Groups[1].Value $null (Split-Path $outFile -Leaf) } catch { } }
+}
 
 Write-Output ""
-Write-Output "| Case | Arm | Passed | Rate | Every run | Tokens/run | Questions | Previous | Change |"
-Write-Output "|---|---|---|---|---|---|---|---|---|"
+Write-Output "| Case | Arm | Model | Passed | Rate | Every run | Tokens/run | Questions | Previous | Change |"
+Write-Output "|---|---|---|---|---|---|---|---|---|---|"
 $drops = 0
 foreach ($r in $results) {
-    if ($r.skipped) { Write-Output "| $($r.case) | $($r.arm) | skipped ($($r.skipped)) | | | | | | |"; continue }
-    $key = "$($r.case)|$($r.arm)"
+    if ($r.skipped) { Write-Output "| $($r.case) | $($r.arm) | $($r.model) | skipped ($($r.skipped)) | | | | | | |"; continue }
+    $key = "$($r.case)|$($r.arm)|$($r.model)"
     $prev = if ($previous.ContainsKey($key)) { "$($previous[$key])%" } else { "n/a" }
     $chg = ""
     if ($previous.ContainsKey($key)) {
@@ -324,18 +401,20 @@ foreach ($r in $results) {
         $chg = if ($d -lt 0) { "**$d**"; if ($r.arm -eq "tandem") { $drops++ } } elseif ($d -gt 0) { "+$d" } else { "same" }
     }
     $tok = if ($null -ne $r.meanTokens) { "$($r.meanTokens)" } else { "n/a" }
-    Write-Output "| $($r.case) | $($r.arm) | $($r.passes)/$($r.total) | $($r.rate)% | $(if ($r.passAll) { 'yes' } else { 'no' }) | $tok | $($r.meanQuestions) | $prev | $chg |"
+    Write-Output "| $($r.case) | $($r.arm) | $($r.model) | $($r.passes)/$($r.total) | $($r.rate)% | $(if ($r.passAll) { 'yes' } else { 'no' }) | $tok | $($r.meanQuestions) | $prev | $chg |"
 }
 
 $lift = @(Get-Lift $results)
 if ($lift.Count) {
     Write-Output ""
-    Write-Output "| Case | Tandem | Baseline | Lift |"
-    Write-Output "|---|---|---|---|"
-    foreach ($l in $lift) { Write-Output "| $($l.case) | $($l.tandem)% | $($l.baseline)% | $(if ($l.lift -gt 0) { '+' })$($l.lift) |" }
+    Write-Output "| Case | Model | Tandem | Baseline | Lift |"
+    Write-Output "|---|---|---|---|---|"
+    foreach ($l in $lift) { Write-Output "| $($l.case) | $($l.model) | $($l.tandem)% | $($l.baseline)% | $(if ($l.lift -gt 0) { '+' })$($l.lift) |" }
 }
 Write-Output ""
 if ($previousFile.Count -eq 1) { Write-Output "Compared with $($previousFile[0].Name)." }
 if ($drops) { Write-Output "$drops case(s) dropped. Read their failed checks and logs before releasing." }
 Write-Output "Logs: $logs"
 Write-Output "Results: $outFile"
+if ($Gate -and $drops) { Write-Output "Gate: $drops case(s) dropped against $($previousFile[0].Name)."; exit 1 }
+exit 0

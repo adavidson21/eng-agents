@@ -1,0 +1,27 @@
+{
+  "description": "/tsd drafts a technical spec for sample-api from the code: overview, key flows and at least one Mermaid diagram, using real names. No code changes.",
+  "command": "tsd",
+  "arguments": "sample-api",
+  "expect": {
+    "files": [
+      {
+        "path": ".work/tsd-*/tsd.md",
+        "headings": [
+          "## Overview",
+          "## Key flows"
+        ],
+        "matches": [
+          "```mermaid",
+          "OrderTotals",
+          "PricingOptions"
+        ]
+      }
+    ],
+    "repo": "unchanged",
+    "judge": {
+      "rubric": "tsd",
+      "path": ".work/tsd-*/tsd.md"
+    }
+  },
+  "grader": "Test-Expect"
+}

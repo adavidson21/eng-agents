@@ -1,0 +1,26 @@
+{
+  "description": "/onboard-repo drafts a repo guide; sample-api has a committed AGENTS.md, so the draft goes to AGENTS.local.md, with real build and test commands, and nothing else in the repo changes.",
+  "command": "onboard-repo",
+  "arguments": "sample-api",
+  "expect": {
+    "files": [
+      {
+        "path": "sample-api/AGENTS.local.md",
+        "headings": [
+          "## Purpose",
+          "## Commands"
+        ],
+        "matches": [
+          "dotnet test",
+          "OrderTotals"
+        ]
+      }
+    ],
+    "repo": {
+      "allow": [
+        "^AGENTS\\.local\\.md$"
+      ]
+    }
+  },
+  "grader": "Test-Expect"
+}

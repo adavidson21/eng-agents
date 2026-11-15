@@ -1,0 +1,11 @@
+{
+  "about": "Writing judge for /triage triage.md.",
+  "pass": 0.8,
+  "questions": [
+    "Does the summary say what is being asked in plain words, in one or two sentences?",
+    "Does it name the repo or code the request would touch?",
+    "Are the questions for the requester only things that are actually unknown?",
+    "Could the message to the requester be pasted as is, in a friendly, plain voice?",
+    "Does the suggested route name a lane and who should build it?"
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "description": "Outcome only, for the lift: ItemCount works (hidden outcome tests pass, Do-not-touch kept, changes only in src and tests). The Tandem arm runs the quick lane (/quick, the script approves quick.md, /do-task per task); the baseline arm gets the same story as one plain prompt.",
+  "workItem": "L3-show-item-count",
+  "branch": "dev/feature/L3-show-item-count",
+  "work": [
+    {
+      "from": "L3/start",
+      "to": "L3-show-item-count"
+    }
+  ],
+  "steps": [
+    {
+      "command": "quick",
+      "arguments": "L3 auto"
+    },
+    {
+      "approve": "quick.md"
+    },
+    {
+      "command": "do-task",
+      "arguments": "L3 {n} auto",
+      "eachTask": true
+    }
+  ],
+  "baseline": {
+    "prompt": "Implement this in the sample-api repo (you are on its branch dev/feature/L3-show-item-count). The order summary needs the number of items in an order (adding up the quantity on every line), so customers can check it before paying. Acceptance criteria: OrderTotals.ItemCount(order) returns the sum of the quantities of every line; an order with no lines has 0 items. Add tests, make sure every test passes, and commit. Nobody is watching: do not ask questions, make reasonable choices and finish."
+  },
+  "outcome": {
+    "hidden": "L3"
+  },
+  "grader": "Test-Outcome",
+  "needs": [
+    "dotnet"
+  ]
+}

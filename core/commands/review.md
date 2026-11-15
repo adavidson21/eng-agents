@@ -10,7 +10,7 @@ If the mode above is `auto`, autopilot is running this review and nobody is watc
 ## Step 1: Find the work folder
 
 - Find the folder in `.work/` that starts with `$1-`.
-- Read `repos.md`, `spec.md` (or `bug.md` for the bug lane), `plan.md` if it exists, `tasks.md`, and `progress.md`.
+- Read `repos.md`, `spec.md` (or `bug.md` for the bug lane, `quick.md` for the quick lane), `plan.md` if it exists, `tasks.md`, and `progress.md`.
 - If any task in `tasks.md` is not checked, list them and ask the engineer whether to review anyway. Wait.
   - `auto`: do not review. Add a `progress.md` entry that names the unchecked tasks, and stop.
 

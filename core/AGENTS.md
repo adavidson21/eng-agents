@@ -82,6 +82,7 @@ Each work item has a folder `.work/<id>-<name>/`. Find it by listing `.work/` an
 | `retro.md` | Lessons from the item and proposed `/memory` rules, written by `/retro`. Not pipeline state. |
 | `pr.md` | PR title and description. |
 | `bug.md` | Bug lane analysis. Has a `Status:` line. |
+| `quick.md` | Quick lane: one combined spec and plan for small work (tasks stay in `tasks.md`). Has a `Status:` line. |
 | `findings.md` | Spike results, with `### For business`, `### For engineering` and `### For leadership` blocks. `brief.html` next to it is the shareable export (`Export-Brief.ps1`); never edit it, re-export instead. |
 | `paused.md` | Where a paused item stands and how to pick it up. Has a `Status:` line (`PAUSED` or `RESUMED`). |
 
@@ -106,7 +107,7 @@ A first-pass review of someone else's pull request lives in `.work/pr-<id>/` (wr
 
 `.work/dashboard.html` is written by `/dashboard static`, and `.work/_dashboard/` belongs to Dispatch (Workshop's opencode connector). Never edit them and never read them for pipeline state; read the files above instead.
 
-**Gates.** A file with `Status: APPROVED` was approved by the engineer. The engineer approves by running `/approve <id>` (specs, plans, bug analyses), `/approve scope-<name>` (stories, milestones) or `/publish <folder>` (finished documents such as a TSD), or by editing the line. Only those two commands may change a Status line to `APPROVED`, and only when the engineer runs them. In every other command, you never do. A gate file also has a `Draft-hash:` line under `Status:`, written by `Set-DraftHash.ps1` when a command finishes the draft; never write or change that line yourself.
+**Gates.** A file with `Status: APPROVED` was approved by the engineer. The engineer approves by running `/approve <id>` (specs, plans, bug analyses, quick plans), `/approve scope-<name>` (stories, milestones) or `/publish <folder>` (finished documents such as a TSD), or by editing the line. Only those two commands may change a Status line to `APPROVED`, and only when the engineer runs them. In every other command, you never do. A gate file also has a `Draft-hash:` line under `Status:`, written by `Set-DraftHash.ps1` when a command finishes the draft; never write or change that line yourself.
 
 **Paused items.** If `paused.md` contains `Status: PAUSED`, the item is on hold. Do not run any other pipeline command on it except `/status` and `/resume`. Tell the engineer to run `/resume <id>` first.
 
@@ -119,6 +120,7 @@ Templates for these files are in `{{ENG_HOME}}/templates/`. Always start a new f
 | Base branch | `main` |
 | Feature branch | `dev/feature/<id>-<short-name>` |
 | Bug branch | `dev/bug/<id>-<short-name>` |
+| Quick lane branch | `dev/feature/<id>-<short-name>` (a quick item is a small feature) |
 | `<short-name>` | Same as the `.work` folder name after `<id>-` |
 | Commit message | A short summary in plain words. No prefix, no work item number. Example: `Add retry to export job` |
 | Task size cap | A task changes at most **3 files** |

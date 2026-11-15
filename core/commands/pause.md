@@ -15,7 +15,7 @@ Do not change any code. The only files you write are `paused.md` and `progress.m
 ## Step 2: Read where it stands
 
 - Read `repos.md` (lane, repos, branches).
-- Read the `Status:` line of `spec.md`, `plan.md`, and `bug.md` (whichever exist).
+- Read the `Status:` line of `spec.md`, `plan.md`, `bug.md`, and `quick.md` (whichever exist).
 - Read the checkboxes in `tasks.md` (if it exists) and the verdict in `review.md` (if it exists).
 - Read the last 3 entries of `progress.md`.
 - Work out the phase and the next command using the next-command rules in `/status`.
@@ -44,7 +44,7 @@ Wait for the answer and do what they choose. Never stash, discard, reset, or res
 
 - Start from `{{ENG_HOME}}/templates/paused.md`. Write it to the work folder as `paused.md`, replacing any old copy.
 - "Work in progress": if a task was half done, describe from the diff and the task text what is done and what is left. Name files. Otherwise write "None".
-- "Waiting on": open questions from `spec.md` or `bug.md`, and anything the progress notes say is blocked.
+- "Waiting on": open questions from `spec.md`, `bug.md` or `quick.md`, and anything the progress notes say is blocked.
 - "To resume": the exact next command from Step 2.
 
 ## Step 6: Log it

@@ -1,0 +1,9 @@
+{
+  "description": "/quick keeps a one-task change in the quick lane: quick.md with testable ACs and real files, and at most 2 well-formed tasks.",
+  "command": "quick",
+  "arguments": "L3 auto",
+  "workItem": "L3-show-item-count",
+  "branch": "dev/feature/L3-show-item-count",
+  "work": [{"from":"L3/start","to":"L3-show-item-count"}],
+  "grader": "Test-QuickLane"
+}

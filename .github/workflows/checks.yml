@@ -58,6 +58,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: ./evals/Test-Graders.ps1
+      - run: ./evals/Test-Harness.ps1
   eval-fixtures:
     # The eval fixtures must behave as the cases assume (builds, planted bug is real). Needs dotnet, no model.
     runs-on: ubuntu-latest

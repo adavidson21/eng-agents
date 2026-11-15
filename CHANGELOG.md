@@ -4,6 +4,13 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 3.1.0 (2026-11-14)
+
+- Evals can now show whether Tandem helps: `Invoke-Evals.ps1 -Arm both` runs each case with Tandem and as one plain prompt with Tandem left out (same model, same workspace), and adds a lift table (Tandem's pass rate minus the baseline's). `-Arm baseline` runs only the plain arm. The plain arm uses a config folder made for the run: your `opencode.json` without Tandem's `instructions`, `agent`, `command` and `mode`.
+- New case `feature-outcome`: the whole feature lane in one workspace (`/spec`, `/plan`, `/tasks`, `/do-task` per task, gates approved by the script between them), graded on the outcome only, with behavior-only hidden tests (`fixtures/hidden-outcome/`). Cases can list `steps` (`approve` and `eachTask` included) and a `baseline.prompt`.
+- Results files are `version: 2`: `arm`, `passAll` (every run passed), `meanSeconds`, and each run's `steps`. Workshop's Bench app (opencode connector 1.13.0) reads them; older files read as the tandem arm.
+- New CI check `evals/Test-Harness.ps1`: the harness itself, with a fake opencode (`evals/selftest/fake-opencode`).
+
 ## Core 3.0.0 (2026-11-14)
 
 Breaking: repo guides name their tech stacks. A guide without a `Stack:` line still works (agents read every stack file and say so once); run `/onboard-repo <repo>` to add it.

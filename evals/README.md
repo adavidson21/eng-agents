@@ -22,7 +22,25 @@ Each case builds a made-up workspace (a repo map and `sample-api`, a small .NET 
 3. Read the summary table. It compares each case with the newest file in `evals/results/`. A drop means read that case's failed checks and log before releasing.
 4. Commit the results file you want later runs compared against (your baseline).
 
+Results files are `version: 2`: each case entry has an `arm` (`tandem` or `baseline`), `passAll` (every run passed) and `meanSeconds`, and each run lists its `steps` with seconds. Older files have no `arm`; read them as `tandem`.
+
 Cases marked `needs: dotnet` are skipped without the .NET 8 SDK.
+
+## Does Tandem help? (the lift)
+
+`-Arm both` runs each case twice over: once with Tandem (the **tandem** arm) and once as one plain prompt with Tandem left out (the **baseline** arm), on the same model. The summary adds a lift table: Tandem's pass rate minus the baseline's, per case.
+
+```
+./evals/Invoke-Evals.ps1 -Case feature-outcome -Arm both -Runs 3 -AutoApprove -Model <provider/model>
+```
+
+- Only cases with a `baseline` prompt take part in the baseline arm (today: `feature-outcome`). `-Arm baseline` runs just that arm.
+- The baseline arm starts opencode with a config folder made for the run (`XDG_CONFIG_HOME`): your `opencode.json` without `instructions`, `agent`, `command` and `mode`, so it keeps your model, providers and permissions but none of Tandem's rules, memory, agents or commands. No `.work` files are laid down either.
+- Both arms get the same workspace, repo map and repo guide, so the lift measures Tandem's phases, not its knowledge files.
+- The Tandem arm of a case with `steps` runs several commands in one workspace and approves each gate in between (the `Status:` line, as `/approve` does), like autopilot. `eachTask` runs `/do-task` once per open task in `tasks.md` (at most 8).
+- Report pass rate (any run) and whether every run passed (`Every run`, pass^k). Never compare a pass rate with a best-of-N number.
+
+Workshop's **Bench** app shows the same results: lift, history, compare and each run's failed checks, and can start a run in a terminal you can see.
 
 Debug one case by hand: `./evals/Invoke-Evals.ps1 -Case do-task -SetupOnly` builds the workspace and prints the opencode line to run there. `-KeepWorkspaces` keeps every run's folder.
 
@@ -43,20 +61,23 @@ Runs are unattended. A command that hits an `ask` rule waits for an answer nobod
 | `bug-lane` | `/bug L2 auto` | root cause in `OrderTotals.cs` with a confidence, 1 to 3 tasks, Task 1 a test that must fail |
 | `small-lane` | `/quick L3 auto` | a one-task change stays quick: quick.md with Given/When/Then ACs and a real pattern file, 1 or 2 tasks with verify commands from the repo guide |
 | `small-lane-escalate` | `/quick L4 auto` | a schema plus API change steps up: `Lane: feature`, no quick.md or tasks.md, `escalated=1` logged |
+| `feature-outcome` | the whole feature lane (`/spec`, `/plan`, `/tasks`, `/do-task` per task), or one plain prompt (`-Arm baseline`) | outcome only: hidden outcome tests pass, `LegacyRound` kept, settings in `PricingOptions`, changes only under `src/` and `tests/` (committed or not) |
 | `retro-repeat` | `/retro --since 2026-01-01` | spots the same repo and category in two items and proposes a rule (or flags the existing one as broken) without writing memory |
 
 ## How it fits together
 
 | Path | What |
 |---|---|
-| `cases/<case>.json` | Command, arguments, which fixtures to lay down, which grader to run |
+| `cases/<case>.json` | Command and arguments (or `steps`), an optional `baseline.prompt`, which fixtures to lay down, which grader to run |
 | `workspace/` | The repo map and `sample-api` (becomes its own git repo per run) |
 | `fixtures/work/` | `.work` files for each starting point; `progress-add.md` is appended to `progress.md` |
 | `fixtures/repo/` | Code committed on the branch before the run (the correct and the planted implementation) |
 | `fixtures/hidden/` | Acceptance tests the do-task grader adds after the run, runs, and removes |
+| `fixtures/hidden-outcome/` | Behavior-only tests the feature-outcome grader adds, runs and removes (no names either arm had to guess) |
 | `lib/Graders.ps1` | One grader per case: file and git checks, no model |
 | `goldens/<case>/pass`, `fail` | Hand-written good and bad outputs that prove each grader tells them apart |
 | `Test-Graders.ps1` | CI: every good golden passes, every bad golden fails (no model, no dotnet) |
+| `Test-Harness.ps1` | CI: `Invoke-Evals.ps1` itself, with a fake opencode (`selftest/fake-opencode`): steps in order, gates approved, the baseline's config without Tandem, results with both arms and the lift |
 | `Test-Fixtures.ps1` | CI with dotnet: the fixtures build, the planted bug is real, the do-task grader works end to end |
 
 ## Adding a case
@@ -64,4 +85,5 @@ Runs are unattended. A command that hits an `ask` rule waits for an answer nobod
 1. Write `cases/<name>.json` and the fixtures it needs.
 2. Add a grader function to `lib/Graders.ps1`. Prefer checks a script can decide over judgments.
 3. Add `goldens/<name>/pass` and `goldens/<name>/fail`, and run `./evals/Test-Graders.ps1`.
-4. Keep everything made up: no company names, people, or code.
+4. For a lift case, grade the outcome only (files, tests, scope), never Tandem's own files, so both arms are graded the same way, and add a `baseline.prompt` that gives the plain arm the same information the work item gives Tandem.
+5. Keep everything made up: no company names, people, or code.

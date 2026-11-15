@@ -78,7 +78,8 @@ Each work item has a folder `.work/<id>-<name>/`. Find it by listing `.work/` an
 | `tasks.md` | Numbered tasks with checkboxes and verify commands. |
 | `progress.md` | Append-only log. Add an entry after every command. Never delete entries. When a command asks for a `- Stats:` line, write it exactly as asked (`key=value` pairs); `/stats` reads it. |
 | `baseline.md` | Unit test results per repo right after `/start` made the branches, before any change. `/do-task` uses it to tell old test failures from new ones. |
-| `review.md` | Review findings and verdict. |
+| `review.md` | Review findings (each with a category) and verdict. Earlier rounds are copied to `history/review-<date>-<n>.md` first. |
+| `retro.md` | Lessons from the item and proposed `/memory` rules, written by `/retro`. Not pipeline state. |
 | `pr.md` | PR title and description. |
 | `bug.md` | Bug lane analysis. Has a `Status:` line. |
 | `findings.md` | Spike results, with `### For business`, `### For engineering` and `### For leadership` blocks. `brief.html` next to it is the shareable export (`Export-Brief.ps1`); never edit it, re-export instead. |
@@ -101,7 +102,7 @@ A first-pass review of someone else's pull request lives in `.work/pr-<id>/` (wr
 | `threads.md` | Comments already on the PR. |
 | `review.md` | Draft comments for the engineer to post. Has a `Reviewed commit:` line. Older reviews move to `history/`. |
 
-`.work/runway.md` is the end-of-day note written by `/shutdown`. It is not pipeline state; read the files above for that.
+`.work/_retro/<date>.md` holds cross-item retros (`/retro --since`). `.work/runway.md` is the end-of-day note written by `/shutdown`. It is not pipeline state; read the files above for that.
 
 `.work/dashboard.html` is written by `/dashboard static`, and `.work/_dashboard/` belongs to Dispatch (Workshop's opencode connector). Never edit them and never read them for pipeline state; read the files above instead.
 

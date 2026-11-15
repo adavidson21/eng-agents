@@ -33,7 +33,8 @@ If the mode above is `auto`, autopilot is running this review and nobody is watc
 
 - For each acceptance criterion, mark `Met`, `Partly met`, or `Not met`. Give the test and file that prove it.
 - List changes that no criterion or task asked for.
-- For each checked task, find its Manual Validation Checklist in `progress.md`: in its `/do-task` entry, or in a later entry for that task. If it is missing or vague (no exact URL, click, value, or command), add a `Blocker` finding for that task.
+- For each checked task, find its Manual Validation Checklist in `progress.md`: in its `/do-task` entry, or in a later entry for that task. If it is missing or vague (no exact URL, click, value, or command), add a `Blocker` finding for that task (category `checklist`).
+- **TDD evidence.** For each checked task that changed .NET code, find its `Red run` and `Green run` output blocks in `progress.md` (or the failing and passing runs in entries older than Core 2.23.0). The Red run must show the named test failing on an assertion or the expected exception, not a compile error elsewhere. If the Red run is missing, or shows something other than the new test failing for the expected reason, add a `Should fix` finding (category `tdd`), unless a Personal or Company rule makes it a `Blocker`. Bug lane Task 1 (a test that must fail) counts as its own Red run.
 
 ## Step 6: Pass 2, code quality
 
@@ -49,9 +50,13 @@ Check every changed file against this list and the repo `AGENTS.md`:
 - **Playwright:** every API call mocked with `page.route`, no fixed waits (`waitForTimeout`), stable selectors.
 - **Leftovers:** no debug logging, commented-out code, or TODO comments added.
 
+Give every finding a category: the bold word of the checklist item it falls under, in lower case (`architecture`, `consistency`, `correctness`, `efcore`, `security`, `tests`, `angular`, `playwright`, `leftovers`), or `spec`, `scope`, `checklist` or `tdd` for Pass 1 findings. If none fits, use the closest one; do not invent new categories.
+
 ## Step 7: Write review.md
 
+- If `review.md` already exists (an earlier review round), first copy it unchanged to `history/review-<yyyy-mm-dd>-<n>.md` in the work folder (`<n>` = 1, 2, ... so nothing is overwritten). `/retro` reads every round.
 - Start from `{{ENG_HOME}}/templates/review.md`. Write it to the work folder as `review.md`.
+- Put every finding, from both passes, in the findings table with its category.
 - Copy every task's Manual Validation Checklist into the "Manual validation" section, in task order, so the engineer has one list to walk through.
 - Verdict is `READY` only if all tests pass, every criterion is `Met`, and there are no Blockers.
 

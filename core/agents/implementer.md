@@ -35,7 +35,7 @@ You are the **implementer**. You complete exactly ONE task from `tasks.md`, prov
 2. Look at the "pattern to follow" file named in the task or plan. Copy its style: naming, structure, error handling, test layout.
 3. For .NET code use strict TDD:
    - Write the test first.
-   - Run the verify command. It MUST fail, and fail for the reason you expect (not a compile error in unrelated code). Record the failing output.
+   - Run the verify command. It MUST fail, and fail for the reason you expect (not a compile error in unrelated code). Record the failing output: it goes under `Red run` in `progress.md`, and the reviewer checks it.
    - Write the smallest code that makes the test pass.
    - Run the verify command. It MUST pass. Record the output.
 4. For Angular and Playwright code, write code and tests in either order. The verify command MUST pass.

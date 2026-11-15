@@ -13,6 +13,14 @@ Append a new entry at the bottom after every command. Never edit or delete old e
   ```
   <paste the last 10 to 20 lines of real output>
   ```
+- Red run (`/do-task` on .NET code only: the verify run BEFORE the code change, showing the new test failing):
+  ```
+  <last 10 to 20 lines, including the failing test name and the assertion or exception>
+  ```
+- Green run (`/do-task` on .NET code only: the same verify command AFTER the change; can be the Output block above):
+  ```
+  <last 10 to 20 lines>
+  ```
 - Manual validation (`/do-task` only, skip if blocked):
   1. Open <exact URL or file path>
   2. <exact physical action: click 'X', type 'Y', or run 'Z'>

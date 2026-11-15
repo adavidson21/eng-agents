@@ -27,6 +27,7 @@ Open opencode from your workspace root (for example `C:\src\work`).
 | Hands-off build after the plan | Dispatch: **Approve and build**. It runs tasks, review, and PR text, each step in a new session, and stops only when it needs you (see [Autopilot](docs/pipeline.md#autopilot)) |
 | End of day | `/shutdown`: writes `.work/runway.md` with where you left off, tomorrow's first step, and open loops. Next morning, `/status` shows it first. |
 | Is the pipeline helping? | `/stats [--since yyyy-MM-dd]`: days to PR, review rounds, rework, and which gates you approve as written (see [Measuring the pipeline](docs/pipeline.md#measuring-the-pipeline)) |
+| Learn from an item | `/retro <id>` after review: what caused rework and up to 5 rules, each with the `/memory` line to save it. `/retro --since <date>` finds mistakes that repeat across items. |
 | Standup update | `/standup [days back]` (default 1, or 3 on a Monday) |
 | Switch to something urgent | `/pause <id> [reason]`, later `/resume <id>` |
 | New repo in the workspace | `/onboard-repo <folder>` |

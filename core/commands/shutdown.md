@@ -34,7 +34,7 @@ Wait for the answer.
 - Start from `{{ENG_HOME}}/templates/runway.md`. Write it as `.work/runway.md`, replacing any old one.
 - **Current State:** exactly two sentences from Step 1: what is uncommitted (repo and what the change is), and where the code was left. If everything is clean, say so and name the item that is furthest along.
 - **Tomorrow's Ignition:** one step, the smallest one that gets the engineer moving on what they said. Make it concrete: the exact pipeline command (with "in a new session" for `/do-task`), or the file and line to open. If their answer is about something outside the pipeline, write the first physical action for it.
-- **Open Loops:** everything else they said, one line each, in their words, plus loops from the old runway they did not drop. Add failing verify steps or blocked tasks from Step 1. Write "None" if there is nothing.
+- **Open Loops:** everything else they said, one line each, in their words, plus loops from the old runway they did not drop. Add failing verify steps or blocked tasks from Step 1. Add one loop for each work item whose `progress.md` got a `/pr` entry today and that has no `retro.md`: "`/retro <id>` to capture lessons". Write "None" if there is nothing.
 - **Snapshot:** fill both tables from Step 1. Only list repos that are off their default branch, dirty, or unpushed; then one line "Clean: <repo>, <repo>".
 - Never write secrets, tokens, or connection strings, even if they appear in a diff.
 

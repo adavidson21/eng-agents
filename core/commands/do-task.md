@@ -61,7 +61,7 @@ The verify command only runs this task's tests. Before committing, check the who
 ## Step 6: Record
 
 - In `tasks.md`, change `## [ ] Task $2` to `## [x] Task $2`. Only if it passed.
-- Add a `progress.md` entry using the template format. Paste the real last lines of the verify output. For .NET, include both the failing and the passing run. If it passed, include the Manual Validation Checklist (see your agent instructions), built from the task's "Human interface" line. If blocked, write what you tried and what failed, and skip the checklist. Add a `- Stats: verify=<PASS or FAIL> full=<PASS, FAIL or skipped> attempts=<runs of the verify command>` line.
+- Add a `progress.md` entry using the template format. Paste the real last lines of the verify output. For .NET, paste the failing run under `Red run` and the passing run under `Green run`, and add `red=<name of the test that failed first>` to the Stats line. If it passed, include the Manual Validation Checklist (see your agent instructions), built from the task's "Human interface" line. If blocked, write what you tried and what failed, and skip the checklist. Add a `- Stats: verify=<PASS or FAIL> full=<PASS, FAIL or skipped> attempts=<runs of the verify command>` line.
 
 ## Step 7: Commit
 

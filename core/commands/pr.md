@@ -29,3 +29,4 @@ Draft the pull request text for work item **$1**.
 - Add a `progress.md` entry for `/pr`.
 - Tell the engineer: "PR text is in `pr.md`. Push each branch with `git -C <repo> push -u origin <branch>` (or tell me to, or use Push in Dispatch), then open the PR on your git host (Azure DevOps, GitHub, or another) targeting `<target>`." Name each repo's target. If they ask you to push, run that command for each repo; each push asks for approval.
 - For a repo whose base has no `origin/` (no remote), say there is nothing to push: the work is on `<branch>`, ready to merge into `<base>` locally.
+- End with one line: "When it is merged, `/retro $1` turns this item's review findings into rules."

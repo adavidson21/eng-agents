@@ -194,7 +194,7 @@ function Test-DoTask($Ws, [switch]$NoExec) {
 }
 
 function Get-FindingRows([string]$Review) {
-    return @([regex]::Matches($Review, '(?m)^\|\s*\d+\s*\|\s*(Blocker|Should fix|Nit)\s*\|\s*([^|]*)\|([^\r\n]*)$') | ForEach-Object {
+    return @([regex]::Matches($Review, '(?m)^\|\s*\d+\s*\|\s*(Blocker|Should fix|Nit)\s*\|\s*([^|]*)\|([^\r\n]*)') | ForEach-Object {
             [pscustomobject]@{ Severity = $_.Groups[1].Value; Category = $_.Groups[2].Value.Trim().ToLowerInvariant(); Rest = $_.Groups[3].Value }
         })
 }

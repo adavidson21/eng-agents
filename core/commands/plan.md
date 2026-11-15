@@ -1,5 +1,5 @@
 ---
-description: "Write plan.md from an approved spec. Usage: /plan <id> [auto]"
+description: "Write or redo plan.md for a work item. /spec already drafts it; use this to redo a plan, or for items started before the single gate. Usage: /plan <id> [auto]"
 agent: planner
 ---
 
@@ -10,7 +10,7 @@ If the mode above is `auto`, nobody is watching. Ask nothing. If Step 4 finds a 
 ## Step 1: Find the work folder and check the gate
 
 - Find the folder in `.work/` that starts with `$1-`.
-- Read `spec.md`. If it does not contain `Status: APPROVED`, stop. Tell the engineer to review `spec.md` and run `/approve $1` first.
+- Read `spec.md`. If there is none, stop and suggest `/spec $1`. A draft spec is fine: the spec and the plan are approved together.
 - If `plan.md` exists and says `Status: APPROVED`, stop and suggest `/tasks $1`.
 
 ## Step 2: Read
@@ -41,4 +41,4 @@ If the mode above is `auto`, nobody is watching. Ask nothing. If Step 4 finds a 
 
 - Stamp the draft as your last change to `plan.md`: run exactly `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/work/Set-DraftHash.ps1" -Path "<work folder>/plan.md"`. It adds a `Draft-hash:` line so `/approve` can tell whether the engineer edited the draft. If you change the file again, run it again.
 - Add a `progress.md` entry for `/plan` with a `- Stats: questions=<n> assumptions=<n>` line (how many questions you asked the engineer, and how many assumptions you wrote instead).
-- Tell the engineer: "Review `plan.md`. When it is correct, run `/approve $1` (or change the line to `Status: APPROVED` yourself), then `/tasks $1`."
+- Tell the engineer: "Review `plan.md`. Then run `/tasks $1` to redo the tasks if the plan changed them, and `/approve $1` when the spec, plan and tasks are right."

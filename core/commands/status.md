@@ -41,9 +41,11 @@ Check in this order. The first match wins.
 | `paused.md` contains `Status: PAUSED` | `/resume <id>` |
 | No `repos.md` | `/start <id> <feature, bug or quick>` |
 | Lane feature, no `spec.md` | `/spec <id>` |
-| `spec.md` is DRAFT | Engineer reviews `spec.md`, then `/approve <id>` |
+| `spec.md` is DRAFT, `plan.md` and `tasks.md` exist | Engineer reviews `spec.md`, `plan.md` and `tasks.md`, then `/approve <id>` |
+| `spec.md` is DRAFT, no `plan.md` | `/spec <id>` again to draft the plan and tasks, or `/plan <id>` |
 | Lane feature, no `plan.md` | `/plan <id>` |
-| `plan.md` is DRAFT | Engineer reviews `plan.md`, then `/approve <id>` |
+| `plan.md` is DRAFT, no `tasks.md` | `/tasks <id>` |
+| `plan.md` is DRAFT | Engineer reviews `plan.md` and `tasks.md`, then `/approve <id>` |
 | Lane bug, no `bug.md` | `/bug <id>` |
 | `bug.md` is DRAFT | Engineer reviews `bug.md`, then `/approve <id>` |
 | Lane quick, no `quick.md` | `/quick <id>` |

@@ -21,12 +21,12 @@ Draft the pull request text for work item **$1**.
 - Start from `{{ENG_HOME}}/templates/pr.md`. Write it to the work folder as `pr.md`.
 - One section per repo that has commits. In its `Branch:` line, the target is the base without `origin/` (base `origin/develop` gives `-> develop`).
 - Title: a short plain summary, under 70 characters.
-- Description: one or two sentences, then at most 4 bullets, then one testing line, then `Work item: #$1`.
+- Description: one or two sentences that lead with why, then what; then at most 4 bullets; then one testing line (how to test, then what was run). When the change touches UI files, add a `Screenshots:` placeholder line. End with the work item link: `AB#$1` for an ADO work item (it links the PR in ADO), `Closes owner/repo#<n>` for a GitHub issue (from the `- GitHub:` line in `workitem.md`), nothing for a local item.
 - **Keep it short.** No headings inside the description. No restating the spec. No list of every file.
 
 ## Step 4: Hand off
 
 - Add a `progress.md` entry for `/pr`.
-- Tell the engineer: "PR text is in `pr.md`. Push each branch with `git -C <repo> push -u origin <branch>` (or tell me to, or use Push in Dispatch), then open the PR on your git host (Azure DevOps, GitHub, or another) targeting `<target>`." Name each repo's target. If they ask you to push, run that command for each repo; each push asks for approval.
+- Tell the engineer: "PR text is in `pr.md`. Push each branch with `git -C <repo> push -u origin <branch>` (or tell me to, or use Push in Loom), then open the PR on your git host (Azure DevOps, GitHub, or another) targeting `<target>`." Name each repo's target. If they ask you to push, run that command for each repo; each push asks for approval.
 - For a repo whose base has no `origin/` (no remote), say there is nothing to push: the work is on `<branch>`, ready to merge into `<base>` locally.
 - End with one line: "When it is merged, `/retro $1` turns this item's review findings into rules."

@@ -8,9 +8,9 @@ How each phase works, why it is shaped this way, and what to do when it goes wro
 /backlog scope-<name>  ADO import file (default), ADO items, or local items
 /start <id> feature    fetch work item, create .work/<id>-<name>/, confirm repos, create branches
                        (add a repo folder or ADO connection as a 3rd argument for another collection)
-/spec <id>             questions one at a time, then spec.md        GATE: /approve <id>
-/plan <id>             files per repo, pattern to follow, test plan GATE: /approve <id>
-/tasks <id>            small tasks, each with a verify command      skim task sizes
+/spec <id>             questions one at a time, then spec.md, plan.md and tasks.md
+                       (files per repo, pattern to follow, test plan, small tasks)  GATE: /approve <id>
+/plan <id>, /tasks <id> redo the plan or the tasks on their own (older items, or after big edits)
 /do-task <id> <n>      one task per fresh session, TDD, commit      repeat
 /review <id>           pass 1 spec, pass 2 quality                  accept findings as tasks
 /pr <id>               short title and description per repo
@@ -38,8 +38,7 @@ A gate is the `Status:` line at the top of a file. Nothing moves past a gate unt
 
 | File | Created by | Approve with | Checked by |
 |---|---|---|---|
-| `spec.md` | `/spec` | `/approve <id>` | `/plan` |
-| `plan.md` | `/plan` | `/approve <id>` | `/tasks`, `/do-task` (feature lane) |
+| `spec.md` and `plan.md` (one gate, with `tasks.md`) | `/spec` | `/approve <id>` (approves both) | `/do-task` (feature lane) |
 | `bug.md` | `/bug` | `/approve <id>` | `/do-task` (bug lane) |
 | `tsd.md` | `/tsd` | `/publish tsd-<name>` (approves and moves it) | `/tsd` (refuses to overwrite an approved TSD) |
 
@@ -65,7 +64,9 @@ flowchart LR
 - With no file named, it approves the first DRAFT in this order: `spec.md`, `plan.md`, `bug.md`. Name one to be explicit: `/approve 12345 plan`.
 - It refuses a plan while the spec is still DRAFT, and refuses anything on a paused item.
 - If "Open questions" still has items, it shows them and asks. Yes marks each one `(accepted risk)`; no stops so you can answer them first.
-- It changes only the `Status:` line, logs to `progress.md`, and gives the next command (`/plan`, `/tasks`, or `/do-task <id> 1` in a new session).
+- It first shows three lines: what is being approved, how many criteria, tasks and assumptions it covers, and the one thing to watch.
+- For a feature it approves `spec.md` and `plan.md` together (the one gate).
+- It changes only the `Status:` line, logs to `progress.md`, and gives the next command (usually `/do-task <id> 1` in a new session).
 - Before approving, it checks the file's `Draft-hash:` line (written by `Set-DraftHash.ps1` when the drafting command finished) and logs whether you approved the draft as written, edited it first, or it had no hash. It never blocks. `/stats` turns this into an as-written rate per gate, which shows the gates you never change.
 
 Editing the line yourself still works; the next command reads whatever is on disk. Agents never set `APPROVED` in any other command. To send a draft back, leave it as DRAFT, add notes under "Open questions", and re-run the same command. It refines the draft instead of starting over.
@@ -91,7 +92,7 @@ Bug lane rules:
 
 ## Quick lane
 
-For small work the full lane's two gates in a row (spec, then plan) cost more than they catch. `/quick <id>` (planner) writes `quick.md`, one file with the goal, acceptance criteria, assumptions, files and pattern to follow, plus a normal `tasks.md` (at most 2 tasks). You approve once with `/approve <id>`; `/do-task`, `/review` and `/pr` work as in the feature lane and read the criteria from `quick.md`. The branch is `dev/feature/<id>-<name>`.
+For small work even the feature lane's spec, plan and tasks cost more than they catch. `/quick <id>` (planner) writes `quick.md`, one file with the goal, acceptance criteria, assumptions, files and pattern to follow, plus a normal `tasks.md` (at most 2 tasks). You approve once with `/approve <id>`; `/do-task`, `/review` and `/pr` work as in the feature lane and read the criteria from `quick.md`. The branch is `dev/feature/<id>-<name>`.
 
 `/quick` steps up to the feature lane on its own when the work needs more than 2 tasks, a second or shared repo, a schema, migration or API contract change, or acceptance criteria it cannot pin down: it sets `Lane: feature` in `repos.md`, writes what it found under Notes, logs `escalated=1`, and tells you to run `/spec`.
 
@@ -190,18 +191,20 @@ Better input gives better diagrams: fill in "External systems" and "Business pro
 - Ends with a warm start: it writes `brief.md`, a two-minute read with the goal, the acceptance criteria as a checklist, the parent Feature and Epic, the last 5 comments, the repos and branch, up to 10 likely files, and the first tiny step. It prints the brief before the next command.
 - The likely files are guesses from file names and commit messages that match words in the title. `/start` opens no files to find them, so it stays fast.
 - `-Parents` on `Get-WorkItem.ps1` adds the parent Feature and Epic to `workitem.md`. If they cannot be fetched, the brief says "Parents unknown".
-- `/start <id> <lane> --cold` skips the brief.
+- `/start <id> [lane] --brief` adds the brief (off by default). The lane is optional: a Bug starts in `bug`, anything else in `feature`; type `quick` yourself.
 - Records a test baseline in `baseline.md`: each repo's Pre-commit check (or All unit tests) result right after branching, before any change, with the failing test names. `/do-task` uses it to tell old failures from new ones. `--no-baseline` skips it, for example when a suite is very slow.
 
 **/spec**
 - Questions come one at a time with options and a recommendation, so you can reply "A" or "yes".
-- At most 6 questions. If the item needs more, consider splitting it in ADO.
+- At most 3 questions. If the item needs more, consider splitting it in ADO.
+- Acceptance criteria the work item already states clearly are kept in its words, marked `(from work item)`. New ones are Given / When / Then.
+- Then it drafts `plan.md` and `tasks.md` from the draft spec in the same run (below). One `/approve` covers all three: the feature lane has one gate, like the quick lane.
 
-**/plan**
+**Plan (drafted by /spec, or redone with /plan)**
 - Each repo section names a "pattern to follow": a real file that does something similar. This is the most effective way to get consistent code from a weaker model.
 - The test plan maps every acceptance criterion to a test before any code exists.
 
-**/tasks**
+**Tasks (drafted by /spec, or redone with /tasks)**
 - Each task touches one repo and at most 3 files (or your configured cap). Split big-looking tasks by hand before starting.
 - A coverage table proves every acceptance criterion has a task.
 - Every task has a "Human interface" line (page, button, endpoint, or command) so the implementer knows how a person meets the code.
@@ -452,7 +455,7 @@ Plus **global memory** in `%USERPROFILE%\.config\eng-agents\memory.md` (`/memory
 
 ## Retros
 
-`/retro <id>` (planner) after an item's review: it reads every review round, the blocked and failed entries in `progress.md`, and gates you edited, then writes `retro.md` with what caused rework and at most 5 candidate rules. Each rule names the finding it would have prevented and comes with the exact `/memory` line to save it (repo, `-global` or `-product`, by the split rule). It never writes memory itself, and it lists existing rules that were broken instead of repeating them. Problems with the pipeline itself go in a separate "For Tandem itself" list.
+`/retro <id>` (writer) after an item's review: it reads every review round, the blocked and failed entries in `progress.md`, and gates you edited, then writes `retro.md` with what caused rework and at most 5 candidate rules. Each rule names the finding it would have prevented and comes with the exact `/memory` line to save it (repo, `-global` or `-product`, by the split rule). It then shows the rules as a numbered checklist and saves only the ones you pick, the way `/memory` does (`auto` saves nothing). It lists existing rules that were broken instead of repeating them. Problems with the pipeline itself go in a separate "For Tandem itself" list.
 
 `/retro --since yyyy-MM-dd` looks across items with `scripts/stats/Get-ReviewFindings.ps1`: a repo and category that showed up in 2 or more items is a repeating pattern, and gets one proposed rule (or a clearer wording for a rule that keeps being broken). It writes `.work/_retro/<date>.md`.
 

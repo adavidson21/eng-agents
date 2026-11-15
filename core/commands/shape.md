@@ -7,9 +7,9 @@ Shape this: **$ARGUMENTS**
 
 You interview the engineer (it is their idea, or a request they want to understand before defining it) in rounds, until the idea is understood well enough to scope. Each run is one round. Follow these steps in order. Do not change any code, and never post anything.
 
-This is the interview the engineer asked for, so core rule 3's limit of 3 questions per command does not apply here: each round asks at most 5, in `questions.md`. The rest of rule 3 does: never ask what the files, the code, the triage or earlier answers already settle, and when a recommended answer is safe to assume, write it in `understanding.md` (as "Assumed: ...") instead of asking.
+This is the interview the engineer asked for, so core rule 3's limit of 3 questions per command does not apply here: each round asks at most 3, in `questions.md`, and the brief comes by round 3. The rest of rule 3 does: never ask what the files, the code, the triage or earlier answers already settle, and when a recommended answer is safe to assume, write it in `understanding.md` (as "Assumed: ...") instead of asking.
 
-**You never ask questions in the chat.** Each round's questions go in `questions.md`, and the run ends. The engineer answers in Workshop's Slate (or in `answers.md` by hand) and runs `/shape shape-<name>` again.
+**You never ask questions in the chat.** Each round's questions go in `questions.md`, and the run ends. The engineer answers in Workshop's Loom (or in `answers.md` by hand) and runs `/shape shape-<name>` again.
 
 ## Step 1: Pick the folder
 
@@ -38,7 +38,7 @@ This is the interview the engineer asked for, so core rule 3's limit of 3 questi
 
 ## Step 4: Ask, or write the brief
 
-Write the brief (Step 6) when the mode is `brief`, or when there is no mode and all of these are known: the problem, who it is for, the goals, the MVP line (what is in the first version and what can wait), and the rules or edge cases that would change the MVP. Also write it after round 6 with no mode, listing what is still open.
+Write the brief (Step 6) when the mode is `brief`, or when there is no mode and all of these are known: the problem, who it is for, the goals, the MVP line (what is in the first version and what can wait), and the rules or edge cases that would change the MVP. Also write it after round 3 with no mode, with everything still open written as assumptions or open questions.
 
 Otherwise (or when the mode is `more`), ask a round (Step 5).
 
@@ -46,9 +46,9 @@ Otherwise (or when the mode is `more`), ask a round (Step 5).
 
 - Start from `{{ENG_HOME}}/templates/shape-questions.md`. Write it to the folder as `questions.md`, replacing the last round.
 - `Status: ASKING`. `Round:` is the last round plus 1 (1 on the first round).
-- Up to **5 questions**, the ones whose answers change the most, in this order of topics: the product (only if unclear), the problem and who it is for, goals and non-goals, the MVP line, business rules and edge cases, risks. Do not ask about implementation; `/slice` and the build decide that.
+- Up to **3 questions**, the ones whose answers change the most, in this order of topics: the product (only if unclear), the problem and who it is for, goals and non-goals, the MVP line, business rules and edge cases, risks. Do not ask about implementation; `/slice` and the build decide that.
 - Each question: `## Q<n>: <question>`, then 2 to 4 options as `- A) ...`, `- B) ...`, then `Recommended: <letter>` and `Why: <one line>`, with a file path when the code backs it.
-- Never ask again what `answers.md`, `understanding.md` or the triage already answer. From round 4 on, ask only what would change the MVP; leave details for `/scope` or `/refine` under Open points.
+- Never ask again what `answers.md`, `understanding.md` or the triage already answer. In round 3, ask only what would change the MVP; leave details for `/scope` or `/refine` under Open points.
 
 ## Step 6: The brief
 
@@ -61,5 +61,5 @@ Otherwise (or when the mode is `more`), ask a round (Step 5).
 
 - Add a `progress.md` entry for `/shape` (round, questions asked or brief written).
 - Reply in 3 lines or fewer:
-  - After a round: "Round <n>: <k> questions in `.work/shape-<name>/questions.md`. Answer them in Slate, or in `answers.md`, then `/shape shape-<name>`." Do not repeat the questions in the chat.
+  - After a round: "Round <n>: <k> questions in `.work/shape-<name>/questions.md`. Answer them in Loom, or in `answers.md`, then `/shape shape-<name>`." Do not repeat the questions in the chat.
   - After the brief: the problem in one line, the level and size, open questions if any, and the next step: `/scope shape-<name>` (Epic or Feature) or `/refine shape-<name>` (User Story or Bug). `/shape shape-<name> more` asks another round.

@@ -37,7 +37,7 @@ names or jargon. Export to a shareable page: Export-Brief.ps1 (see /spike).
 
 ## Questions for the requester
 
-- <Something only the asker can answer that changes the size or the approach. At least one.>
+- <Something only the asker can answer that changes the size or the approach. Or "None." when nothing is open.>
 
 ## Current state
 

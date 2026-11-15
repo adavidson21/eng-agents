@@ -1,14 +1,12 @@
 {
-  "description": "Outcome only, for the lift: the bulk discount works end to end (hidden outcome tests pass, Do-not-touch kept, settings in PricingOptions, changes only in src and tests). The Tandem arm runs the whole feature lane with gates approved by the script; the baseline arm gets the same work item as one plain prompt.",
+  "description": "Outcome only, for the lift: the bulk discount works end to end (hidden outcome tests pass, Do-not-touch kept, settings in PricingOptions, changes only in src and tests). The Tandem arm runs the whole feature lane (/spec drafts spec, plan and tasks; the script approves the one gate); the baseline arm gets the same work item as one plain prompt.",
   "workItem": "L1-bulk-discount",
   "branch": "dev/feature/L1-bulk-discount",
   "work": [{"from":"L1/start","to":"L1-bulk-discount"}],
   "steps": [
     {"command": "spec", "arguments": "L1 auto"},
     {"approve": "spec.md"},
-    {"command": "plan", "arguments": "L1 auto"},
     {"approve": "plan.md"},
-    {"command": "tasks", "arguments": "L1 auto"},
     {"command": "do-task", "arguments": "L1 {n} auto", "eachTask": true}
   ],
   "baseline": {

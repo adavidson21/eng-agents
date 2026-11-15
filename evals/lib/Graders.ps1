@@ -12,7 +12,7 @@
 
 . (Join-Path $script:RepoRoot "core/scripts/work/DraftHash.ps1")
 
-$script:AllowedCategories = @("architecture", "consistency", "correctness", "efcore", "security", "tests", "angular", "playwright", "leftovers", "spec", "scope", "checklist", "tdd")
+$script:AllowedCategories = @("architecture", "consistency", "correctness", "efcore", "security", "tests", "angular", "playwright", "leftovers", "overbuild", "spec", "scope", "checklist", "tdd")
 
 function New-Checks { return , (New-Object System.Collections.ArrayList) }
 function Add-Check($List, [string]$Name, [bool]$Pass, [string]$Detail = "") {
@@ -93,8 +93,9 @@ function Test-SpecBasic($Ws, [switch]$NoExec) {
     if ($t) {
         $acs = @([regex]::Matches($t, '(?m)^\s*-\s*\*\*AC-\d+:\*\*\s*(.+)$') | ForEach-Object { $_.Groups[1].Value })
         Add-Check $c "2 or more acceptance criteria" ($acs.Count -ge 2) "found $($acs.Count)"
-        $bad = @($acs | Where-Object { $_ -notmatch '(?i)\bgiven\b' -or $_ -notmatch '(?i)\bwhen\b' -or $_ -notmatch '(?i)\bthen\b' })
-        Add-Check $c "every AC is Given / when / then" ($acs.Count -gt 0 -and $bad.Count -eq 0) "not in Given/When/Then: $($bad -join ' | ')"
+        # ACs kept in the work item's own words end with "(from work item)"; every new one is Given / When / Then.
+        $bad = @($acs | Where-Object { $_ -notmatch '(?i)\(from work item\)\s*$' -and ($_ -notmatch '(?i)\bgiven\b' -or $_ -notmatch '(?i)\bwhen\b' -or $_ -notmatch '(?i)\bthen\b') })
+        Add-Check $c "every new AC is Given / when / then" ($acs.Count -gt 0 -and $bad.Count -eq 0) "not in Given/When/Then: $($bad -join ' | ')"
         Add-Check $c "an AC covers the 10-item threshold" (@($acs | Where-Object { $_ -match '\b10\b|ten' }).Count -ge 1)
         Add-Check $c "an AC covers smaller orders" (@($acs | Where-Object { $_ -match '(?i)fewer|less than|below|under|\b9\b' }).Count -ge 1)
         $missing = @(Get-CitedPaths $t | Where-Object { -not (Test-Path -LiteralPath (Join-Path $Ws.Root $_)) })

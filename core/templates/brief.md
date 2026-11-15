@@ -1,6 +1,6 @@
 # Brief: <id> <title>
 
-<!-- Written by /start (skip with --cold). A two-minute read for the engineer, so a new item never starts from a blank screen. Built only from workitem.md, repos.md, file names and commit messages. No file contents were read. Keep each section short. -->
+<!-- Written by /start --brief. A two-minute read for the engineer, so a new item never starts from a blank screen. Built only from workitem.md, repos.md, file names and commit messages. No file contents were read. Keep each section short. -->
 
 ## Goal
 

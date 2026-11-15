@@ -33,12 +33,7 @@ For each repo in `repos.md`:
 
 Skip this step if every repo is clean.
 
-For each repo with uncommitted changes, show the engineer the changed files and ask **one question**:
-
-- **A. Commit as work in progress** (recommended if you might use this repo for other work before resuming). You will run `git -C <repo> add -- <each changed file>` then `git -C <repo> commit -m "WIP $1: <task title>"`.
-- **B. Leave uncommitted** (only if nobody will use this repo before resuming).
-
-Wait for the answer and do what they choose. Never stash, discard, reset, or restore changes.
+For each repo with uncommitted changes, commit them as work in progress without asking: run `git -C <repo> add -- <each changed file>` then `git -C <repo> commit -m "WIP $1: <task title>"`. Name the files you committed in Step 7. Never stash, discard, reset, or restore changes.
 
 ## Step 5: Write paused.md
 

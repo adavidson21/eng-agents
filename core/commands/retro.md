@@ -1,11 +1,13 @@
 ---
-description: "Turn review findings and rework into rules so the same mistake does not come back. Usage: /retro <id>, or /retro --since yyyy-MM-dd for patterns across items"
-agent: planner
+description: "Turn review findings and rework into rules so the same mistake does not come back. Usage: /retro <id>, or /retro --since yyyy-MM-dd for patterns across items. Add auto to save nothing."
+agent: writer
 ---
 
 Run a retro. Arguments: **$ARGUMENTS**
 
-You write only inside `.work/`. You never write memory, repo guides or product notes yourself: you propose rules, and the engineer saves the ones they want with the `/memory` lines you give.
+You propose rules. You save only the ones the engineer picks from your list (Step 6), and only the way `/memory` does. Everything else you write stays inside `.work/`.
+
+If the last argument is `auto`, nobody is watching (an eval or autopilot run): take it out of the arguments, propose the rules as usual, and save nothing (skip Step 6).
 
 ## Step 1: Pick the mode
 
@@ -43,8 +45,7 @@ You write only inside `.work/`. You never write memory, repo guides or product n
 ## Step 4: Hand off (one item)
 
 - Add a `progress.md` entry for `/retro` with a `- Stats: rules_proposed=<n> broken_rules=<n>` line.
-- Reply with: the rework lines (at most 5), then each candidate rule with its `/memory` line, ready to copy. End with: "Run the `/memory` lines you agree with. Edit a rule first if it is not quite right."
-- Do not ask which to apply. The engineer runs the ones they want.
+- Reply with the rework lines (at most 5), then go to Step 6.
 
 ## Step 5: Patterns across items
 
@@ -60,4 +61,12 @@ You write only inside `.work/`. You never write memory, repo guides or product n
   - If no rule covers it, propose one rule that would have prevented most of the examples, scoped as in Step 3.
   - If a rule covers it but keeps being broken, say so and propose a clearer wording to replace it (as a `/memory` line plus "then remove the old line").
 - Write `.work/_retro/<today yyyy-mm-dd>.md` from `{{ENG_HOME}}/templates/retro.md`: fill "What caused rework" with the patterns (repo, category, number of items) and the rule tables as in Step 3. Leave "What went smoothly" as "Not covered by a cross-item retro".
-- Reply with each pattern in one line and each proposed rule with its `/memory` line. Do not write a `progress.md` entry (no single item owns this retro).
+- Reply with each pattern in one line, then go to Step 6. Do not write a `progress.md` entry (no single item owns this retro).
+
+## Step 6: Pick and save
+
+Skip this step in `auto` mode, or if there are no candidate rules: then end with the rules and their `/memory` lines, ready to copy.
+
+- Show the candidate rules as a numbered checklist, one line each with its scope (`repo <folder>`, `global` or `product <name>`), and ask once: "Which should I save? Reply with numbers, `all` or `none`. Edit a rule's words in your reply if it is not quite right." Wait.
+- For each rule they pick, in their wording if they changed it, follow Steps 2 to 6 of `{{ENG_HOME}}/../commands/memory.md` with that scope (it checks for duplicates and secrets, and `-product` facts go through `Set-ProductNote.ps1`). For a "replace the old line" rule, replace that line instead of adding a second one.
+- Reply with what was saved, one line each with the file it went to. Rules they did not pick are not saved anywhere.

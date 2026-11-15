@@ -64,12 +64,12 @@ else {
             $t = @($r.cases | Where-Object { $_.arm -eq "tandem" })[0]
             $b = @($r.cases | Where-Object { $_.arm -eq "baseline" })[0]
             Check "results are version 3 with both arms" ($r.version -eq 3 -and (@($r.arms) -join ",") -eq "tandem,baseline")
-            Check "Tandem runs add up 5 opencode calls: 750 tokens, 0.05 cost, 1 question, 1 failed verify" ($t.runs[0].tokens -eq 750 -and [math]::Abs($t.runs[0].cost - 0.05) -lt 0.0001 -and $t.runs[0].questions -eq 1 -and $t.runs[0].verifyFails -eq 1 -and $t.runs[0].usageKnown) "tokens=$($t.runs[0].tokens) cost=$($t.runs[0].cost) q=$($t.runs[0].questions) vf=$($t.runs[0].verifyFails)"
-            Check "Tandem case: mean and per-pass tokens, prompt tokens counted" ($t.meanTokens -eq 750 -and $t.tokensPerPass -eq 750 -and $t.meanQuestions -eq 1 -and $t.promptTokens -gt 0)
+            Check "Tandem runs add up 3 opencode calls: 450 tokens, 0.03 cost, 1 question, 1 failed verify" ($t.runs[0].tokens -eq 450 -and [math]::Abs($t.runs[0].cost - 0.03) -lt 0.0001 -and $t.runs[0].questions -eq 1 -and $t.runs[0].verifyFails -eq 1 -and $t.runs[0].usageKnown) "tokens=$($t.runs[0].tokens) cost=$($t.runs[0].cost) q=$($t.runs[0].questions) vf=$($t.runs[0].verifyFails)"
+            Check "Tandem case: mean and per-pass tokens, prompt tokens counted" ($t.meanTokens -eq 450 -and $t.tokensPerPass -eq 450 -and $t.meanQuestions -eq 1 -and $t.promptTokens -gt 0)
             Check "baseline case: 400 tokens a run, no per-pass number without a pass, no prompt tokens" ($b.meanTokens -eq 400 -and $null -eq $b.tokensPerPass -and $b.promptTokens -eq 0)
             Check "each step has its own tokens" ($t.runs[0].steps[0].tokens -eq 150 -and $t.runs[0].steps[1].tokens -eq 0)
             Check "Tandem arm passed 2 of 2 (steps ran in order, gates approved)" ($t.passes -eq 2 -and $t.passAll) (($t.runs | ForEach-Object { $_.failed | ForEach-Object { $_.check } }) -join "; ")
-            Check "Tandem arm recorded 6 steps, do-task once per task" (@($t.runs[0].steps).Count -eq 6 -and $t.runs[0].steps[5].runs -eq 2)
+            Check "Tandem arm recorded 4 steps, do-task once per task" (@($t.runs[0].steps).Count -eq 4 -and $t.runs[0].steps[3].runs -eq 2)
             Check "baseline arm failed 2 of 2 (inline rate)" ($b.passes -eq 0 -and $b.rate -eq 0)
             Check "summary shows the lift" ($text -match '\| feature-outcome \| 100% \| 0% \| \+100 \|') $text
         }

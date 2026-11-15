@@ -20,7 +20,7 @@
       eng-agents\templates\        templates (later layer replaces same name)
       eng-agents\scripts\          scripts
       eng-agents\stacks\           rules per tech stack, read when a repo guide names the stack
-      eng-agents\guides\           longer rules a few commands read (product notes)
+      eng-agents\guides\           longer rules some commands read (pipeline, product notes)
       eng-agents\manifest.json     what was installed (files, versions, source repo and
                                    commit, overridden files), so removed files get
                                    cleaned up next time and update.ps1 can compare

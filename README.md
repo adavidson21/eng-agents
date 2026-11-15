@@ -8,7 +8,7 @@ Open opencode from your workspace root (for example `C:\src\work`).
 
 | Work | Run |
 |---|---|
-| Feature | `/start <id> feature` (ends with `brief.md`, a short context brief; `--cold` skips it) → `/spec <id>` → `/approve <id>` → `/plan <id>` → `/approve <id>` → `/tasks <id>` → `/do-task <id> <n>` (repeat) → `/review <id>` → `/pr <id>` |
+| Feature | `/start <id>` (lane from the work item type; `--brief` adds a short context brief) → `/spec <id>` (drafts spec, plan and tasks) → `/approve <id>` → `/do-task <id> <n>` (repeat) → `/review <id>` → `/pr <id>` |
 | Work with no tracker item | `/start new <feature or bug>`: describe it in chat. It gets a local id like `L3`; use that id in the commands above. |
 | Define the work first | `/scope <idea>` → `/approve scope-<name>` → `/slice scope-<name>` → `/approve scope-<name> milestones` → `/backlog scope-<name> [csv\|ado\|local]` → `/start <story id> feature` |
 | Bug | `/start <id> bug` → `/bug <id>` → `/approve <id>` → `/do-task <id> <n>` (repeat) → `/review <id>` → `/pr <id>` |
@@ -17,18 +17,18 @@ Open opencode from your workspace root (for example `C:\src\work`).
 | Define one story or bug | `/refine <title>` → `/approve refine-<name>`. Writes `refine.md` with a description and Gherkin acceptance criteria, ready to publish (Slate publishes it to ADO). For anything epic-sized, use `/scope`. |
 | Hand work to a teammate | `/handoff <ADO id> <name>`: a brief with context, acceptance criteria, where to start and what to watch. Posts nothing. |
 | Question or a vague ask, no code changes (writes a shareable `brief.html`) | `/spike <id or topic> [--for business\|engineering\|leadership]` |
-| First pass on a teammate's PR | `/pr-review <PR link>` (or **PR reviews** in Dispatch). Drafts comments in `.work/pr-<id>/review.md`; you post the ones you agree with. Never checks out the PR or posts anything. |
-| Ask or capture from Workshop | Type in the hub on Workshop's Dispatch page. It runs `/hub <request>`: captures become proposals you accept, questions are answered from your repo map, repo guides and code, with sources. It writes nothing but its own two files and never changes ADO or git. |
+| First pass on a teammate's PR | `/pr-review <PR link>` (or **PR reviews** in Loom). Drafts comments in `.work/pr-<id>/review.md`; you post the ones you agree with. Never checks out the PR or posts anything. |
+| Ask or capture from Workshop | Type in the hub in Workshop's Loom (Chat tab). It runs `/hub <request>`: captures become proposals you accept, questions are answered from your repo map, repo guides and code, with sources. It writes nothing but its own two files and never changes ADO or git. |
 | Prep a 1:1 | **Draft talking points** in Workshop's 1:1s app runs `/one-on-one <packet>`. It drafts wins, follow-ups, blockers, growth topics and 3 questions from the app's packet; it never rates or judges anyone. |
 | Docs | `/docs <target>`, new session, `/check-docs <doc path>` |
 | Technical spec with diagrams | `/tsd <product or repo> [repo ...]` → new session → `/check-docs .work/tsd-<name>/tsd.md` → revise → `/publish tsd-<name>` |
-| Where was I? | `/dashboard [id]` (opens Dispatch in Workshop, at the item when you give an id) or `/status [id]` |
-| Drive it from the browser | Dispatch in [Workshop](https://github.com/adavidson21/workshop): it runs each step in opencode (see [Dashboard](docs/pipeline.md#dashboard)) |
-| Hands-off build after the plan | Dispatch: **Approve and build**. It runs tasks, review, and PR text, each step in a new session, and stops only when it needs you (see [Autopilot](docs/pipeline.md#autopilot)) |
+| Where was I? | `/dashboard [id]` (opens Loom in Workshop, at the item when you give an id) or `/status [id]` |
+| Drive it from the browser | Loom in [Workshop](https://github.com/adavidson21/workshop): it runs each step in opencode (see [Dashboard](docs/pipeline.md#dashboard)) |
+| Hands-off build after the plan | Loom: **Approve and build**. It runs tasks, review, and PR text, each step in a new session, and stops only when it needs you (see [Autopilot](docs/pipeline.md#autopilot)) |
 | End of day | `/shutdown`: writes `.work/runway.md` with where you left off, tomorrow's first step, and open loops. Next morning, `/status` shows it first. |
 | Is the pipeline helping? | `/stats [--since yyyy-MM-dd]`: days to PR, review rounds, rework, and which gates you approve as written (see [Measuring the pipeline](docs/pipeline.md#measuring-the-pipeline)) |
 | Small change (one repo, 1 or 2 tasks) | `/start <id> quick` → `/quick <id>` → `/approve <id>` → `/do-task` → `/review` → `/pr`. One combined spec and plan, one approval. It steps up to the feature lane by itself when the work turns out bigger. |
-| Learn from an item | `/retro <id>` after review: what caused rework and up to 5 rules, each with the `/memory` line to save it. `/retro --since <date>` finds mistakes that repeat across items. |
+| Learn from an item | `/retro <id>` after review: what caused rework and up to 5 rules; tick the ones to save. `/retro --since <date>` finds mistakes that repeat across items. |
 | Standup update | `/standup [days back]` (default 1, or 3 on a Monday) |
 | Switch to something urgent | `/pause <id> [reason]`, later `/resume <id>` |
 | New repo in the workspace | `/onboard-repo <folder>` |
@@ -43,7 +43,7 @@ Open opencode from your workspace root (for example `C:\src\work`).
 - **Review findings** you accept become new tasks. Run `/do-task` for each, then `/review` again.
 - **You approve every push** and open the PR. No agent can merge or deploy.
 - Every command ends with the next command to run. If lost, run `/dashboard` or `/status <id>`.
-- Dispatch in Workshop is the live UI; `/dashboard` opens it and says to start Workshop if it is not running. The static dashboard (`.work\dashboard.html`, `/dashboard static`) remains for terminal-only use.
+- Loom in Workshop is the live UI; `/dashboard` opens it and says to start Workshop if it is not running. The static dashboard (`.work\dashboard.html`, `/dashboard static`) remains for terminal-only use.
 - **After a restart**, open `.work\dashboard.html` (bookmark it) to see where you were, or start Workshop and run `/dashboard` (see [Dashboard](docs/pipeline.md#dashboard)).
 
 Something went wrong? See [Recovering from problems](docs/pipeline.md#recovering-from-problems).
@@ -68,7 +68,7 @@ Something went wrong? See [Recovering from problems](docs/pipeline.md#recovering
 
 Loom's Health > Tandem reads the same numbers as `/stats` with its own port of `Get-PipelineStats.ps1` and `Get-ReviewFindings.ps1`, checked against Workshop's `docs/examples/work/expected-health.json` by `core/scripts/stats/Test-HealthFormat.ps1` in CI.
 
-Workshop's Dispatch reads `.work` with its own parser. The two repos meet only at the `.work` format, written down in Workshop's [docs/work-format.md](https://github.com/adavidson21/workshop/blob/main/docs/work-format.md) with a synthetic example workspace, and at the command names Dispatch runs. CI runs `core/scripts/dashboard/Test-WorkFormat.ps1` against a checkout of Workshop, so a change to how Tandem writes `.work` that Workshop would read differently fails here. Change the format in Workshop's doc first.
+Workshop's Loom reads `.work` with its own parser. The two repos meet only at the `.work` format, written down in Workshop's [docs/work-format.md](https://github.com/adavidson21/workshop/blob/main/docs/work-format.md) with a synthetic example workspace, and at the command names Loom runs. CI runs `core/scripts/dashboard/Test-WorkFormat.ps1` against a checkout of Workshop, so a change to how Tandem writes `.work` that Workshop would read differently fails here. Change the format in Workshop's doc first.
 
 ## License
 

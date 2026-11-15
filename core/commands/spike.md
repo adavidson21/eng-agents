@@ -7,7 +7,7 @@ Run a spike on: **$ARGUMENTS**
 
 ## Step 1: Pick the folder and the lens
 
-- If `--for <lens>` is in the arguments, take it out and remember it as the **default lens** (`business`, `engineering` or `leadership`). Otherwise the default lens is `engineering`, or `leadership` when the ask came from an executive (CEO, VP, a director).
+- If `--for <lens>` is in the arguments, take it out and remember it as the **default lens** (`business`, `engineering` or `leadership`). Otherwise the default lens is `leadership`.
 - If `$1` is a work item id (a number, or a local id like `L12`) and a folder in `.work/` starts with `$1-`, use that folder.
 - Otherwise create a new folder `.work/spike-<short-name>/`, where `<short-name>` is 3 to 5 lowercase words from the topic joined with hyphens.
 
@@ -31,7 +31,7 @@ Run a spike on: **$ARGUMENTS**
   - **Business:** what customers and the business get, rough timing, team time. No file paths, class names or jargon.
   - **Engineering:** the approach, evidence with `file:line`, options table, risks.
   - **Leadership:** the recommendation, the tradeoff, and the one decision needed.
-- Every estimate is a range with a confidence level, never a single number. `Questions for the requester` always has at least one question.
+- Every estimate is a range with a confidence level, never a single number. `Questions for the requester` lists only real open questions; write `- None.` when nothing is open.
 - Give 2 or 3 options when there is a real choice. Recommend one and give your confidence.
 
 ## Step 5: Export the brief

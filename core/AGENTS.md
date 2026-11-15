@@ -13,7 +13,7 @@ You are working with an engineer who uses a step-by-step pipeline. Each step is 
 3. **Ask only what changes the outcome.** Before asking, check the files, the code and the work folder's earlier decisions; never ask what they already answer or what was already decided. Ask only when a wrong guess would change what gets built or would be hard to undo. Otherwise take your recommended answer, write it under "Assumptions" (or the file's Decisions table) and keep going. When you do ask: ONE question at a time, 2 to 4 options, your recommendation first. A command asks at most 3 questions in total unless it sets a lower limit. When you hit the limit, stop asking and list the rest as assumptions the engineer can change at review.
 4. **Prove it.** Never say something works without running the command that proves it and showing the output.
 5. **Stay in scope.** Only change what the current task says. If you find something else that needs fixing, write it down in `progress.md` under "Notes" and keep going.
-6. **Stop after 3 failed attempts.** If the same command fails 3 times, stop. Write what you tried in `progress.md` and ask the engineer for help.
+6. **Stop after 3 failed attempts.** If the same step fails 3 times, even when you change the fix between tries, stop. Write what you tried in `progress.md` and ask the engineer for help.
 7. **Never guess paths, commands, or names.** Look them up in the repo's `AGENTS.md` or in the code.
 8. **Simple, but built to maintain.** Build or plan the smallest thing that meets the acceptance criteria and is easy to change later. Both halves matter:
    - **Do:** put values likely to change (limits, timeouts, URLs, labels, feature switches) in the repo's existing config or constants, not inline. Follow the repo's existing extension points and patterns. Keep clear seams (one job per function or module) so the next change is an edit, not a rewrite.
@@ -44,7 +44,7 @@ The engineer saves rules with `/memory`. Follow them like any other rule.
 | One product | Its product note in Workshop's Notes app (see Product notes) | When you work on that product |
 
 - A repo's `## Remembered` rule wins over a global memory rule.
-- If the engineer says "remember this", "from now on", or "always do X here", suggest `/memory <rule>` (one repo), `/memory -global <rule>` (every repo) or `/memory -product <product> <fact>` (a product fact, written to the product note; see Product notes). Do not write memory files yourself unless running `/memory`.
+- If the engineer says "remember this", "from now on", or "always do X here", suggest `/memory <rule>` (one repo), `/memory -global <rule>` (every repo) or `/memory -product <product> <fact>` (a product fact; the split rule under Product notes decides which). Do not write memory files yourself unless running `/memory` (or `/retro` saving the rules the engineer ticked).
 
 ## Product notes
 
@@ -57,47 +57,9 @@ Each product can have a **product note** in Workshop's Notes app: one Markdown f
 - **Write:** when you confirm a product fact that is missing from the note or contradicts it, and it would help the next person, first read `{{ENG_HOME}}/guides/product-notes.md` and follow it exactly: only `Set-ProductNote.ps1`, one fact per call, and list every change in your reply.
 - Agents that may not run scripts or write files (hub, pr-reviewer) only read product notes. pr-reviewer suggests product note lines in `review.md` instead of writing them.
 
-## Pipeline files
+## Pipeline commands
 
-Each work item has a folder `.work/<id>-<name>/`. Find it by listing `.work/` and matching the folder that starts with `<id>-`. If there is no match or more than one, stop and ask.
-
-| File | Purpose |
-|---|---|
-| `workitem.md` | The work item text. Source of the requirement. |
-| `brief.md` | A short context brief for the engineer, written by `/start` (not with `--cold`). A help to read, not pipeline state. |
-| `repos.md` | Lane, repos involved, branch per repo, order. |
-| `spec.md` | What to build. Has a `Status:` line. |
-| `plan.md` | How to build it. Has a `Status:` line. |
-| `tasks.md` | Numbered tasks with checkboxes and verify commands. |
-| `progress.md` | Append-only log. Add an entry after every command. Never delete entries. When a command asks for a `- Stats:` line, write it exactly as asked (`key=value` pairs); `/stats` reads it. |
-| `baseline.md` | Unit test results per repo right after `/start` made the branches, before any change. `/do-task` uses it to tell old test failures from new ones. |
-| `review.md` | Review findings (each with a category) and verdict. Earlier rounds are copied to `history/review-<date>-<n>.md` first. |
-| `retro.md` | Lessons from the item and proposed `/memory` rules, written by `/retro`. Not pipeline state. |
-| `pr.md` | PR title and description. |
-| `bug.md` | Bug lane analysis. Has a `Status:` line. |
-| `quick.md` | Quick lane: one combined spec and plan for small work (tasks stay in `tasks.md`). Has a `Status:` line. |
-| `findings.md` | Spike results, with `### For business`, `### For engineering` and `### For leadership` blocks. `brief.html` next to it is the shareable export (`Export-Brief.ps1`); never edit it, re-export instead. |
-| `paused.md` | Where a paused item stands and how to pick it up. Has a `Status:` line (`PAUSED` or `RESUMED`). |
-
-Other `.work` folders are described by the commands that write them: `scope-<name>/` (`/scope`, `/slice`, `/backlog`), `pr-<id>/` (`/pr-review`), `triage-`, `shape-` and `refine-` folders, `_retro/` (`/retro --since`) and `runway.md` (`/shutdown`). `.work/dashboard.html` and `.work/_dashboard/` belong to the static dashboard and to Dispatch: never edit them and never read them for pipeline state.
-
-**Gates.** A file with `Status: APPROVED` was approved by the engineer. The engineer approves by running `/approve <id>` (specs, plans, bug analyses, quick plans), `/approve scope-<name>` (stories, milestones) or `/publish <folder>` (finished documents such as a TSD), or by editing the line. Only those two commands may change a Status line to `APPROVED`, and only when the engineer runs them. In every other command, you never do. A gate file also has a `Draft-hash:` line under `Status:`, written by `Set-DraftHash.ps1` when a command finishes the draft; never write or change that line yourself.
-
-**Paused items.** If `paused.md` contains `Status: PAUSED`, the item is on hold. Do not run any other pipeline command on it except `/status` and `/resume`. Tell the engineer to run `/resume <id>` first.
-
-Templates for these files are in `{{ENG_HOME}}/templates/`. Always start a new file from its template.
-
-## Conventions
-
-| Item | Value |
-|---|---|
-| Base branch | `main` |
-| Feature branch | `dev/feature/<id>-<short-name>` |
-| Bug branch | `dev/bug/<id>-<short-name>` |
-| Quick lane branch | `dev/feature/<id>-<short-name>` (a quick item is a small feature) |
-| `<short-name>` | Same as the `.work` folder name after `<id>-` |
-| Commit message | A short summary in plain words. No prefix, no work item number. Example: `Add retry to export job` |
-| Task size cap | A task changes at most **3 files** |
+Before you run any command that reads or writes `.work/` (the pipeline, triage, shape, scope, spikes, standup, shutdown and the like), read `{{ENG_HOME}}/guides/pipeline.md`: the work folder files, the approval gates, paused items and the branch and commit conventions. Chat, hub, people prep and PR review do not need it.
 
 ## Shell rules (PowerShell on Windows)
 

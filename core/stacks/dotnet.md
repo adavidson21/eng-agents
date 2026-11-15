@@ -17,4 +17,5 @@ Category in `review.md` in brackets.
 - **Correctness** (`correctness`): async/await used correctly (no `.Result` or `.Wait()`), `CancellationToken` passed through where the pattern does.
 - **EF Core** (`efcore`): no queries inside loops, read-only queries use `AsNoTracking()` if the repo does, no unexpected migration changes.
 - **Tests** (`tests`): .NET tests use mocks, no real database.
+- **Security** (`security`): no secrets, tokens, connection strings or personal data in log messages or exception text.
 - **TDD evidence** (`tdd`): every task that changed .NET code has a `Red run` showing the new test failing for the expected reason.

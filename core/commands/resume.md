@@ -16,8 +16,8 @@ Do not change any code. The only files you write are `paused.md` and `progress.m
 
 Before you touch any repo, print these for the engineer, so coming back gets the same help as starting:
 
-- `brief.md`, as it is, if the work folder has one. If it does not, skip it without comment.
-- The last entry of `progress.md`: its heading line and its `Did`, `Notes` and `Next` lines.
+- The Goal line of `brief.md`, if the work folder has one. If it does not, skip it without comment.
+- The last entry of `progress.md`: its heading line and its `Next` line.
 
 ## Step 2: Restore each repo
 
@@ -45,9 +45,8 @@ For each repo in the Repos table of `paused.md`:
 
 ## Step 5: Tell the engineer
 
-Reply with:
+Reply in 5 lines or fewer:
 - Where it stands: phase, tasks done, task in progress.
-- One line pointing back to the brief printed in Step 1b, if there was one ("The brief is above.").
-- The "Work in progress" and "Waiting on" sections from `paused.md`, in a few lines.
-- The state of each repo, and any repo where its base has moved.
+- Work in progress and what it is waiting on, from `paused.md`, in one or two lines.
+- Only repos that need attention (not switched, or the base moved). Say "Repos ready" if none.
 - The next command. If it is `/do-task`, say to start a new session first.

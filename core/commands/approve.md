@@ -31,8 +31,21 @@ Running this command is the engineer's approval. It is the only command that may
 
 - If the file does not exist, or there is no match, reply with the Status line of each of `spec.md`, `plan.md`, `bug.md`, and `quick.md` that exists, and stop.
 - If the file already says `Status: APPROVED`, say so, give the next command from Step 6, and stop.
-- To approve `plan.md`, `spec.md` must already say `Status: APPROVED`. If not, stop and suggest `/approve $1 spec`.
+- **The feature lane has one gate.** When the file is `spec.md` and `plan.md` exists as a draft, approve both: every step below runs for `spec.md`, then for `plan.md`. If `tasks.md` is missing, say so and stop: suggest `/tasks $1` first.
+- To approve `plan.md` on its own, `spec.md` must already say `Status: APPROVED`. If not, approve `spec.md` with it (above).
 - To approve `milestones.md`, `stories.md` must already say `Status: APPROVED`. If not, stop and suggest `/approve $1 stories`.
+
+## Step 2b: Show what is being approved
+
+Before anything changes, show the engineer three lines, from the file (and `plan.md` and `tasks.md` when they are approved with it):
+
+```
+Approving: <file(s)> for <id> <title>
+Covers: <number of acceptance criteria>, <number of tasks if tasks.md exists>, <number of assumptions>
+Watch: <the riskiest assumption or open point in one line, or "nothing open">
+```
+
+Then go on. Running `/approve` is the approval; do not ask again unless Step 4 finds open questions.
 
 ## Step 3: Check whether the draft was edited
 
@@ -58,15 +71,16 @@ It prints one word: `unchanged` (approved as the agent wrote it), `edited` (the 
 
 ## Step 6: Log and hand off
 
-- Add a `progress.md` entry for `/approve` that names the file, with a `- Stats: gate=<the word from Step 3> file=<spec, plan, bug, quick, stories, milestones or refine>` line. `/stats` uses it to show which gates you edit and which you approve as written.
+- Add a `progress.md` entry for `/approve` that names the file (one entry per file when the spec and plan are approved together), with a `- Stats: gate=<the word from Step 3> file=<spec, plan, bug, quick, stories, milestones or refine>` line. `/stats` uses it to show which gates you edit and which you approve as written.
 - Tell the engineer the file is approved and the next command:
 
 | Approved | Next |
 |---|---|
-| `spec.md` | `/plan $1` |
-| `plan.md` | `/tasks $1` |
+| `spec.md` and `plan.md` together | Start a new session, then `/do-task $1 1` |
+| `spec.md` alone (no plan yet, an older item) | `/plan $1` |
+| `plan.md` alone | `/tasks $1` if there is no `tasks.md`, otherwise start a new session, then `/do-task $1 1` |
 | `bug.md` | Start a new session, then `/do-task $1 1` |
 | `quick.md` | Start a new session, then `/do-task $1 1` |
 | `stories.md` | `/slice $1` |
 | `milestones.md` | `/backlog $1` (import file), `/backlog $1 ado`, or `/backlog $1 local` |
-| `refine.md` | Publish it to ADO from Slate (Workshop), or paste its Description and Acceptance criteria into a new work item. Then `/start <id> feature` or `/handoff <id> <name>`. |
+| `refine.md` | Publish it to ADO from Loom (Workshop), or paste its Description and Acceptance criteria into a new work item. Then `/start <id> feature` or `/handoff <id> <name>`. |

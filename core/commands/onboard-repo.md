@@ -57,10 +57,9 @@ Only if Step 2 found team guides. Ask the engineer exactly this, filling in the 
 
 Wait for the answer. The engineer can choose differently per file.
 
-## Step 5: Offer to test the commands
+## Step 5: Test the commands
 
-- Show the engineer the build and test commands you found. Ask: "Should I run these now to confirm they work? They may take a few minutes." Wait.
-- If yes, run them one at a time and record whether each works.
+- Run the build and test commands you found, one at a time, without asking, and record whether each works. If one hangs or needs something you do not have (a VPN, a database, a secret), stop it, write `not checked` with the reason, and go on.
 
 ## Step 6: Write the draft
 

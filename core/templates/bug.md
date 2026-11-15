@@ -4,6 +4,10 @@ Status: DRAFT
 
 <!-- The engineer confirms the root cause and tasks with /approve <id>, or by changing the line above to "Status: APPROVED". No other command changes it. -->
 
+## Impact
+
+<One plain sentence for stakeholders: who is affected and how badly. No file names.>
+
 ## Symptom
 
 - Expected: <what should happen>
@@ -40,3 +44,7 @@ The full tasks are written in `tasks.md`. Maximum 3 tasks. Task 1 is always a te
 ## Risks
 
 - <What else could this fix affect? Which callers share this code?>
+
+## Same flaw elsewhere
+
+- <Other places with the same pattern, `repo/path/File.cs:line`, not fixed in this item. Or "None found".>

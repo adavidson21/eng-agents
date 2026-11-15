@@ -13,7 +13,7 @@ Follow these steps in order. Do not change any code, and never post anything to 
 - **Folder:** if `$ARGUMENTS` is one word that starts with `triage-`, it is an existing folder: `.work/$1/`. If it does not exist, list the `.work/triage-*` folders and stop. Otherwise this is a re-triage (below). If the folder name is `triage-<number>`, that number is the ADO item: do Step 2 with it.
 - **ADO item:** `$1` is a number. The folder is `.work/triage-$1/`. Anything after the number is a note from the engineer (who asked, why it matters, a deadline). Write it to `note.md` in the folder, with today's date on its first line (on a re-triage, add it under the notes already there), and treat it as part of the request: it can answer a question before you ask the requester.
 - **Words:** otherwise the whole of `$ARGUMENTS` is the request. Make a short name from it: the first 5 meaningful words, lowercase, joined with `-`, at most 40 characters, filler words (a, an, the, to, of, for, and, add, new) dropped. The folder is `.work/triage-<short name>/`.
-- **Again:** if the folder already has a `triage.md`, this is a re-triage. Read it, `note.md` if there is one, and `answers.md` in the folder if there is one (the requester's answers, pasted in by the engineer or by Slate). Keep what still holds and update the rest.
+- **Again:** if the folder already has a `triage.md`, this is a re-triage. Read it, `note.md` if there is one, and `answers.md` in the folder if there is one (the requester's answers, pasted in by the engineer or by Loom). Keep what still holds and update the rest.
 
 ## Step 2: Get the request (ADO item only)
 
@@ -40,6 +40,8 @@ Run exactly this command:
 
 - Start from `{{ENG_HOME}}/templates/triage.md`. Write it to the folder as `triage.md` (on a re-triage, update it).
 - **Questions for the requester:** only what blocks writing acceptance criteria: rules, limits, who uses it, what "done" looks like. One per line. If nothing is missing, write `- None.`
+- **Message to the requester:** the same questions as one short message the engineer can paste as is, in their voice (the writing rules in the Personal and Company sections of `AGENTS.md`): casual, plain, no headings. Leave it out when there are no questions.
+- **Area:** suggest the ADO area path that owns it. `Get-Content ~/.workshop/config.json` gives `dataDir` (default `~/Workshop`); read `<dataDir>/settings/products.json` and use the matched product's `areas`, else `<dataDir>/settings/teams.json` and pick the closest of the team's `areas`. Name the area, never a person. If neither file exists or nothing fits, write `unknown`.
 - **Route:** `delegate` when it fits work the team already owns and you can point to where it lives; `myself` when it needs a decision only the engineer can make or is small enough to do now; `undecided` when the questions must be answered first. Never rank or judge people.
 - **Size:** S (a day or less), M (a few days), L (a sprint), XL (more than a sprint: suggest `/scope`).
 

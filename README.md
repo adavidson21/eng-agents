@@ -66,6 +66,8 @@ Something went wrong? See [Recovering from problems](docs/pipeline.md#recovering
 
 ## What Workshop relies on
 
+Loom's Health > Tandem reads the same numbers as `/stats` with its own port of `Get-PipelineStats.ps1` and `Get-ReviewFindings.ps1`, checked against Workshop's `docs/examples/work/expected-health.json` by `core/scripts/stats/Test-HealthFormat.ps1` in CI.
+
 Workshop's Dispatch reads `.work` with its own parser. The two repos meet only at the `.work` format, written down in Workshop's [docs/work-format.md](https://github.com/adavidson21/workshop/blob/main/docs/work-format.md) with a synthetic example workspace, and at the command names Dispatch runs. CI runs `core/scripts/dashboard/Test-WorkFormat.ps1` against a checkout of Workshop, so a change to how Tandem writes `.work` that Workshop would read differently fails here. Change the format in Workshop's doc first.
 
 ## License

@@ -4,6 +4,12 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 2.26.0 (2026-11-14)
+
+- Workshop's Loom shows Tandem health (Health > Tandem: pipeline, learning loop, prompts, setup) from Workshop's opencode connector 1.12.0. It ports `Get-PipelineStats.ps1` and `Get-ReviewFindings.ps1`; the two meet at Workshop's `docs/tandem-health.md` and `docs/examples/work/expected-health.json`.
+- New CI check `core/scripts/stats/Test-HealthFormat.ps1`: both scripts must read Workshop's example workspace exactly as `expected-health.json` says.
+- `Get-PipelineStats.ps1`: an item with no `Lane:` line takes its lane from the work item's Type (`bug` if it says bug, else `feature`), as Workshop's parser does, instead of `unknown`. Medians and rates round half away from zero, so both sides agree.
+
 ## Core 2.25.0 (2026-11-14)
 
 - Quick lane for small work: `/start <id> quick`, then new `/quick <id> [auto]` (planner) writes `quick.md` (new template: goal, acceptance criteria, assumptions, files and pattern to follow, why it fits) and a normal `tasks.md` with at most 2 tasks. One approval (`/approve <id>`), then `/do-task`, `/review` and `/pr` as usual; they read the criteria from `quick.md`. The branch is `dev/feature/<id>-<name>`.

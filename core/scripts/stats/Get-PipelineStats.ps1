@@ -58,14 +58,14 @@ function Get-Median {
     $v = @($Values | Sort-Object)
     if ($v.Count -eq 0) { return $null }
     $mid = [math]::Floor($v.Count / 2)
-    if ($v.Count % 2 -eq 1) { return [math]::Round($v[$mid], 1) }
-    return [math]::Round(($v[$mid - 1] + $v[$mid]) / 2, 1)
+    if ($v.Count % 2 -eq 1) { return [math]::Round($v[$mid], 1, [MidpointRounding]::AwayFromZero) }
+    return [math]::Round(($v[$mid - 1] + $v[$mid]) / 2, 1, [MidpointRounding]::AwayFromZero)
 }
 
 function Get-Rate {
     param([int]$Part, [int]$Whole)
     if ($Whole -le 0) { return $null }
-    return [math]::Round(100.0 * $Part / $Whole)
+    return [math]::Round(100.0 * $Part / $Whole, 0, [MidpointRounding]::AwayFromZero)
 }
 
 # progress.md entries: date, command, verify, and the Stats key=value pairs.
@@ -141,6 +141,11 @@ foreach ($dir in (Get-ChildItem -LiteralPath $WorkRoot -Directory | Sort-Object 
         $lm = [regex]::Match($repos, '(?mi)^\s*Lane\s*:\s*([a-z]+)')
         if ($lm.Success) { $lane = $lm.Groups[1].Value.ToLowerInvariant() }
         $repoCount = @([regex]::Matches($repos, '(?m)^\|\s*\d+\s*\|')).Count
+    }
+    # No Lane line: guess from the work item's Type, as Workshop's parser does (docs/work-format.md, Lane).
+    if (-not $lane) {
+        $tm = [regex]::Match([string](Read-Text (Join-Path $dir.FullName "workitem.md")), '(?mi)^\s*(?:-\s*)?Type\s*:\s*(.*?)\s*$')
+        $lane = if ($tm.Success -and $tm.Groups[1].Value -match 'bug') { "bug" } else { "feature" }
     }
 
     $started = Get-FirstDate $entries "start"

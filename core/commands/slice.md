@@ -67,6 +67,7 @@ Run exactly this command:
 
 ## Step 8: Log and hand off
 
-- Add a `progress.md` entry for `/slice` with the format check output.
+- Stamp the draft as your last change to `milestones.md`: run exactly `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/work/Set-DraftHash.ps1" -Path "<work folder>/milestones.md"`. It adds a `Draft-hash:` line so `/approve` can tell whether the engineer edited the draft. If you change the file again, run it again.
+- Add a `progress.md` entry for `/slice` with the format check output and a `- Stats: questions=<n> assumptions=<n>` line.
 - Tell the engineer, in a few lines: the features in order with their story counts, and anything under "Changes from stories.md" or "Open questions".
 - Then: "Review `milestones.md`. When it is right, run `/approve $1 milestones`, then `/backlog $1` to make the import file (or `/backlog $1 ado` to create the items in ADO, or `/backlog $1 local` for local work items)."

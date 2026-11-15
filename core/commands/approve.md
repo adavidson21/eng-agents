@@ -29,25 +29,35 @@ Running this command is the engineer's approval. It is the only command that may
 | `bug.md` exists and says `Status: DRAFT` | `bug.md` |
 
 - If the file does not exist, or there is no match, reply with the Status line of each of `spec.md`, `plan.md`, and `bug.md` that exists, and stop.
-- If the file already says `Status: APPROVED`, say so, give the next command from Step 5, and stop.
+- If the file already says `Status: APPROVED`, say so, give the next command from Step 6, and stop.
 - To approve `plan.md`, `spec.md` must already say `Status: APPROVED`. If not, stop and suggest `/approve $1 spec`.
 - To approve `milestones.md`, `stories.md` must already say `Status: APPROVED`. If not, stop and suggest `/approve $1 stories`.
 
-## Step 3: Check open questions
+## Step 3: Check whether the draft was edited
+
+Do this before Step 4 changes anything. Run exactly this command, with the file from Step 2:
+
+```
+{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/work/Test-DraftHash.ps1" -Path "<folder>/<file>"
+```
+
+It prints one word: `unchanged` (approved as the agent wrote it), `edited` (the engineer changed it first) or `no-hash` (an older draft). Remember it for Step 6. It never blocks approval. If the script fails, use `no-hash` and go on.
+
+## Step 4: Check open questions
 
 - Read the file's "Open questions" section, if it has one. For `stories.md`, also read the one in `epics.md`.
 - If it lists anything that is not marked `accepted risk`, show those lines and ask: "These questions are still open. Approve anyway and mark them as accepted risk? (Recommended: no. Answer them in the file, or re-run the command that wrote it.)" Wait.
   - If no, stop.
   - If yes, add ` (accepted risk)` to the end of each of those lines, in whichever file they are in.
 
-## Step 4: Approve
+## Step 5: Approve
 
-- Change the line `Status: DRAFT` to `Status: APPROVED`. Apart from the marks added in Step 3, change nothing else in the file.
+- Change the line `Status: DRAFT` to `Status: APPROVED`. Apart from the marks added in Step 4, change nothing else in the file.
 - Read the file again and confirm the line now says `Status: APPROVED`.
 
-## Step 5: Log and hand off
+## Step 6: Log and hand off
 
-- Add a `progress.md` entry for `/approve` that names the file.
+- Add a `progress.md` entry for `/approve` that names the file, with a `- Stats: gate=<the word from Step 3> file=<spec, plan, bug, stories, milestones or refine>` line. `/stats` uses it to show which gates you edit and which you approve as written.
 - Tell the engineer the file is approved and the next command:
 
 | Approved | Next |

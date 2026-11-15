@@ -44,5 +44,6 @@ Investigate bug **$1**.
 
 ## Step 7: Log and hand off
 
-- Add a `progress.md` entry for `/bug`.
+- Stamp the draft as your last change to `bug.md`: run exactly `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/work/Set-DraftHash.ps1" -Path "<work folder>/bug.md"`. It adds a `Draft-hash:` line so `/approve` can tell whether the engineer edited the draft. If you change the file again, run it again.
+- Add a `progress.md` entry for `/bug` with a `- Stats: questions=<n> assumptions=<n> tasks=<number of tasks in tasks.md>` line.
 - Tell the engineer the root cause in one sentence and the confidence level, then: "Review `bug.md` and `tasks.md`. If correct, run `/approve $1` (or change `bug.md` to `Status: APPROVED` yourself), start a new session, and run `/do-task $1 1`."

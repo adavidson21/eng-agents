@@ -63,6 +63,7 @@ Follow these steps in order. Do not change any code.
 
 ## Step 6: Log and hand off
 
-- Add a `progress.md` entry for `/scope`.
+- Stamp the draft as your last change to `stories.md`: run exactly `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/work/Set-DraftHash.ps1" -Path "<work folder>/stories.md"`. It adds a `Draft-hash:` line so `/approve` can tell whether the engineer edited the draft. If you change the file again, run it again.
+- Add a `progress.md` entry for `/scope` with a `- Stats: questions=<n> assumptions=<n>` line (how many questions you asked the engineer, and how many assumptions you wrote instead).
 - Tell the engineer, in a few lines: the epic, the MVP features with their story count, what went to Icebox, and any open questions.
 - Then: "Review `epics.md` and `stories.md`. To change them, edit the files or add notes under Open questions and run `/scope scope-<short name>` again. When they are right, run `/approve scope-<short name>`, then `/slice scope-<short name>`."

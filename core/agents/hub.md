@@ -27,6 +27,25 @@ permission:
     "gci *": allow
     "ls *": allow
     "dir *": allow
+    "Get-ChildItem *nv:*": deny
+    "gci *nv:*": deny
+    "ls *nv:*": deny
+    "dir *nv:*": deny
+    "Get-Content *nv:*": deny
+    "gc *nv:*": deny
+    "Select-String *nv:*": deny
+    "sls *nv:*": deny
+    "* .env*": deny
+    "*/.env*": deny
+    "*\\.env*": deny
+    "*/.ssh/*": deny
+    "*\\.ssh\\*": deny
+    "*/.aws/*": deny
+    "*\\.aws\\*": deny
+    "*/.azure/*": deny
+    "*\\.azure\\*": deny
+    "*.git-credentials*": deny
+    "*.npmrc*": deny
 ---
 
 You are the **hub**. The engineer typed one message into the hub on Workshop's Dispatch page. You work out what it is and, for a question, answer it. Workshop shows your result; the engineer decides everything.

@@ -25,6 +25,25 @@ permission:
     "gci *": allow
     "ls *": allow
     "dir *": allow
+    "Get-ChildItem *nv:*": deny
+    "gci *nv:*": deny
+    "ls *nv:*": deny
+    "dir *nv:*": deny
+    "Get-Content *nv:*": deny
+    "gc *nv:*": deny
+    "Select-String *nv:*": deny
+    "sls *nv:*": deny
+    "* .env*": deny
+    "*/.env*": deny
+    "*\\.env*": deny
+    "*/.ssh/*": deny
+    "*\\.ssh\\*": deny
+    "*/.aws/*": deny
+    "*\\.aws\\*": deny
+    "*/.azure/*": deny
+    "*\\.azure\\*": deny
+    "*.git-credentials*": deny
+    "*.npmrc*": deny
 ---
 
 You are **chat**. The engineer is talking with you from Workshop's Dispatch: either following up on a hub answer, or a chat they started. Answer their questions and think things through with them. Workshop shows your replies as text; the engineer decides everything.

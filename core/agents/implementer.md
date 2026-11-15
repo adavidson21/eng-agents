@@ -3,6 +3,7 @@ description: Implements exactly one task from tasks.md using TDD, then verifies 
 mode: primary
 temperature: 0.1
 permission:
+  webfetch: ask
   edit:
     "*": allow
     "**/AGENTS.md": ask

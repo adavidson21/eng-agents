@@ -4,6 +4,17 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 2.22.0 (2026-11-14)
+
+- Measure the pipeline. New `/stats [--since yyyy-MM-dd]` (planner, read-only) and `core/scripts/stats/Get-PipelineStats.ps1` (`-AsJson` for Workshop): days from `/start` to `/pr`, review rounds, items needing a second review, questions versus assumptions, `/do-task` verify failures, full-suite failures caught, tasks added after `/tasks`, review findings by severity (and by category when `review.md` has one), and per gate how often you approve the draft as written. Local and read-only; older items show `n/a` where data was never written. Self-test `Test-PipelineStats.ps1`, run in CI.
+- Draft hashes. `/spec`, `/plan`, `/bug`, `/scope`, `/slice` and `/refine` finish by running new `core/scripts/work/Set-DraftHash.ps1`, which adds a `Draft-hash:` line under `Status:`. `/approve` runs `Test-DraftHash.ps1` first (new Step 3) and logs `gate=unchanged`, `gate=edited` or `gate=no-hash`. It never blocks approval. Its later steps are renumbered (open questions is Step 4).
+- `progress.md` entries can carry a `- Stats:` line of `key=value` pairs. `/spec`, `/plan`, `/bug`, `/scope`, `/slice`, `/refine` (questions, assumptions), `/tasks` (tasks), `/do-task` (verify, full, attempts), `/review` (findings and verdict) and `/approve` (gate, file) write one. Dispatch and the static dashboard ignore it.
+- `/do-task` checks nothing else broke before it commits (new Step 5b): it runs the repo's Build, then its new optional **Pre-commit check** command or All unit tests. A failure listed in the new `baseline.md` (written by `/start` Step 7b right after branching, before any change; skip with `--no-baseline`) is noted, not chased. A new failure counts toward the 3-attempt limit and blocks the commit. The repo guide template has the new optional Commands row.
+- Guards: every `git -C` rule now has a `git -c *=*` twin, so `git -c key=value push` and the like ask or are denied as intended. Shell wrappers that hide a command (`pwsh -c`/`-Command`, `powershell -c`/`-Command`, `cmd /c`, `bash -c`, `sh -c`, `Start-Process`) ask. Secrets rules also match Windows `\` paths, and reading env vars with `Get-Content env:`, `gc env:`, `cat env:`, `type env:` and `Select-String` asks.
+- The read-only hub and chat agents allowed `Get-Content`, `Get-ChildItem` and similar on any path, which included env vars, `.env` files and `~/.ssh`. They now deny those.
+- `webfetch` is `ask` for the implementer and reviewer (pr-reviewer, hub, chat and people-prep already deny it).
+- New CI check `tests/Test-Guards.ps1`: installs Core and resolves a list of risky and everyday commands against `opencode.json` and every agent, last match wins.
+
 ## Core 2.21.0 (2026-11-12)
 
 - `/spike` answers vague asks ("how hard would it be to add X?") as a brief with three readers. `findings.md` (new template) has header lines `Asked by`, `Size`, `Effort` (a range), `Confidence`, `Lenses` and `Default lens`, sections The ask, Short answer, Questions for the requester, Current state, Options, Risks and dependencies, Recommendation, Next step and Sources, and `### For business`, `### For engineering` and `### For leadership` blocks inside them. `/spike <topic> --for leadership` picks the lens the brief opens on.

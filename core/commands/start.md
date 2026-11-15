@@ -1,5 +1,5 @@
 ---
-description: "Start a work item: fetch or describe it, create its .work folder, pick repos, create branches, write a brief. Usage: /start <id|new> <feature|bug> [repo folder or ADO connection] [--cold]"
+description: "Start a work item: fetch or describe it, create its .work folder, pick repos, create branches, write a brief. Usage: /start <id|new> <feature|bug> [repo folder or ADO connection] [--cold] [--no-baseline]"
 agent: planner
 ---
 
@@ -16,7 +16,8 @@ Follow these steps in order. Do not skip any step, except the ones marked "only 
   - a local id, `L` and a number (for example `L12`): work with no tracker item, already described. Dispatch creates its folder before it runs `/start`.
   - `new`: work with no tracker item that is not described yet.
 - `$2` must be `feature` or `bug`.
-- If either is wrong, stop and reply: `Usage: /start <id|new> <feature|bug> [repo folder or ADO connection] [--cold]`.
+- If either is wrong, stop and reply: `Usage: /start <id|new> <feature|bug> [repo folder or ADO connection] [--cold] [--no-baseline]`.
+- `--no-baseline` is optional and can come anywhere after the lane. If any argument is `--no-baseline`, remember it: Step 7b is skipped. Like `--cold`, it is never the third argument.
 - `--cold` is optional and can come anywhere after the lane. If any argument is `--cold`, remember it: Step 8b is skipped. `--cold` is never the third argument, so if `$3` is `--cold`, there is no third argument.
 - `$3` is optional and only for a number. It is a repo folder in the workspace or an ADO connection name. It tells the script which ADO server or collection holds the work item. If the third argument above is empty, there is none.
 
@@ -103,6 +104,16 @@ For each repo in `repos.md`, in order:
    - **If it prints nothing** (a repo with no remote): the base is `main` if `git -C <repo> rev-parse --verify --quiet main` prints a hash, else `master` if that prints one, else the current branch if it does not start with `dev/`, else ask the engineer.
    - Write the base in the repo's **Base** column in `repos.md`.
 4. Run `git -C <repo> checkout -b <branch> <base>`.
+
+## Step 7b: Record the test baseline (skip with `--no-baseline`)
+
+`/do-task` runs each repo's full unit tests before it commits. This baseline tells it which failures were already there before this work item, so it does not chase them.
+
+- Copy `{{ENG_HOME}}/templates/baseline.md` into the work folder as `baseline.md`.
+- For each repo in `repos.md` that has its branch: read its repo guide's Commands table. If it has a **Pre-commit check** row, run that command; otherwise run the **All unit tests** row. If it has neither, write `no command` for that repo.
+- Write one row per repo: the command, `PASS` or `FAIL`, and the names of the failing tests (at most 20; if more, write the count). Paste nothing else.
+- Run each command once. If it cannot run at all (for example a build error on the base branch), write `could not run` and the first error line.
+- This step never blocks `/start`. If it fails, say so in one line and go on.
 
 ## Step 8: Start the log
 

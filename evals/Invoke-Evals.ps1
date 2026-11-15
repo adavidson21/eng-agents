@@ -153,6 +153,8 @@ if ($Arm -ne "tandem") {
 
 # opencode may be a .cmd shim on Windows; Process.Start needs cmd.exe for those.
 function Start-Opencode([string]$WorkDir, [string[]]$OcArgs, [string]$Log, [hashtable]$Env = @{}) {
+    # Raw JSON events, so tokens, cost, tool calls and questions can be counted (Get-RunUsage).
+    $OcArgs = @($OcArgs[0], "--format", "json") + @($OcArgs | Select-Object -Skip 1)
     $quoted = @($OcArgs | ForEach-Object { if ($_ -match '[\s"]') { '"' + ($_ -replace '"', '\"') + '"' } else { $_ } }) -join ' '
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     if ($oc.Source -match '\.(cmd|bat)$') { $psi.FileName = $env:ComSpec; $psi.Arguments = "/c `"`"$($oc.Source)`" $quoted`"" }
@@ -171,7 +173,7 @@ function Start-Opencode([string]$WorkDir, [string[]]$OcArgs, [string]$Log, [hash
     if (-not $done) { try { $p.Kill() } catch { } ; $p.WaitForExit(10000) | Out-Null }
     $prior = if (Test-Path -LiteralPath $Log) { [IO.File]::ReadAllText($Log) + "`n" } else { "" }
     [IO.File]::WriteAllText($Log, $prior + "=== opencode $quoted`nexit: $(if ($done) { $p.ExitCode } else { 'timeout' })`n--- stdout`n$($outTask.Result)`n--- stderr`n$($errTask.Result)", $script:Utf8)
-    return [pscustomobject]@{ TimedOut = (-not $done); ExitCode = $(if ($done) { $p.ExitCode } else { $null }) }
+    return [pscustomobject]@{ TimedOut = (-not $done); ExitCode = $(if ($done) { $p.ExitCode } else { $null }); Usage = (Get-RunUsage $outTask.Result) }
 }
 
 function Invoke-Step($step, $c, $ws, [string]$Log) {
@@ -179,26 +181,28 @@ function Invoke-Step($step, $c, $ws, [string]$Log) {
     $label = Get-StepLabel $step
     if ($step.approve) {
         $ok = Approve-GateFile -Work $ws.Work -Name $step.approve
-        return [ordered]@{ step = $label; ok = $ok; seconds = [int]((Get-Date) - $t0).TotalSeconds; timedOut = $false }
+        return [ordered]@{ step = $label; ok = $ok; seconds = [int]((Get-Date) - $t0).TotalSeconds; timedOut = $false; usage = (New-Usage) }
     }
     $argsList = @("$($step.arguments)")
     if ($step.eachTask) {
         $open = @((Get-Tasks (Read-WorkFile $ws "tasks.md")) | Where-Object { -not $_.Done } | Select-Object -First $script:MaxTasks)
-        if (-not $open.Count) { return [ordered]@{ step = $label; ok = $false; seconds = 0; timedOut = $false; detail = "no open tasks in tasks.md" } }
+        if (-not $open.Count) { return [ordered]@{ step = $label; ok = $false; seconds = 0; timedOut = $false; detail = "no open tasks in tasks.md"; usage = (New-Usage) } }
         $argsList = @($open | ForEach-Object { "$($step.arguments)" -replace '\{n\}', "$($_.N)" })
     }
     $timedOut = $false
     $exit = 0
+    $usage = New-Usage
     foreach ($a in $argsList) {
         $ocArgs = @("run", "--command", $step.command)
         if ($Model) { $ocArgs += @("--model", $Model) }
         if ($AutoApprove) { $ocArgs += "--auto" }
         $ocArgs += $a
         $proc = Start-Opencode $ws.Root $ocArgs $Log
+        $usage = Add-Usage $usage $proc.Usage
         if ($proc.TimedOut) { $timedOut = $true; break }
         if ($proc.ExitCode) { $exit = $proc.ExitCode }
     }
-    return [ordered]@{ step = $label; ok = (-not $timedOut -and $exit -eq 0); seconds = [int]((Get-Date) - $t0).TotalSeconds; timedOut = $timedOut; runs = $argsList.Count }
+    return [ordered]@{ step = $label; ok = (-not $timedOut -and $exit -eq 0); seconds = [int]((Get-Date) - $t0).TotalSeconds; timedOut = $timedOut; runs = $argsList.Count; usage = $usage }
 }
 
 # ------------------------------------------------------------------ run
@@ -236,7 +240,7 @@ foreach ($cf in $caseFiles) {
                 $ocArgs += "$($c.baseline.prompt)"
                 $t0 = Get-Date
                 $proc = Start-Opencode $root $ocArgs $log @{ XDG_CONFIG_HOME = $baselineConfig }
-                $steps = @([ordered]@{ step = "plain prompt"; ok = (-not $proc.TimedOut -and -not $proc.ExitCode); seconds = [int]((Get-Date) - $t0).TotalSeconds; timedOut = $proc.TimedOut })
+                $steps = @([ordered]@{ step = "plain prompt"; ok = (-not $proc.TimedOut -and -not $proc.ExitCode); seconds = [int]((Get-Date) - $t0).TotalSeconds; timedOut = $proc.TimedOut; usage = $proc.Usage })
             }
             else {
                 $ws = New-EvalWorkspace $c $root
@@ -253,24 +257,33 @@ foreach ($cf in $caseFiles) {
             $failedChecks = @($checks | Where-Object { -not $_.Pass })
             $pass = ($checks.Count -gt 0 -and $failedChecks.Count -eq 0 -and -not $timedOut)
             $secs = [int]((Get-Date) - $started).TotalSeconds
+            $runUsage = New-Usage
+            foreach ($st2 in $steps) { if ($st2.usage) { $runUsage = Add-Usage $runUsage $st2.usage } }
+            $verifyFails = Get-VerifyFails $ws
             Write-Output ("{0,-26} run {1}: {2} ({3}s){4}" -f $tag, $i, $(if ($pass) { "PASS" } else { "FAIL" }), $secs, $(if ($timedOut) { " timed out" } else { "" }))
             foreach ($f in $failedChecks) { Write-Output "    - $($f.Check)$(if ($f.Detail) { ": $($f.Detail)" })" }
             [void]$runList.Add([ordered]@{
                 run = $i; pass = $pass; seconds = $secs; timedOut = $timedOut
-                steps = @($steps)
+                tokens = (Get-UsageTokens $runUsage); cost = $runUsage.cost; toolCalls = $runUsage.toolCalls; questions = $runUsage.questions
+                usageKnown = $runUsage.known; verifyFails = $verifyFails
+                steps = @($steps | ForEach-Object { $u = $_.usage; $o = [ordered]@{}; foreach ($k in $_.Keys) { if ($k -ne 'usage') { $o[$k] = $_[$k] } }; if ($u) { $o.tokens = $u.input + $u.output + $u.reasoning; $o.cost = $u.cost }; $o })
                 failed = @($failedChecks | ForEach-Object { [ordered]@{ check = $_.Check; detail = $_.Detail } }); checks = $checks.Count
                 log = $log; workspace = $(if ($KeepWorkspaces) { $root } else { $null })
             })
             if (-not $KeepWorkspaces) { Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue }
         }
         $passes = @($runList | Where-Object { $_.pass }).Count
-        [void]$results.Add([ordered]@{
+        $entry = [ordered]@{
             case = $name; arm = $a; passes = $passes; total = $runList.Count
             rate = [math]::Round(100.0 * $passes / [math]::Max(1, $runList.Count))
             passAll = ($runList.Count -gt 0 -and $passes -eq $runList.Count)
-            meanSeconds = [int](($runList | Measure-Object -Property seconds -Average).Average)
-            runs = @($runList)
-        })
+            meanSeconds = $(if ($runList.Count) { $t = 0; foreach ($rr in $runList) { $t += [int]$rr.seconds }; [int]($t / $runList.Count) } else { 0 })
+            promptTokens = (Get-CasePromptTokens $c $a)
+        }
+        $sumUp = Get-CaseUsageSummary $runList $passes
+        foreach ($k in $sumUp.Keys) { $entry[$k] = $sumUp[$k] }
+        $entry.runs = @($runList)
+        [void]$results.Add($entry)
     }
 }
 if ($baselineConfig) { Remove-Item -LiteralPath $baselineConfig -Recurse -Force -ErrorAction SilentlyContinue }
@@ -290,7 +303,7 @@ if ($previousFile.Count -eq 1) {
 }
 $armsRun = @($results | ForEach-Object { $_.arm } | Select-Object -Unique)
 $doc = [ordered]@{
-    version = 2; tandem = $version; installed = $installed; model = $(if ($Model) { $Model } else { "opencode default" })
+    version = 3; tandem = $version; installed = $installed; model = $(if ($Model) { $Model } else { "opencode default" })
     runsPerCase = $Runs; autoApprove = [bool]$AutoApprove; arms = @($armsRun); date = (Get-Date).ToString("yyyy-MM-ddTHH:mm:ss")
     cases = @($results)
 }
@@ -298,11 +311,11 @@ $outFile = Join-Path $OutDir "$version-$stamp.json"
 [IO.File]::WriteAllText($outFile, ($doc | ConvertTo-Json -Depth 10), $script:Utf8)
 
 Write-Output ""
-Write-Output "| Case | Arm | Passed | Rate | Every run | Previous | Change |"
-Write-Output "|---|---|---|---|---|---|---|"
+Write-Output "| Case | Arm | Passed | Rate | Every run | Tokens/run | Questions | Previous | Change |"
+Write-Output "|---|---|---|---|---|---|---|---|---|"
 $drops = 0
 foreach ($r in $results) {
-    if ($r.skipped) { Write-Output "| $($r.case) | $($r.arm) | skipped ($($r.skipped)) | | | | |"; continue }
+    if ($r.skipped) { Write-Output "| $($r.case) | $($r.arm) | skipped ($($r.skipped)) | | | | | | |"; continue }
     $key = "$($r.case)|$($r.arm)"
     $prev = if ($previous.ContainsKey($key)) { "$($previous[$key])%" } else { "n/a" }
     $chg = ""
@@ -310,7 +323,8 @@ foreach ($r in $results) {
         $d = $r.rate - $previous[$key]
         $chg = if ($d -lt 0) { "**$d**"; if ($r.arm -eq "tandem") { $drops++ } } elseif ($d -gt 0) { "+$d" } else { "same" }
     }
-    Write-Output "| $($r.case) | $($r.arm) | $($r.passes)/$($r.total) | $($r.rate)% | $(if ($r.passAll) { 'yes' } else { 'no' }) | $prev | $chg |"
+    $tok = if ($null -ne $r.meanTokens) { "$($r.meanTokens)" } else { "n/a" }
+    Write-Output "| $($r.case) | $($r.arm) | $($r.passes)/$($r.total) | $($r.rate)% | $(if ($r.passAll) { 'yes' } else { 'no' }) | $tok | $($r.meanQuestions) | $prev | $chg |"
 }
 
 $lift = @(Get-Lift $results)

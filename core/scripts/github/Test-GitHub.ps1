@@ -65,3 +65,5 @@ finally { Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue }
 
 if ($failed) { Write-Output "$failed failed"; exit 1 }
 Write-Output "All GitHub checks passed"
+# The ALREADY check above leaves LASTEXITCODE at 1 on purpose; this run passed.
+exit 0

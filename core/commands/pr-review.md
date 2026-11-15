@@ -1,5 +1,5 @@
 ---
-description: "First-pass review of a teammate's ADO pull request. Drafts comments in .work/pr-<id>/review.md; never posts. Usage: /pr-review <PR link or number> [repo folder or ADO connection] [again]"
+description: "First-pass review of a teammate's pull request (Azure DevOps or GitHub). Drafts comments in .work/pr-<id>/review.md; never posts. Usage: /pr-review <PR link or number> [repo folder or ADO connection] [again]"
 agent: pr-reviewer
 ---
 
@@ -21,16 +21,22 @@ This is someone else's PR. You draft comments for the engineer. You never post, 
 
 ## Step 1: Check the arguments
 
-- `$1` is a PR link (it contains `/pullrequest/<number>`) or a PR number.
+- `$1` is a PR link (Azure DevOps: it contains `/pullrequest/<number>`; GitHub: it contains `/pull/<number>`) or an Azure DevOps PR number.
 - Any other argument is either the word `again` (review again even if the commit was already reviewed) or a repo folder in the workspace or an ADO connection name (only needed with a number).
 - If `$1` is empty, stop and reply: `Usage: /pr-review <PR link or number> [repo folder or ADO connection] [again]`.
 
 ## Step 2: Fetch the PR
 
-For a link, run exactly this command:
+For an Azure DevOps link, run exactly this command:
 
 ```
 {{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/ado/Get-PullRequest.ps1" -Url "$1" -WorkRoot ".work"
+```
+
+For a GitHub link (`.../<owner>/<repo>/pull/<number>`), run exactly this command instead:
+
+```
+{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/github/Get-GitHubPullRequest.ps1" -Url "$1" -WorkRoot ".work"
 ```
 
 For a number, run exactly this command, adding `-From "<repo folder or connection>"` at the end if one was given:
@@ -44,6 +50,8 @@ For a number, run exactly this command, adding `-From "<repo folder or connectio
 - If the error contains:
   - `AMBIGUOUS:` or `UNKNOWN:`: ask "Which repo folder or ADO connection is this PR in?" Run the number command again with `-From "<their answer>"`.
   - `NOCONN:`: tell the engineer the link's server and collection are not in their ADO `config.json`, and stop.
+  - `NOTOKEN:` (GitHub): tell the engineer to set a GitHub token (`workshop pat GITHUB_PAT`, or `gh auth login`), and stop.
+  - `BADURL:` or `NOTFOUND:` (GitHub): show it in one line, and stop.
   - `NOREPO:`: tell the engineer which repo to clone into the workspace (the error names it and its URL), and stop.
   - `FETCH:`: show the git error in one line, and stop.
 - Any other failure: show the error in one line and stop. Do not try other ways to get the code.

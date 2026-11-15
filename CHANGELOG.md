@@ -4,6 +4,13 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 3.2.0 (2026-11-14)
+
+- GitHub issues: `/start owner/repo#12 <lane>` (or `/start #12 <lane> <repo folder>`) fetches the issue with the new `scripts/github/Get-GitHubIssue.ps1` and makes it a local work item (`L<n>`), so the rest of the pipeline and Dispatch work unchanged. `workitem.md` keeps the issue as `- GitHub: owner/repo#12` and its link, splits the body into Description, Acceptance criteria and Repro steps by their `##` headings, types it from its labels (`bug`, `story`, `feature`, `epic`, `task`), and lists its sub-issue parent (the Feature) and milestone (the Epic) under Parents. Starting the same issue twice says `ALREADY:`.
+- GitHub pull requests: `/pr-review <GitHub PR link>` uses the new `scripts/github/Get-GitHubPullRequest.ps1`, which writes the same `context.md` and `threads.md` as the ADO script. It fetches `refs/pull/<n>/head` (forks too), lists the issues the PR closes as linked work items, and reads reviews, comments and line comments. Read-only: never posts.
+- The GitHub token is `GITHUB_PAT` (the variable Workshop's GitHub connector uses), else `GH_TOKEN` or `GITHUB_TOKEN`, else `gh auth token`. `GITHUB_API_URL` points at GitHub Enterprise Server.
+- New CI check `core/scripts/github/Test-GitHub.ps1`: the helpers, and an issue written as a local work item from a saved answer (no network).
+
 ## Core 3.1.0 (2026-11-14)
 
 - Evals can now show whether Tandem helps: `Invoke-Evals.ps1 -Arm both` runs each case with Tandem and as one plain prompt with Tandem left out (same model, same workspace), and adds a lift table (Tandem's pass rate minus the baseline's). `-Arm baseline` runs only the plain arm. The plain arm uses a config folder made for the run: your `opencode.json` without Tandem's `instructions`, `agent`, `command` and `mode`.

@@ -13,6 +13,7 @@ If the mode above is `auto`, nobody is watching (autopilot or an eval run). Neve
 - Read `repos.md` to get the lane.
   - Lane `feature`: `plan.md` must contain `Status: APPROVED`.
   - Lane `bug`: `bug.md` must contain `Status: APPROVED`.
+  - Lane `quick`: `quick.md` must contain `Status: APPROVED`.
   - If the gate file is not approved, stop and tell the engineer.
 - If `paused.md` contains `Status: PAUSED`, stop. Tell the engineer to run `/resume $1` first.
 
@@ -22,7 +23,7 @@ If the mode above is `auto`, nobody is watching (autopilot or an eval run). Neve
 - If it is already checked `[x]`, stop and tell the engineer.
 - If an earlier task is not checked, tell the engineer which one and ask whether to continue anyway. Wait.
 - Read the repo guide (`<repo>/AGENTS.local.md` if it exists, otherwise `<repo>/AGENTS.md`) for the task's repo.
-- Read the acceptance criteria the task covers in `spec.md` (or `bug.md`), and the matching repo section of `plan.md` (feature lane only).
+- Read the acceptance criteria the task covers in `spec.md` (or `bug.md`, or `quick.md` in the quick lane), and the matching repo section of `plan.md` (feature lane only; in the quick lane the files and pattern are in `quick.md`).
 - Read the last 2 entries of `progress.md`.
 - If `paused.md` exists and names this task as in progress, read its "Work in progress" section. Continue from there instead of starting over.
 

@@ -4,6 +4,14 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 2.25.0 (2026-11-14)
+
+- Quick lane for small work: `/start <id> quick`, then new `/quick <id> [auto]` (planner) writes `quick.md` (new template: goal, acceptance criteria, assumptions, files and pattern to follow, why it fits) and a normal `tasks.md` with at most 2 tasks. One approval (`/approve <id>`), then `/do-task`, `/review` and `/pr` as usual; they read the criteria from `quick.md`. The branch is `dev/feature/<id>-<name>`.
+- `/quick` steps up to the feature lane by itself when the work needs more than 2 tasks, a second or shared repo, a schema, migration or API contract change, or criteria it cannot pin down: it sets `Lane: feature` in `repos.md`, writes what it found under Notes, logs `escalated=1`, and points to `/spec`.
+- `/status`, `/pause`, `/resume`, `/approve` (`quick` file name), `/do-task` (gate), `/review`, `/pr` and the reviewer know the lane. `New-Dashboard.ps1` gives quick items a `quick` stage (`/quick`, then "Review quick.md and tasks.md") and the static page a Start, Quick plan, Build, Review, PR track. `/stats` counts the `quick` gate and how many quick items stepped up.
+- Evals: `small-lane` and `small-lane-escalate` cases, with goldens.
+- Workshop's Dispatch reads the lane from Workshop's next release; until then it shows quick items as feature items.
+
 ## Core 2.24.0 (2026-11-14)
 
 - Evals: new `evals/` folder. `Invoke-Evals.ps1` builds a made-up workspace per run (a repo map and `sample-api`, a small .NET order pricing library), runs a command with a real model through `opencode run --command`, grades what the agent left behind with file and git checks, and saves `evals/results/<version>-<time>.json` with a comparison against the previous run. First 8 cases: `spec-basic`, `plan-paths`, `tasks-shape`, `do-task` (with hidden acceptance tests), `review-planted` (an off-by-one the branch's own tests miss), `review-clean`, `bug-lane`, `retro-repeat`. See `evals/README.md`.

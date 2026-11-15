@@ -268,3 +268,45 @@ function Test-RetroRepeat($Ws, [switch]$NoExec) {
     Add-Check $c "wrote no memory or repo guide changes" (-not $status) $status
     return $c
 }
+
+function Test-QuickLane($Ws, [switch]$NoExec) {
+    $c = New-Checks
+    $t = Test-GateFile $Ws $c "quick.md"
+    if ($t) {
+        $acs = @([regex]::Matches($t, '(?m)^\s*-\s*\*\*AC-\d+:\*\*\s*(.+)$') | ForEach-Object { $_.Groups[1].Value })
+        $bad = @($acs | Where-Object { $_ -notmatch '(?i)\bgiven\b' -or $_ -notmatch '(?i)\bwhen\b' -or $_ -notmatch '(?i)\bthen\b' })
+        Add-Check $c "acceptance criteria are Given / when / then" ($acs.Count -ge 1 -and $bad.Count -eq 0) "found $($acs.Count), not GWT: $($bad.Count)"
+        $pm = [regex]::Match($t, '(?mi)^\s*Pattern to follow:\s*`([^`]+)`')
+        Add-Check $c "the pattern file exists" ($pm.Success -and (Test-Path -LiteralPath (Join-Path $Ws.Root ($pm.Groups[1].Value -replace ':\d+$', ''))))
+        $missing = @(Get-CitedPaths (Get-MdSection $t "Current behavior") | Where-Object { -not (Test-Path -LiteralPath (Join-Path $Ws.Root $_)) })
+        Add-Check $c "cited paths exist" ($missing.Count -eq 0) "missing: $($missing -join ', ')"
+    }
+    $tasks = Get-Tasks (Read-WorkFile $Ws "tasks.md")
+    Add-Check $c "1 or 2 tasks" ($tasks.Count -ge 1 -and $tasks.Count -le 2) "$($tasks.Count) tasks"
+    $guide = [IO.File]::ReadAllText((Join-Path $Ws.Repo "AGENTS.md"))
+    $cmds = @([regex]::Matches((Get-MdSection $guide "Commands"), '(?m)^\|[^|]+\|\s*`([^`]+)`') | ForEach-Object { ($_.Groups[1].Value -split ' --filter')[0].Trim() })
+    foreach ($k in $tasks) {
+        Add-Check $c "task $($k.N): 3 files or fewer" ($k.Files.Count -ge 1 -and $k.Files.Count -le 3) "$($k.Files.Count) files"
+        $v = if ($k.Verify) { $k.Verify.Trim('`').Trim() } else { "" }
+        Add-Check $c "task $($k.N): verify command comes from the repo guide" (@($cmds | Where-Object { $v.StartsWith($_) }).Count -ge 1) "Verify: $v"
+    }
+    $repos = Read-WorkFile $Ws "repos.md"
+    Add-Check $c "stays in the quick lane" ($repos -match '(?mi)^\s*Lane:\s*quick\s*$')
+    $e = Get-LastEntry (Read-WorkFile $Ws "progress.md") "quick"
+    Add-Check $c "/quick Stats line counts the tasks" ((Get-StatValue $e "tasks") -eq "$($tasks.Count)") "tasks=$(Get-StatValue $e 'tasks')"
+    Test-RepoUntouched $Ws $c
+    return $c
+}
+
+function Test-QuickEscalate($Ws, [switch]$NoExec) {
+    $c = New-Checks
+    $repos = Read-WorkFile $Ws "repos.md"
+    Add-Check $c "switched repos.md to the feature lane" ($repos -match '(?mi)^\s*Lane:\s*feature\s*$')
+    Add-Check $c "kept the branch" ($repos -match 'dev/feature/L4-save-orders-http')
+    Add-Check $c "wrote no quick.md" ($null -eq (Read-WorkFile $Ws "quick.md"))
+    Add-Check $c "wrote no tasks.md" ($null -eq (Read-WorkFile $Ws "tasks.md"))
+    $e = Get-LastEntry (Read-WorkFile $Ws "progress.md") "quick"
+    Add-Check $c "logged escalated=1" ((Get-StatValue $e "escalated") -eq "1")
+    Test-RepoUntouched $Ws $c
+    return $c
+}

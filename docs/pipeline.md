@@ -75,6 +75,7 @@ Editing the line yourself still works; the next command reads whatever is on dis
 | Lane | Use when | Flow |
 |---|---|---|
 | Feature | New behavior, or more than 3 files of change | Full pipeline |
+| Quick | Small work: one repo (not shared), 1 or 2 tasks, no schema or API contract change, clear acceptance criteria | `/start <id> quick` → `/quick` → `/approve` → `/do-task` (repeat) → `/review` → `/pr`. See [Quick lane](#quick-lane). |
 | Bug | A defect with a reproducible symptom | `/start` → `/bug` → `/approve` → `/do-task` (repeat) → `/review` → `/pr` |
 | Scope | The work is an idea, not work items yet | `/scope` → `/approve` → `/slice` → `/approve` → `/backlog`. Then each story runs the feature lane. See [Scoping](#scoping-before-work-items). |
 | Spike | You do not know enough to write a spec, or someone asks "how hard would it be to...?" | `/spike` writes `findings.md` and a shareable `brief.html` with Business, Engineering and Leadership views (`--for <lens>` picks the one it opens on). No code changes. Good input to a later `/spec`. |
@@ -87,6 +88,14 @@ Bug lane rules:
 - Task 1 is always a test that fails because of the bug.
 - If root-cause confidence is Low, `/bug` stops and points you to `/spike`.
 - If the fix needs more than 3 tasks, it moves to the feature lane (`/spec`).
+
+## Quick lane
+
+For small work the full lane's two gates in a row (spec, then plan) cost more than they catch. `/quick <id>` (planner) writes `quick.md`, one file with the goal, acceptance criteria, assumptions, files and pattern to follow, plus a normal `tasks.md` (at most 2 tasks). You approve once with `/approve <id>`; `/do-task`, `/review` and `/pr` work as in the feature lane and read the criteria from `quick.md`. The branch is `dev/feature/<id>-<name>`.
+
+`/quick` steps up to the feature lane on its own when the work needs more than 2 tasks, a second or shared repo, a schema, migration or API contract change, or acceptance criteria it cannot pin down: it sets `Lane: feature` in `repos.md`, writes what it found under Notes, logs `escalated=1`, and tells you to run `/spec`.
+
+When to widen or narrow it: `/stats` shows quick items next to feature items (days to PR, review rounds) and how many stepped up. If quick items reach PR faster without more review rounds, it is working.
 
 ## Scoping (before work items)
 

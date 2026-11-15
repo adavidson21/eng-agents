@@ -426,7 +426,8 @@ a.btn { text-decoration: none; }
   // --------------------------------------------------------------- the track
   var STOPS = {
     feature: [["start", "Start"], ["spec", "Spec", "spec"], ["plan", "Plan", "plan"], ["tasks", "Tasks"], ["build", "Build"], ["review", "Review", "review"], ["pr", "PR"]],
-    bug: [["start", "Start"], ["bug", "Bug", "bug"], ["build", "Build"], ["review", "Review", "review"], ["pr", "PR"]]
+    bug: [["start", "Start"], ["bug", "Bug", "bug"], ["build", "Build"], ["review", "Review", "review"], ["pr", "PR"]],
+    quick: [["start", "Start"], ["quick", "Quick plan", "quick"], ["build", "Build"], ["review", "Review", "review"], ["pr", "PR"]]
   };
   var CHECK = '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 6.3l2.3 2.3 4.7-5"/></svg>';
   // What is happening at the current stage, in a word or two, shown under its label.
@@ -441,7 +442,7 @@ a.btn { text-decoration: none; }
   }
   // Tooltip for a stage that is behind the item.
   function doneTip(it, key) {
-    var g = { spec: "spec", plan: "plan", bug: "bug", review: "review" }[key];
+    var g = { spec: "spec", plan: "plan", bug: "bug", quick: "quick", review: "review" }[key];
     var v = g && it.gates ? it.gates[g] : null;
     if (v === "APPROVED") return key + ".md approved";
     if (v === "READY") return "Review: READY";

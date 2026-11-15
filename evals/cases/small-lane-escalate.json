@@ -1,0 +1,9 @@
+{
+  "description": "/quick steps a schema plus API change up to the feature lane instead of squeezing it into quick.md.",
+  "command": "quick",
+  "arguments": "L4 auto",
+  "workItem": "L4-save-orders-http",
+  "branch": "dev/feature/L4-save-orders-http",
+  "work": [{"from":"L4/start","to":"L4-save-orders-http"}],
+  "grader": "Test-QuickEscalate"
+}

@@ -1,5 +1,5 @@
 ---
-description: "Start a work item: fetch or describe it, create its .work folder, pick repos, create branches, write a brief. Usage: /start <id|new> <feature|bug> [repo folder or ADO connection] [--cold] [--no-baseline]"
+description: "Start a work item: fetch or describe it, create its .work folder, pick repos, create branches, write a brief. Usage: /start <id|new> <feature|bug|quick> [repo folder or ADO connection] [--cold] [--no-baseline]"
 agent: planner
 ---
 
@@ -15,8 +15,8 @@ Follow these steps in order. Do not skip any step, except the ones marked "only 
   - a number: a work item in ADO.
   - a local id, `L` and a number (for example `L12`): work with no tracker item, already described. Dispatch creates its folder before it runs `/start`.
   - `new`: work with no tracker item that is not described yet.
-- `$2` must be `feature` or `bug`.
-- If either is wrong, stop and reply: `Usage: /start <id|new> <feature|bug> [repo folder or ADO connection] [--cold] [--no-baseline]`.
+- `$2` must be `feature`, `bug` or `quick`. `quick` is the small lane: one repo, at most 2 tasks, no schema or API contract change (see `/quick`).
+- If either is wrong, stop and reply: `Usage: /start <id|new> <feature|bug|quick> [repo folder or ADO connection] [--cold] [--no-baseline]`.
 - `--no-baseline` is optional and can come anywhere after the lane. If any argument is `--no-baseline`, remember it: Step 7b is skipped. Like `--cold`, it is never the third argument.
 - `--cold` is optional and can come anywhere after the lane. If any argument is `--cold`, remember it: Step 8b is skipped. `--cold` is never the third argument, so if `$3` is `--cold`, there is no third argument.
 - `$3` is optional and only for a number. It is a repo folder in the workspace or an ADO connection name. It tells the script which ADO server or collection holds the work item. If the third argument above is empty, there is none.
@@ -73,7 +73,7 @@ If there is a third argument, run exactly this command instead:
 ## Step 4: Read the work item
 
 - Read `workitem.md` in the new folder.
-- If the type is Bug but `$2` is `feature` (or the other way around), ask the engineer which lane is correct. Use their answer as the lane.
+- If the type is Bug but `$2` is `feature` or `quick` (or the other way around), ask the engineer which lane is correct. Use their answer as the lane.
 
 ## Step 5: Choose repos
 
@@ -90,7 +90,7 @@ If there is a third argument, run exactly this command instead:
 
 - Copy `{{ENG_HOME}}/templates/repos.md` into the work folder as `repos.md` and fill it in.
 - Lane is the lane from Step 4.
-- Branch name is `dev/<lane>/<folder name without the .work/ part>`. For example, folder `.work/12345-export-retry` in lane `feature` gives `dev/feature/12345-export-retry`.
+- Branch name is `dev/<lane>/<folder name without the .work/ part>`, with `feature` in place of `quick` (a quick item is a small feature). For example, folder `.work/12345-export-retry` in lane `feature` gives `dev/feature/12345-export-retry`.
 
 ## Step 7: Create branches
 
@@ -134,7 +134,7 @@ Skip this step if `--cold` was given. Otherwise write a short brief, so the engi
   1. `git -C <repo> ls-files "*<keyword>*"` (file names only).
   2. `git -C <repo> log --oneline -n 20 -i --grep "<keyword>" --name-only` (recent commit messages and the files they touched).
   List at most 10 paths, most matches first, each with why it matched. Do not open or read any of these files. They are guesses, and the brief says so. If nothing matches, write "No matches".
-- **First tiny step:** usually "Run `/spec $1`" (or "Run `/bug $1`" for a bug). If the work item leaves something important open (no acceptance criteria, or a contradiction), write the one concrete question to answer first instead.
+- **First tiny step:** usually "Run `/spec $1`" (or "Run `/bug $1`" for a bug, "Run `/quick $1`" for the quick lane). If the work item leaves something important open (no acceptance criteria, or a contradiction), write the one concrete question to answer first instead.
 - Do not add requirements the work item does not give.
 - If this step fails, say so in one line and go on. The brief is a help, not a gate.
 
@@ -144,4 +144,4 @@ Reply with:
 - The folder path.
 - The repos and branches created, and any that were skipped.
 - The brief: print `brief.md` as it is (or say it was skipped with `--cold`).
-- The next command: `/spec $1` for a feature, or `/bug $1` for a bug.
+- The next command: `/spec $1` for a feature, `/bug $1` for a bug, or `/quick $1` for the quick lane.

@@ -154,6 +154,7 @@ foreach ($dir in (Get-ChildItem -LiteralPath $WorkRoot -Directory | Sort-Object 
         $phase[$c] = if ($d) { $d.ToString("yyyy-MM-dd") } else { $null }
     }
     $prDate = Get-FirstDate $entries "pr"
+    $escalated = @($entries | Where-Object { $_.command -eq "quick" -and $_.stats.ContainsKey("escalated") -and $_.stats["escalated"] -eq "1" }).Count -gt 0
 
     # Rounds: how many times a drafting command or review ran.
     $rounds = [ordered]@{}
@@ -233,6 +234,7 @@ foreach ($dir in (Get-ChildItem -LiteralPath $WorkRoot -Directory | Sort-Object 
         tasksTotal      = $tasksTotal
         tasksDone       = $tasksDone
         tasksAdded      = $tasksAdded
+        quickEscalated  = $escalated
         retro           = (Test-Path -LiteralPath (Join-Path $dir.FullName "retro.md"))
         verdict         = $verdict
         findings        = $findings
@@ -290,6 +292,7 @@ $summary = [ordered]@{
     blockers              = [int](($all | Where-Object { $null -ne $_.findings.blocker } | ForEach-Object { $_.findings.blocker } | Measure-Object -Sum).Sum)
     findingCategories     = $catTotals
     retros                = @($all | Where-Object { $_.retro }).Count
+    quickEscalations      = @($all | Where-Object { $_.quickEscalated }).Count
 }
 
 $result = [ordered]@{
@@ -335,6 +338,7 @@ $out.Add("| /do-task runs, verify failure rate | $($summary.doTaskRuns), $(Show 
 $out.Add("| Full-suite failures caught in /do-task | $($summary.fullSuiteFails) |")
 $out.Add("| Tasks added after /tasks (mostly review fixes) | $($summary.tasksAddedByReview) |")
 $out.Add("| Review Blockers (current review.md files) | $($summary.blockers) |")
+$out.Add("| Quick-lane items stepped up to the feature lane | $($summary.quickEscalations) |")
 $out.Add("| Items with a /retro | $($summary.retros) of $($summary.reachedPr) that reached /pr |")
 $out.Add("")
 $out.Add("## Gates")

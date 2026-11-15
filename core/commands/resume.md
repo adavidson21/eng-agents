@@ -35,7 +35,7 @@ For each repo in the Repos table of `paused.md`:
 
 ## Step 3: Check nothing else changed
 
-- Re-read the `Status:` lines of `spec.md`, `plan.md`, `bug.md`, and the checkboxes in `tasks.md`.
+- Re-read the `Status:` lines of `spec.md`, `plan.md`, `bug.md`, `quick.md`, and the checkboxes in `tasks.md`.
 - Work out the next command using the next-command rules in `/status` (ignoring the paused rule). If it differs from "To resume" in `paused.md`, use the new one and say why.
 
 ## Step 4: Mark it resumed

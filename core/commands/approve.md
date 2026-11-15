@@ -1,5 +1,5 @@
 ---
-description: "Approve a work item's spec, plan, or bug analysis, a scope's stories or milestones, or a refined story, so the next phase can start. Usage: /approve <id> [spec|plan|bug], /approve scope-<name> [stories|milestones], or /approve refine-<name>"
+description: "Approve a work item's spec, plan, or bug analysis, a scope's stories or milestones, or a refined story, so the next phase can start. Usage: /approve <id> [spec|plan|bug|quick], /approve scope-<name> [stories|milestones], or /approve refine-<name>"
 agent: planner
 ---
 
@@ -17,7 +17,7 @@ Running this command is the engineer's approval. It is the only command that may
 
 ## Step 2: Pick the file
 
-- If the engineer named `spec`, `plan`, `bug`, `stories`, or `milestones`, use that file (`spec.md`, `plan.md`, `bug.md`, `stories.md`, or `milestones.md`).
+- If the engineer named `spec`, `plan`, `bug`, `quick`, `stories`, or `milestones`, use that file (`spec.md`, `plan.md`, `bug.md`, `quick.md`, `stories.md`, or `milestones.md`).
 - For a `refine-` folder, use `refine.md`.
 - For a `scope-` folder, use the first match: `stories.md` if it says `Status: DRAFT`, otherwise `milestones.md` if it says `Status: DRAFT`. If neither, reply with the Status line of each that exists, and stop. Approving `stories.md` approves `epics.md` with it.
 - For a work item, use the first match:
@@ -27,8 +27,9 @@ Running this command is the engineer's approval. It is the only command that may
 | `spec.md` exists and says `Status: DRAFT` | `spec.md` |
 | `plan.md` exists and says `Status: DRAFT` | `plan.md` |
 | `bug.md` exists and says `Status: DRAFT` | `bug.md` |
+| `quick.md` exists and says `Status: DRAFT` | `quick.md` |
 
-- If the file does not exist, or there is no match, reply with the Status line of each of `spec.md`, `plan.md`, and `bug.md` that exists, and stop.
+- If the file does not exist, or there is no match, reply with the Status line of each of `spec.md`, `plan.md`, `bug.md`, and `quick.md` that exists, and stop.
 - If the file already says `Status: APPROVED`, say so, give the next command from Step 6, and stop.
 - To approve `plan.md`, `spec.md` must already say `Status: APPROVED`. If not, stop and suggest `/approve $1 spec`.
 - To approve `milestones.md`, `stories.md` must already say `Status: APPROVED`. If not, stop and suggest `/approve $1 stories`.
@@ -57,7 +58,7 @@ It prints one word: `unchanged` (approved as the agent wrote it), `edited` (the 
 
 ## Step 6: Log and hand off
 
-- Add a `progress.md` entry for `/approve` that names the file, with a `- Stats: gate=<the word from Step 3> file=<spec, plan, bug, stories, milestones or refine>` line. `/stats` uses it to show which gates you edit and which you approve as written.
+- Add a `progress.md` entry for `/approve` that names the file, with a `- Stats: gate=<the word from Step 3> file=<spec, plan, bug, quick, stories, milestones or refine>` line. `/stats` uses it to show which gates you edit and which you approve as written.
 - Tell the engineer the file is approved and the next command:
 
 | Approved | Next |
@@ -65,6 +66,7 @@ It prints one word: `unchanged` (approved as the agent wrote it), `edited` (the 
 | `spec.md` | `/plan $1` |
 | `plan.md` | `/tasks $1` |
 | `bug.md` | Start a new session, then `/do-task $1 1` |
+| `quick.md` | Start a new session, then `/do-task $1 1` |
 | `stories.md` | `/slice $1` |
 | `milestones.md` | `/backlog $1` (import file), `/backlog $1 ado`, or `/backlog $1 local` |
 | `refine.md` | Publish it to ADO from Slate (Workshop), or paste its Description and Acceptance criteria into a new work item. Then `/start <id> feature` or `/handoff <id> <name>`. |

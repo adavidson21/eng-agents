@@ -10,14 +10,14 @@ Do not change any files.
 ## If an id was given
 
 1. Find the folder in `.work/` that starts with `$1-`. If none, say so and stop.
-2. Read `paused.md` (if it exists), `repos.md`, the `Status:` line of `spec.md`, `plan.md`, and `bug.md` (whichever exist), the checkboxes in `tasks.md`, the verdict in `review.md`, whether `pr.md` exists, and the last entry of `progress.md`.
+2. Read `paused.md` (if it exists), `repos.md`, the `Status:` line of `spec.md`, `plan.md`, `bug.md`, and `quick.md` (whichever exist), the checkboxes in `tasks.md`, the verdict in `review.md`, whether `pr.md` exists, and the last entry of `progress.md`.
 3. Work out the next command using the table below.
 4. Reply in this format and nothing else:
 
 ```
 <id> <name> | lane: <lane>
 Repos: <repo (branch)>, ...
-Spec: <missing | DRAFT | APPROVED>   Plan: <...>   Bug: <...>
+Spec: <missing | DRAFT | APPROVED>   Plan: <...>   Bug: <...>   Quick: <...>
 Tasks: <done>/<total> done
 Review: <none | READY | CHANGES NEEDED>   PR text: <yes/no>
 Paused: <no | since <date>: <reason>>
@@ -39,13 +39,15 @@ Check in this order. The first match wins.
 | Condition | Next |
 |---|---|
 | `paused.md` contains `Status: PAUSED` | `/resume <id>` |
-| No `repos.md` | `/start <id> <feature or bug>` |
+| No `repos.md` | `/start <id> <feature, bug or quick>` |
 | Lane feature, no `spec.md` | `/spec <id>` |
 | `spec.md` is DRAFT | Engineer reviews `spec.md`, then `/approve <id>` |
 | Lane feature, no `plan.md` | `/plan <id>` |
 | `plan.md` is DRAFT | Engineer reviews `plan.md`, then `/approve <id>` |
 | Lane bug, no `bug.md` | `/bug <id>` |
 | `bug.md` is DRAFT | Engineer reviews `bug.md`, then `/approve <id>` |
+| Lane quick, no `quick.md` | `/quick <id>` |
+| `quick.md` is DRAFT | Engineer reviews `quick.md` and `tasks.md`, then `/approve <id>` |
 | No `tasks.md` | `/tasks <id>` |
 | Unchecked task exists | `/do-task <id> <first unchecked number>` (new session) |
 | No `review.md`, or tasks were added after it | `/review <id>` |

@@ -41,6 +41,8 @@ Runs are unattended. A command that hits an `ask` rule waits for an answer nobod
 | `review-planted` | `/review L1 auto` | finds a planted off-by-one (exactly 10 items get no discount) that the branch's own tests miss |
 | `review-clean` | `/review L1 auto` | a correct branch gets READY with no invented Blockers |
 | `bug-lane` | `/bug L2 auto` | root cause in `OrderTotals.cs` with a confidence, 1 to 3 tasks, Task 1 a test that must fail |
+| `small-lane` | `/quick L3 auto` | a one-task change stays quick: quick.md with Given/When/Then ACs and a real pattern file, 1 or 2 tasks with verify commands from the repo guide |
+| `small-lane-escalate` | `/quick L4 auto` | a schema plus API change steps up: `Lane: feature`, no quick.md or tasks.md, `escalated=1` logged |
 | `retro-repeat` | `/retro --since 2026-01-01` | spots the same repo and category in two items and proposes a rule (or flags the existing one as broken) without writing memory |
 
 ## How it fits together

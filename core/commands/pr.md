@@ -12,7 +12,7 @@ Draft the pull request text for work item **$1**.
 
 ## Step 2: Read
 
-- Read `repos.md`, `spec.md` (or `bug.md`), and `progress.md`.
+- Read `repos.md`, `spec.md` (or `bug.md`, or `quick.md`), and `progress.md`.
 - For each repo, take its base from the **Base** column in `repos.md` (`origin/main` if there is no Base column, from an older item).
 - For each repo, run `git -C <repo> log --oneline <base>..HEAD` and `git -C <repo> diff --stat <base>...HEAD`.
 

@@ -43,7 +43,7 @@ Read these once so you know what you are overriding. Change them through your ow
 | File | How layers combine |
 |---|---|
 | `AGENTS.md` | **Appended.** One section per layer (Core, Personal, Company). When rules conflict, the later section wins. |
-| `agents/`, `commands/`, `templates/`, `scripts/` | **Replaced.** A same-named file in a later layer replaces the earlier one. A new name adds a file. |
+| `agents/`, `commands/`, `templates/`, `scripts/`, `stacks/`, `guides/` | **Replaced.** A same-named file in a later layer replaces the earlier one. A new name adds a file. |
 | `permissions/<tier>.json` | **Merged per tier.** A later layer adds rules or changes a rule's value. Every agent and `opencode.json` that uses the tier gets the result. |
 | `opencode.json` | **Merged.** A later layer's entry for the same key wins. Lists such as `instructions` are combined. |
 
@@ -105,6 +105,7 @@ Use the lightest option that works. A rule in `AGENTS.md` keeps you on Core upda
 | A rule applies to every repo | Add it to `overlay\AGENTS.md` |
 | Base branch or PR target is not `main` | Rule under "Team conventions" in `overlay\AGENTS.md` |
 | Team PR or spec format | `overlay\templates\pr.md` or `spec.md` |
+| Testing or review rules for a tech stack (for example a team's Python or Go rules) | `overlay\stacks\<name>.md` with `## Testing` and `## Review checklist` (see `core/stacks/README.md`); name it on each repo guide's `Stack:` line. Same name as a Core stack replaces it. |
 | Team TSD format or diagram colors | `overlay\templates\tsd.md` or `tsd-diagrams.md` |
 | Company-specific command or agent | `overlay\commands\`, `overlay\agents\` |
 | Company-specific command that should ask or never run (for example an internal deploy CLI) | `overlay\permissions\guards.json` |

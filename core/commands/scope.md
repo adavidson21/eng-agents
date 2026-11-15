@@ -5,6 +5,17 @@ agent: product-manager
 
 Scope this: **$ARGUMENTS**
 
+## The files
+
+Work that is not defined yet is scoped first, in `.work/scope-<name>/`, before it becomes work items:
+
+| File | Purpose |
+|---|---|
+| `epics.md` | The epic (a product version), its MVP features, and what waits. Written by `/scope`. |
+| `stories.md` | User stories with Gherkin acceptance criteria. Has a `Status:` line; approving it approves `epics.md` too. |
+| `milestones.md` | Features (short description and release note) and stories in build order, each story with local notes for the builder. Has a `Status:` line. Written by `/slice`. |
+| `backlog.csv`, `published.md` | Written by `/backlog`: the ADO import file, or the ADO or local ids that were created. |
+
 Follow these steps in order. Do not change any code.
 
 ## Step 1: New scope or refine a draft

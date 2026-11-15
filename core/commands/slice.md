@@ -5,6 +5,17 @@ agent: milestone-architect
 
 Slice the stories in **.work/$1/** (the `.work/` part is optional). Do not change any code.
 
+## The files
+
+Work that is not defined yet is scoped first, in `.work/scope-<name>/`, before it becomes work items:
+
+| File | Purpose |
+|---|---|
+| `epics.md` | The epic (a product version), its MVP features, and what waits. Written by `/scope`. |
+| `stories.md` | User stories with Gherkin acceptance criteria. Has a `Status:` line; approving it approves `epics.md` too. |
+| `milestones.md` | Features (short description and release note) and stories in build order, each story with local notes for the builder. Has a `Status:` line. Written by `/slice`. |
+| `backlog.csv`, `published.md` | Written by `/backlog`: the ADO import file, or the ADO or local ids that were created. |
+
 ## Step 1: Find the folder and check the gate
 
 - The folder is `.work/$1/`, or `$1` itself if it already starts with `.work/`. If `$1` is empty or the folder does not exist, list the `.work/scope-*` folders and stop.

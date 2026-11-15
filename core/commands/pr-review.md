@@ -5,6 +5,18 @@ agent: pr-reviewer
 
 Review pull request **$1**. Arguments: **$ARGUMENTS**
 
+## The files
+
+A first-pass review of someone else's pull request lives in `.work/pr-<id>/` (written by `/pr-review`). It is not pipeline state and has no gates:
+
+| File | Purpose |
+|---|---|
+| `context.md` | The PR: repo folder, branches, source commit, the exact `git` commands to read it, changed files, description, linked work items. Written by `Get-PullRequest.ps1`. |
+| `threads.md` | Comments already on the PR. |
+| `review.md` | Draft comments for the engineer to post. Has a `Reviewed commit:` line. Older reviews move to `history/`. |
+
+`.work/_retro/<date>.md` holds cross-item retros (`/retro --since`).
+
 This is someone else's PR. You draft comments for the engineer. You never post, vote, approve, or reject, and you never check out the PR.
 
 ## Step 1: Check the arguments

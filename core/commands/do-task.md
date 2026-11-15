@@ -22,7 +22,7 @@ If the mode above is `auto`, nobody is watching (autopilot or an eval run). Neve
 - Read `tasks.md` and find `Task $2`.
 - If it is already checked `[x]`, stop and tell the engineer.
 - If an earlier task is not checked, tell the engineer which one and ask whether to continue anyway. Wait.
-- Read the repo guide (`<repo>/AGENTS.local.md` if it exists, otherwise `<repo>/AGENTS.md`) for the task's repo.
+- Read the repo guide (`<repo>/AGENTS.local.md` if it exists, otherwise `<repo>/AGENTS.md`) for the task's repo, and the stack files its `Stack:` line names. Their testing rules decide the order of tests and code in Step 4.
 - Read the acceptance criteria the task covers in `spec.md` (or `bug.md`, or `quick.md` in the quick lane), and the matching repo section of `plan.md` (feature lane only; in the quick lane the files and pattern are in `quick.md`).
 - Read the last 2 entries of `progress.md`.
 - If `paused.md` exists and names this task as in progress, read its "Work in progress" section. Continue from there instead of starting over.
@@ -35,12 +35,12 @@ If the mode above is `auto`, nobody is watching (autopilot or an eval run). Neve
 ## Step 4: Do the work
 
 - Read the "Pattern to follow" file and copy its style.
-- **.NET code: strict TDD.**
+- **A stack whose testing rules say strict TDD (Core: `dotnet`):**
   1. Write or update the test.
-  2. Run the verify command. It must FAIL for the expected reason. Save the output.
+  2. Run the verify command. It must FAIL for the expected reason. Save the output (the Red run).
   3. Write the smallest code change that makes it pass.
-  4. Run the verify command. It must PASS. Save the output.
-- **Angular or Playwright code:** write the code and tests in any order, then run the verify command. It must PASS.
+  4. Run the verify command. It must PASS. Save the output (the Green run).
+- **Any other stack (Core: `angular`, `playwright`):** write the code and tests in the order its testing rules allow, then run the verify command. It must PASS.
 - Change only the files the task lists. If another file must change, stop and ask.
 - If the verify command fails 3 times in a row, stop. Go to Step 6 and log it as blocked.
 

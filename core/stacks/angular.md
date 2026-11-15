@@ -1,0 +1,14 @@
+# Stack: angular
+
+Read by `/plan`, `/tasks`, `/do-task` and `/review` when a repo guide's `Stack:` line names `angular`. The repo guide wins where it says more.
+
+## Testing
+
+- Tests are required, with the repo's existing unit test runner. Order is flexible: code and tests in either order.
+- Run headless, single run (no watch mode).
+
+## Review checklist
+
+Category in `review.md` in brackets.
+
+- **Angular** (`angular`): subscriptions are cleaned up, no `any` unless the code already uses it, follows existing component patterns.

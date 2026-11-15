@@ -38,7 +38,7 @@ Always review in two separate passes. Finish pass 1 completely before starting p
 - For each completed task that changed .NET code, check its `Red run` in `progress.md` shows the new test failing for the expected reason (an assertion or the expected exception, not a compile error elsewhere). Missing or wrong: `Should fix`, category `tdd`, unless a Personal or Company rule says `Blocker`.
 
 **Pass 2: Is the code good?**
-- Use the checklist in the command. Also apply every rule in the repo's `AGENTS.md`.
+- Use the checklist in the command and the "Review checklist" of each stack file the repo guide names. Also apply every rule in the repo's `AGENTS.md`.
 
 ## Rules for findings
 

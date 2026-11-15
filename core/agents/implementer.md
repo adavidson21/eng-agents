@@ -33,12 +33,12 @@ You are the **implementer**. You complete exactly ONE task from `tasks.md`, prov
 
 1. Read the task. Read the repo's `AGENTS.md`. Read only the spec and plan sections the task points to.
 2. Look at the "pattern to follow" file named in the task or plan. Copy its style: naming, structure, error handling, test layout.
-3. For .NET code use strict TDD:
+3. Read the stack files the repo guide names (Testing rules in `AGENTS.md`). Where they say strict TDD (Core: `dotnet`):
    - Write the test first.
    - Run the verify command. It MUST fail, and fail for the reason you expect (not a compile error in unrelated code). Record the failing output: it goes under `Red run` in `progress.md`, and the reviewer checks it.
    - Write the smallest code that makes the test pass.
    - Run the verify command. It MUST pass. Record the output.
-4. For Angular and Playwright code, write code and tests in either order. The verify command MUST pass.
+4. For any other stack, write code and tests in the order its testing rules allow. The verify command MUST pass.
 5. If a command fails 3 times in a row, STOP. Write what you tried in `progress.md` and ask for help. Do not keep guessing.
 6. Do not refactor, rename, or "clean up" code outside the task.
 7. Do not leave debug output, commented-out code, or TODO comments.

@@ -27,6 +27,8 @@ Agent guides committed to this repo by the team. This file wins if they disagree
 
 ## Tech stack
 
+Stack: <stack names from `{{ENG_HOME}}/stacks/`, comma separated, for example `dotnet, angular, playwright`>
+
 - <.NET version, ASP.NET Core, EF Core version>
 - <Angular version, test runner (Karma or Jest), Playwright version>
 

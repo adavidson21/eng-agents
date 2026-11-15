@@ -208,7 +208,7 @@ Better input gives better diagrams: fill in "External systems" and "Business pro
 
 **/do-task**
 - Always in a new session. Checks the gate, the branch, and that the repo has no unrelated changes.
-- .NET is strict TDD: the failing run goes under `Red run` and the passing run under `Green run` in `progress.md`, with `red=<test name>` on the Stats line. If the "failing" run passed, the test does not test the change. `/review` checks the Red run.
+- Testing rules come from the repo's stacks (`Stack:` in its repo guide, files in `core/stacks/`). In `dotnet`, strict TDD: the failing run goes under `Red run` and the passing run under `Green run` in `progress.md`, with `red=<test name>` on the Stats line. If the "failing" run passed, the test does not test the change. `/review` checks the Red run.
 - Before committing, runs the repo's Build and its Pre-commit check (or All unit tests), because the task's verify command only runs the new tests. A failure listed in `baseline.md` is noted, not chased; a new one counts toward the 3-attempt limit and blocks the commit.
 - Stages only the task's files and commits with a short summary. You approve the commit.
 - Ends with a Manual Validation Checklist: exact URL, exact click or command, exact result. It is saved in `progress.md`, and `/review` blocks on a missing or vague one and collects them all into `review.md`.

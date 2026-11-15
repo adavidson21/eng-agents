@@ -16,7 +16,7 @@ If the mode above is `auto`, nobody is watching. Ask nothing: where Step 1 says 
 ## Step 2: Read
 
 - Read `spec.md`, `plan.md`, and `repos.md`.
-- Read the repo guide (`<repo>/AGENTS.local.md` if it exists, otherwise `<repo>/AGENTS.md`) for each repo, especially the Commands table. Verify commands must come from that table.
+- Read the repo guide (`<repo>/AGENTS.local.md` if it exists, otherwise `<repo>/AGENTS.md`) for each repo, especially the Commands table, and the stack files its `Stack:` line names. Verify commands must come from that table.
 
 ## Step 3: Write the tasks
 
@@ -25,7 +25,7 @@ Start from `{{ENG_HOME}}/templates/tasks.md`. Write it to the work folder as `ta
 Rules for every task:
 - One repo only.
 - At most 3 files (or the task size cap in `AGENTS.md`, if different).
-- For .NET, the test and the code it tests go in the same task, so the implementer can do TDD.
+- Follow each stack file's task rules (for example, `dotnet` puts the test and the code it tests in the same task, so the implementer can do TDD).
 - Exactly one verify command, copied from the repo `AGENTS.md` and narrowed to the relevant tests with a filter when possible.
 - A "Done when" line that anyone could check.
 - A "Pattern to follow" file from the plan.

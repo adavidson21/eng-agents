@@ -54,14 +54,7 @@ Each product can have a **product note** in Workshop's Notes app: one Markdown f
   `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/notes/Get-ProductNote.ps1" -Product "<product name>"`
   Use the product's `Note:` line in the repo map if it has one (`-Note products/<slug>.md`). Read only the notes of the products the work touches, never all of them. If it says product notes are not available, or the note does not exist yet, go on without it.
 - **What goes where (split rule):** if a fact would still be true after the product's code was rewritten (a business rule, a customer need, who owns what, why a decision was made), it belongs in the product note. If it is about one codebase (a build quirk, a pattern, a file to avoid), it belongs in that repo guide's `## Remembered`. Never write a fact in both.
-- **Write:** when you confirm a product fact that is missing from the note or contradicts it, and it would help the next person working on this product, change the note with:
-  `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/notes/Set-ProductNote.ps1" -Product "<product name>" -Line "<the fact>" -Source "<PR, work item or file>" [-Section <section>] [-Replace "<text of the wrong line>"]`
-  - One fact per call, one short line, only facts you saw in code, a work item, a PR or from the engineer. Never guesses, plans, to-dos or session notes.
-  - If a line already covers the subject, replace that line (`-Replace`) instead of adding a second. When a line is wrong, replace it; never keep both.
-  - Default section is `Remembered`. Use `Business rules`, `Gotchas`, `People` or `Decisions` when the fact clearly belongs there.
-  - Never edit product notes with any other tool: the script keeps the earlier version in Notes' history and marks the note "Changed by Tandem" for the engineer to review.
-  - If the script says the note is over budget, propose a tidy to the engineer instead of adding more.
-  - List every product note change in your reply: the note, the section, and the line before and after.
+- **Write:** when you confirm a product fact that is missing from the note or contradicts it, and it would help the next person, first read `{{ENG_HOME}}/guides/product-notes.md` and follow it exactly: only `Set-ProductNote.ps1`, one fact per call, and list every change in your reply.
 - Agents that may not run scripts or write files (hub, pr-reviewer) only read product notes. pr-reviewer suggests product note lines in `review.md` instead of writing them.
 
 ## Pipeline files
@@ -86,26 +79,7 @@ Each work item has a folder `.work/<id>-<name>/`. Find it by listing `.work/` an
 | `findings.md` | Spike results, with `### For business`, `### For engineering` and `### For leadership` blocks. `brief.html` next to it is the shareable export (`Export-Brief.ps1`); never edit it, re-export instead. |
 | `paused.md` | Where a paused item stands and how to pick it up. Has a `Status:` line (`PAUSED` or `RESUMED`). |
 
-Work that is not defined yet is scoped first, in `.work/scope-<name>/`, before it becomes work items:
-
-| File | Purpose |
-|---|---|
-| `epics.md` | The epic (a product version), its MVP features, and what waits. Written by `/scope`. |
-| `stories.md` | User stories with Gherkin acceptance criteria. Has a `Status:` line; approving it approves `epics.md` too. |
-| `milestones.md` | Features (short description and release note) and stories in build order, each story with local notes for the builder. Has a `Status:` line. Written by `/slice`. |
-| `backlog.csv`, `published.md` | Written by `/backlog`: the ADO import file, or the ADO or local ids that were created. |
-
-A first-pass review of someone else's pull request lives in `.work/pr-<id>/` (written by `/pr-review`). It is not pipeline state and has no gates:
-
-| File | Purpose |
-|---|---|
-| `context.md` | The PR: repo folder, branches, source commit, the exact `git` commands to read it, changed files, description, linked work items. Written by `Get-PullRequest.ps1`. |
-| `threads.md` | Comments already on the PR. |
-| `review.md` | Draft comments for the engineer to post. Has a `Reviewed commit:` line. Older reviews move to `history/`. |
-
-`.work/_retro/<date>.md` holds cross-item retros (`/retro --since`). `.work/runway.md` is the end-of-day note written by `/shutdown`. It is not pipeline state; read the files above for that.
-
-`.work/dashboard.html` is written by `/dashboard static`, and `.work/_dashboard/` belongs to Dispatch (Workshop's opencode connector). Never edit them and never read them for pipeline state; read the files above instead.
+Other `.work` folders are described by the commands that write them: `scope-<name>/` (`/scope`, `/slice`, `/backlog`), `pr-<id>/` (`/pr-review`), `triage-`, `shape-` and `refine-` folders, `_retro/` (`/retro --since`) and `runway.md` (`/shutdown`). `.work/dashboard.html` and `.work/_dashboard/` belong to the static dashboard and to Dispatch: never edit them and never read them for pipeline state.
 
 **Gates.** A file with `Status: APPROVED` was approved by the engineer. The engineer approves by running `/approve <id>` (specs, plans, bug analyses, quick plans), `/approve scope-<name>` (stories, milestones) or `/publish <folder>` (finished documents such as a TSD), or by editing the line. Only those two commands may change a Status line to `APPROVED`, and only when the engineer runs them. In every other command, you never do. A gate file also has a `Draft-hash:` line under `Status:`, written by `Set-DraftHash.ps1` when a command finishes the draft; never write or change that line yourself.
 
@@ -137,10 +111,6 @@ Templates for these files are in `{{ENG_HOME}}/templates/`. Always start a new f
 
 All tests must run locally with **no database, no real backend, and no shared environment**.
 
-| Code | Framework | Rule |
-|---|---|---|
-| .NET | xUnit | **Strict TDD.** 1) Write the test. 2) Run it and confirm it FAILS for the expected reason. 3) Write the code. 4) Run it and confirm it PASSES. Mock dependencies. Do not use a real database. |
-| Angular | The repo's existing unit test runner | Tests are required. Order is flexible. Run headless, single run (no watch mode). |
-| Playwright | Playwright | Tests are required. Order is flexible. Mock every API call with `page.route`. Never call a real environment. Use the repo's existing mock helpers if the repo `AGENTS.md` lists any. |
+Each repo guide has a `Stack:` line (for example `Stack: dotnet, angular`). Before you plan, write, test or review code in a repo, read `{{ENG_HOME}}/stacks/<stack>.md` for each stack it names: its testing rules and review checklist. If the repo guide has no `Stack:` line, read every file in that folder except `README.md`, and tell the engineer once: "`<repo>`'s guide has no Stack line. Run `/onboard-repo <repo>` to add it."
 
 A task is **not done** until its verify command passes and the output is recorded in `progress.md`.

@@ -6,6 +6,8 @@ Order pricing library. `OrderTotals.Calculate` turns an order into the amount th
 
 ## Tech stack
 
+Stack: dotnet
+
 - .NET 8 class library, xUnit 2 tests, no mocking library (the code has no dependencies to mock)
 
 ## Commands

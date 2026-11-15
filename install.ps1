@@ -19,6 +19,8 @@
                                    file. Provider and model settings are kept.
       eng-agents\templates\        templates (later layer replaces same name)
       eng-agents\scripts\          scripts
+      eng-agents\stacks\           rules per tech stack, read when a repo guide names the stack
+      eng-agents\guides\           longer rules a few commands read (product notes)
       eng-agents\manifest.json     what was installed (files, versions, source repo and
                                    commit, overridden files), so removed files get
                                    cleaned up next time and update.ps1 can compare
@@ -208,7 +210,7 @@ if (-not (Test-Path $coreDir)) { throw "Core folder not found at $coreDir. Run t
 function Test-LayerContent {
     param([string]$Path)
     if (-not (Test-Path $Path)) { return $false }
-    foreach ($name in @("AGENTS.md", "opencode.json", "agents", "commands", "templates", "scripts", "permissions")) {
+    foreach ($name in @("AGENTS.md", "opencode.json", "agents", "commands", "templates", "scripts", "stacks", "guides", "permissions")) {
         if (Test-Path (Join-Path $Path $name)) { return $true }
     }
     return $false
@@ -281,7 +283,7 @@ foreach ($layer in $layers) {
 $files = [ordered]@{}
 $overrides = [ordered]@{}
 foreach ($layer in $layers) {
-    foreach ($kind in @("agents", "commands", "templates", "scripts")) {
+    foreach ($kind in @("agents", "commands", "templates", "scripts", "stacks", "guides")) {
         $dir = Join-Path $layer.Path $kind
         if (-not (Test-Path $dir)) { continue }
         Get-ChildItem -Path $dir -Recurse -File | ForEach-Object {

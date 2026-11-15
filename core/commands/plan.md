@@ -16,7 +16,7 @@ If the mode above is `auto`, nobody is watching. Ask nothing. If Step 4 finds a 
 ## Step 2: Read
 
 - Read `spec.md`, `repos.md`, and the latest entries in `progress.md`.
-- Read the repo guide (`<repo>/AGENTS.local.md` if it exists, otherwise `<repo>/AGENTS.md`) for every repo in `repos.md`, including its architecture rules and "Patterns to follow" table.
+- Read the repo guide (`<repo>/AGENTS.local.md` if it exists, otherwise `<repo>/AGENTS.md`) for every repo in `repos.md`, including its architecture rules and "Patterns to follow" table, and the stack files its `Stack:` line names (Testing rules in `AGENTS.md`).
 - If a repo `AGENTS.md` points to an architecture doc, read it.
 
 ## Step 3: Investigate the code
@@ -34,7 +34,7 @@ If the mode above is `auto`, nobody is watching. Ask nothing. If Step 4 finds a 
 - Start from `{{ENG_HOME}}/templates/plan.md`. Write it to the work folder as `plan.md`.
 - Keep `Status: DRAFT`. Never set it to APPROVED.
 - List repos in the same order as `repos.md`.
-- In the test plan, every acceptance criterion must have at least one test. .NET tests are xUnit unit tests with mocks. UI flows use Playwright with `page.route` mocks.
+- In the test plan, every acceptance criterion must have at least one test, of the kind the repo's stack files ask for.
 - Keep the plan short. If a section has nothing to say, write "None".
 
 ## Step 6: Log and hand off

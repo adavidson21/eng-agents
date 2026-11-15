@@ -1,0 +1,9 @@
+{
+  "description": "/spec in auto mode turns a clear work item into a testable spec without questions.",
+  "command": "spec",
+  "arguments": "L1 auto",
+  "workItem": "L1-bulk-discount",
+  "branch": "dev/feature/L1-bulk-discount",
+  "work": [{"from":"L1/start","to":"L1-bulk-discount"}],
+  "grader": "Test-SpecBasic"
+}

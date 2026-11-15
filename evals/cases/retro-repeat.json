@@ -1,0 +1,7 @@
+{
+  "description": "/retro --since finds the same repo and category in two items and proposes one rule, without writing memory.",
+  "command": "retro",
+  "arguments": "--since 2026-01-01",
+  "work": [{"from":"retro/R1","to":"R1-free-shipping"}, {"from":"retro/R2","to":"R2-loyalty-discount"}],
+  "grader": "Test-RetroRepeat"
+}

@@ -1,9 +1,11 @@
 ---
-description: "Write plan.md from an approved spec. Usage: /plan <id>"
+description: "Write plan.md from an approved spec. Usage: /plan <id> [auto]"
 agent: planner
 ---
 
-Write the implementation plan for work item **$1**.
+Write the implementation plan for work item **$1**. Mode: **$2**
+
+If the mode above is `auto`, nobody is watching. Ask nothing. If Step 4 finds a repo that is not in `repos.md`, do not add it: plan only the listed repos, write the missing repo under "Risks" as an open question, and say so in the `progress.md` entry.
 
 ## Step 1: Find the work folder and check the gate
 

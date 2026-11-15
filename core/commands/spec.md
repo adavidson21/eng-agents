@@ -1,9 +1,11 @@
 ---
-description: "Clarify a work item and write spec.md. Usage: /spec <id>"
+description: "Clarify a work item and write spec.md. Usage: /spec <id> [auto]"
 agent: planner
 ---
 
-Write the spec for work item **$1**.
+Write the spec for work item **$1**. Mode: **$2**
+
+If the mode above is `auto`, nobody is watching (autopilot or an eval run). Ask no questions: in Step 4, write every question you would have asked under "Assumptions" with your recommended answer, and write `questions=0` on the Stats line.
 
 ## Step 1: Find the work folder
 

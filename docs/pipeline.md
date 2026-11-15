@@ -474,4 +474,8 @@ Read it after about 10 items. A gate approved as written almost every time, with
 
 ## Scripting with `opencode run`
 
-Use the interactive window for real work. In testing, `opencode run "/spec 12345"` did not always expand the slash command (the model had to find the command file itself), and the question tool was unavailable, so questions came back as plain text.
+Use the interactive window for real work. In testing, `opencode run "/spec 12345"` did not always expand the slash command (the model had to find the command file itself), and the question tool was unavailable, so questions came back as plain text. Use `opencode run --command spec "12345 auto"` instead: `--command` runs the command file directly, and the rest is its arguments.
+
+**`auto` mode.** `/spec`, `/plan`, `/tasks`, `/bug`, `/do-task` and `/review` take `auto` as their last argument (`/do-task <id> <n> auto`). In `auto` nobody is watching: the command never asks or waits. Planning commands write what they would have asked as assumptions; `/do-task` stops and logs the task as blocked instead of asking. Autopilot and the evals use it.
+
+**Evals.** [`evals/`](../evals/README.md) runs commands with a real model against a made-up workspace and grades the results with file and git checks: `./evals/Invoke-Evals.ps1` after `./install.ps1`. Run it before a release and compare with the last results file.

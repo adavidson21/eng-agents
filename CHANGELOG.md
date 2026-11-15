@@ -4,6 +4,13 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 2.24.0 (2026-11-14)
+
+- Evals: new `evals/` folder. `Invoke-Evals.ps1` builds a made-up workspace per run (a repo map and `sample-api`, a small .NET order pricing library), runs a command with a real model through `opencode run --command`, grades what the agent left behind with file and git checks, and saves `evals/results/<version>-<time>.json` with a comparison against the previous run. First 8 cases: `spec-basic`, `plan-paths`, `tasks-shape`, `do-task` (with hidden acceptance tests), `review-planted` (an off-by-one the branch's own tests miss), `review-clean`, `bug-lane`, `retro-repeat`. See `evals/README.md`.
+- CI checks the graders and fixtures without a model: `evals/Test-Graders.ps1` (every hand-written good output passes its grader, every bad one fails; pwsh and Windows PowerShell 5.1) and `evals/Test-Fixtures.ps1` (with dotnet: the fixtures build, the planted bug is real, the do-task grader works end to end).
+- `auto` mode for `/spec`, `/plan`, `/tasks`, `/bug` and `/do-task` (like `/review <id> auto`): never ask or wait. Planning commands write would-be questions as assumptions; `/do-task` stops and logs the task as blocked instead of asking.
+- `docs/pipeline.md`: use `opencode run --command <name> "<arguments>"` for scripting.
+
 ## Core 2.23.0 (2026-11-14)
 
 - New `/retro <id>` (planner): reads every review round, blocked and failed entries, and edited gates, and writes `retro.md` (new template) with what caused rework and at most 5 candidate rules. Each rule names the finding it would have prevented and comes with the exact `/memory` line to save it; `/retro` never writes memory itself. Existing rules that were broken are listed instead of repeated. `/retro --since <date>` finds patterns across items (same repo and category in 2+ items) and writes `.work/_retro/<date>.md`.

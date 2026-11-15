@@ -1,9 +1,11 @@
 ---
-description: "Break an approved plan into small tasks in tasks.md. Usage: /tasks <id>"
+description: "Break an approved plan into small tasks in tasks.md. Usage: /tasks <id> [auto]"
 agent: planner
 ---
 
-Write the task list for work item **$1**.
+Write the task list for work item **$1**. Mode: **$2**
+
+If the mode above is `auto`, nobody is watching. Ask nothing: where Step 1 says to ask, add a `progress.md` entry saying why you stopped, and stop.
 
 ## Step 1: Find the work folder and check the gate
 

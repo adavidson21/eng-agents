@@ -4,6 +4,12 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 3.2.0 (2026-11-15)
+
+- Evals measure efficiency: the runner passes `--format json` to opencode and records each run's tokens, cost, tool calls, questions asked and failed verifies, per step too. Case entries add `meanTokens`, `meanCost`, `tokensPerPass`, `costPerPass`, `meanQuestions`, `meanToolCalls`, `meanVerifyFails` and `promptTokens`. Results files are `version: 3`; Workshop's Bench reads them from opencode connector 1.13.0.
+- New `evals/Get-PromptSize.ps1`: what each command loads up front (command, agent, AGENTS.md) in estimated tokens, biggest first. No model; printed in CI.
+- Fix: `meanSeconds` in results was always 0.
+
 ## Core 3.1.0 (2026-11-14)
 
 - Evals can now show whether Tandem helps: `Invoke-Evals.ps1 -Arm both` runs each case with Tandem and as one plain prompt with Tandem left out (same model, same workspace), and adds a lift table (Tandem's pass rate minus the baseline's). `-Arm baseline` runs only the plain arm. The plain arm uses a config folder made for the run: your `opencode.json` without Tandem's `instructions`, `agent`, `command` and `mode`.

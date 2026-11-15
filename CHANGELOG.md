@@ -4,6 +4,10 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 4.0.1 (2026-11-15)
+
+- The static dashboard (`New-Dashboard.ps1`) follows the one feature gate: when `spec.md` and `plan.md` are both drafts, the next step is `/approve <id>` at the plan stage ("Review spec.md, plan.md and tasks.md"), matching Workshop's rule 3a (docs/work-format.md, Loom 4.6.0).
+
 ## Core 4.0.0 (2026-11-15)
 
 Breaking: the feature lane has one gate, and `/start` writes no brief unless asked. Items started before this keep working: `/plan` and `/tasks` still run on their own, and `/approve` approves a spec alone when there is no plan yet.

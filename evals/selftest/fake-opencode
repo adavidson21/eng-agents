@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# A stand-in for opencode, used only by evals/Test-Harness.ps1. It never calls a model.
+# Tandem arm: writes the files each command would (spec, plan, tasks), checks gates were approved, and the last task
+# lays down a correct implementation. Plain prompt: writes an implementation with the rate inline (a bad outcome).
+# Every call is logged to $FAKE_LOG with its arguments and XDG_CONFIG_HOME.
+set -u
+echo "args= $* | xdg=${XDG_CONFIG_HOME:-}" >> "$FAKE_LOG"
+cmd=""; prev=""
+for a in "$@"; do
+  if [ "$prev" = "--command" ]; then cmd="$a"; fi
+  prev="$a"
+done
+work=".work/L1-bulk-discount"
+case "$cmd" in
+  spec) printf 'Status: DRAFT\n\n# Spec\n' > "$work/spec.md" ;;
+  plan)
+    grep -q '^Status: APPROVED' "$work/spec.md" || { echo "spec not approved" >&2; exit 3; }
+    printf 'Status: DRAFT\n\n# Plan\n' > "$work/plan.md" ;;
+  tasks)
+    grep -q '^Status: APPROVED' "$work/plan.md" || { echo "plan not approved" >&2; exit 3; }
+    printf '# Tasks\n\n## [ ] Task 1: Settings\n\n- Repo: sample-api\n\n---\n\n## [ ] Task 2: Rule\n\n- Repo: sample-api\n' > "$work/tasks.md" ;;
+  do-task)
+    last="${!#}"; n=$(echo "$last" | awk '{print $2}')
+    echo "task $n" >> "$work/done.txt"
+    if [ "$n" = "2" ]; then cp "$FAKE_CORRECT"/src/Orders/*.cs sample-api/src/Orders/; fi ;;
+  "")
+    # Plain prompt: Tandem must be out of the config folder opencode reads.
+    if grep -q '"instructions"' "${XDG_CONFIG_HOME:-/nonexistent}/opencode/opencode.json" 2>/dev/null; then echo "Tandem rules leaked" >&2; exit 4; fi
+    cat > sample-api/src/Orders/OrderTotals.cs <<'CS'
+namespace Orders;
+public static class OrderTotals
+{
+    public static decimal Calculate(Order order)
+    {
+        var subtotal = order.Lines!.Sum(l => l.Quantity * l.UnitPrice);
+        if (order.Lines!.Sum(l => l.Quantity) >= 10) subtotal -= subtotal * 0.05m;
+        return Math.Round(subtotal, PricingOptions.Decimals, MidpointRounding.AwayFromZero);
+    }
+    public static decimal LegacyRound(decimal value) => Math.Round(value, 2);
+}
+CS
+    ;;
+esac
+exit 0

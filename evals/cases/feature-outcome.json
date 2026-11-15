@@ -1,0 +1,19 @@
+{
+  "description": "Outcome only, for the lift: the bulk discount works end to end (hidden outcome tests pass, Do-not-touch kept, settings in PricingOptions, changes only in src and tests). The Tandem arm runs the whole feature lane with gates approved by the script; the baseline arm gets the same work item as one plain prompt.",
+  "workItem": "L1-bulk-discount",
+  "branch": "dev/feature/L1-bulk-discount",
+  "work": [{"from":"L1/start","to":"L1-bulk-discount"}],
+  "steps": [
+    {"command": "spec", "arguments": "L1 auto"},
+    {"approve": "spec.md"},
+    {"command": "plan", "arguments": "L1 auto"},
+    {"approve": "plan.md"},
+    {"command": "tasks", "arguments": "L1 auto"},
+    {"command": "do-task", "arguments": "L1 {n} auto", "eachTask": true}
+  ],
+  "baseline": {
+    "prompt": "Implement this in the sample-api repo (you are on its branch dev/feature/L1-bulk-discount). Customers who order a lot should pay less. Orders with 10 or more items in total (adding up the quantity on every line) get 5% off the subtotal. Smaller orders are priced as today. Sales expects to change the threshold and the rate later. Acceptance criteria: an order with 10 or more items in total gets 5% off its subtotal; an order with fewer than 10 items is priced as today; the threshold and the rate can be changed in one place without touching the pricing rule. Add tests, make sure every test passes, and commit. Nobody is watching: do not ask questions, make reasonable choices and finish."
+  },
+  "grader": "Test-FeatureOutcome",
+  "needs": ["dotnet"]
+}

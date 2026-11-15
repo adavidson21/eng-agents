@@ -10,6 +10,7 @@
     careful review can catch it.
   - The bug in work item L2 is real: an order with no lines throws.
   - The do-task grader passes the golden good output with dotnet running.
+  - The feature-outcome grader passes its good output and fails the planted bug on its hidden outcome tests.
 #>
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "lib/EvalLib.ps1")
@@ -76,6 +77,22 @@ try {
     Check "do-task grader removed the hidden test again" (-not (Test-Path (Join-Path $ws.Repo "tests/Orders.Tests/BulkDiscountAcceptanceTests.cs")))
 }
 finally { Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue }
+
+foreach ($v in @("pass", "planted")) {
+    $root = New-TempDir "fixtures"
+    try {
+        $case = Read-Case (Join-Path $PSScriptRoot "cases/feature-outcome.json")
+        $ws = New-EvalWorkspace $case $root
+        if ($v -eq "pass") { Set-GoldenOutput $ws (Join-Path $PSScriptRoot "goldens/feature-outcome/pass") }
+        else { Copy-Overlay (Join-Path $PSScriptRoot "fixtures/repo/L1-planted") $ws.Repo }
+        $checks = @(Test-FeatureOutcome $ws)
+        $bad = @($checks | Where-Object { -not $_.Pass })
+        if ($v -eq "pass") { Check "feature-outcome grader with dotnet: good output passes" ($bad.Count -eq 0) (@($bad | ForEach-Object { "$($_.Check): $($_.Detail)" }) -join " | ") }
+        else { Check "feature-outcome grader with dotnet: the planted bug fails the hidden outcome tests" (@($bad | Where-Object { $_.Check -like "all tests pass*" }).Count -eq 1) }
+        Check "feature-outcome grader removed the hidden test again ($v)" (-not (Test-Path (Join-Path $ws.Repo "tests/Orders.Tests/BulkDiscountOutcomeTests.cs")))
+    }
+    finally { Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue }
+}
 
 if ($failed) { Write-Output "$failed check(s) failed."; exit 1 }
 Write-Output "Eval fixtures: all checks passed."

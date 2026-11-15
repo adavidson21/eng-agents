@@ -310,3 +310,48 @@ function Test-QuickEscalate($Ws, [switch]$NoExec) {
     Test-RepoUntouched $Ws $c
     return $c
 }
+
+# Every file the run changed in sample-api since the start: committed, staged, unstaged and untracked.
+function Get-ChangedFiles($Ws) {
+    $set = New-Object System.Collections.Generic.HashSet[string]
+    foreach ($f in ((Invoke-EvalGit $Ws.Repo @("diff", "--name-only", $Ws.Base, "HEAD")) -split "\r?\n")) { if ($f) { [void]$set.Add($f.Trim()) } }
+    foreach ($line in ((Invoke-EvalGit $Ws.Repo @("status", "--porcelain", "-uall")) -split "\r?\n")) {
+        if (-not $line.Trim()) { continue }
+        # "XY path" (Invoke-EvalGit trims the output, so the first line may have lost its leading space)
+        $path = ($line -replace '^\s*[A-Z?!]{1,2}\s+', '').Trim().Trim('"')
+        if ($path -match ' -> ') { $path = ($path -split ' -> ')[-1] }
+        [void]$set.Add($path)
+    }
+    return @($set | Sort-Object)
+}
+
+# Outcome only, for Tandem and a plain prompt alike (feature-outcome): does the feature work, and did the run stay in
+# bounds? Nothing about .work files, commits or how the agent got there.
+function Test-FeatureOutcome($Ws, [switch]$NoExec) {
+    $c = New-Checks
+    $changed = @(Get-ChangedFiles $Ws)
+    Add-Check $c "changed the code" ($changed.Count -gt 0) "no changes in sample-api"
+    $outside = @($changed | Where-Object { $_ -notmatch '^(src|tests)/' })
+    Add-Check $c "changes only in src/ and tests/" ($outside.Count -eq 0) "outside: $($outside -join ', ')"
+    $totals = [IO.File]::ReadAllText((Join-Path $Ws.Repo "src/Orders/OrderTotals.cs"))
+    $opts = [IO.File]::ReadAllText((Join-Path $Ws.Repo "src/Orders/PricingOptions.cs"))
+    Add-Check $c "kept LegacyRound (Do not touch)" ($totals -match 'LegacyRound')
+    Add-Check $c "threshold and rate live in PricingOptions" (($opts -match '=\s*10\s*;') -and ($opts -match '0?\.05m') -and ($totals -notmatch '0?\.05m') -and ($totals -notmatch '[<>]=?\s*10\b'))
+    if (-not $NoExec) {
+        $proj = Join-Path $Ws.Repo "tests/Orders.Tests"
+        $hiddenName = "BulkDiscountOutcomeTests.cs"
+        Copy-Item -LiteralPath (Join-Path $script:EvalsRoot "fixtures/hidden-outcome/$hiddenName") -Destination $proj -Force
+        try {
+            Push-Location $Ws.Root
+            $prev = $ErrorActionPreference; $ErrorActionPreference = "Continue"
+            $out = & dotnet test "sample-api/tests/Orders.Tests/Orders.Tests.csproj" 2>&1 | Out-String
+            $ok = ($LASTEXITCODE -eq 0)
+            $ErrorActionPreference = $prev
+            Pop-Location
+            Add-Check $c "all tests pass, including hidden outcome tests" $ok (($out -split "\r?\n" | Select-Object -Last 15) -join " / ")
+        }
+        finally { Remove-Item -LiteralPath (Join-Path $proj $hiddenName) -Force -ErrorAction SilentlyContinue }
+    }
+    return $c
+}
+

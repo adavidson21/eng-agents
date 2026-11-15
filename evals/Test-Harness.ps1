@@ -73,3 +73,4 @@ else {
 
 if ($failed) { Write-Output "$failed check(s) failed."; exit 1 }
 Write-Output "Eval harness: all checks passed."
+exit 0

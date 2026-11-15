@@ -96,3 +96,4 @@ foreach ($v in @("pass", "planted")) {
 
 if ($failed) { Write-Output "$failed check(s) failed."; exit 1 }
 Write-Output "Eval fixtures: all checks passed."
+exit 0  # the last dotnet run (the planted bug) failed on purpose; do not pass its exit code on

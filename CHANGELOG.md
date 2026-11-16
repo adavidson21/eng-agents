@@ -4,6 +4,11 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 4.3.0 (2026-11-16)
+
+- `/spike <folder> --log`: diagnose an error log. Reads `log.md` (Loom writes it from Fix a bug's **Error log**, with secrets masked), finds where it happens, checks the configuration before the code, and writes `findings.md` from the new `templates/diagnosis.md`: the probable root cause with a confidence, why (Confirmed and Suspected steps), and a solution with a `Fix type:` line. It prefers Configuration, then Data, then Infrastructure, then Code, gives the exact setting, where it is set and how to verify, and never copies or opens secrets. No `brief.html` in log mode.
+- The static dashboard reads `fixType` and `fromLog` on a diagnosis, the way Workshop's parser does (Loom 4.11.0).
+
 ## Core 4.2.0 (2026-11-16)
 
 For Workshop's Loom flow cards (Loom 4.10.0). Nothing breaks for items in progress.

@@ -60,7 +60,7 @@
       "agent": "planner",
       "tokens": 3360,
       "readTokens": 0,
-      "hash": "f0afd4179b84",
+      "hash": "7f1d0327eef2",
       "files": [
         "core/AGENTS.md",
         "core/agents/planner.md",
@@ -392,15 +392,17 @@
     {
       "command": "spike",
       "agent": "investigator",
-      "tokens": 3441,
-      "readTokens": 668,
-      "hash": "b8dc9111628b",
+      "tokens": 4552,
+      "readTokens": 1682,
+      "hash": "c608bda63fb8",
       "files": [
         "core/AGENTS.md",
         "core/agents/investigator.md",
         "core/commands/spike.md",
         "core/scripts/briefs/Export-Brief.ps1",
-        "core/templates/findings.md"
+        "core/templates/diagnosis.md",
+        "core/templates/findings.md",
+        "core/templates/progress.md"
       ]
     },
     {

@@ -1,5 +1,5 @@
 ---
-description: "Investigate a question or an ask without changing code, write findings.md and a shareable brief.html. Usage: /spike <id or topic> [--for business|engineering|leadership] [--timebox 1h|2h|4h|1d]"
+description: "Investigate a question or an ask without changing code, write findings.md and a shareable brief.html. Or diagnose an error log: probable root cause, why, and a fix, configuration first. Usage: /spike <id or topic> [--for business|engineering|leadership] [--timebox 1h|2h|4h|1d], or /spike spike-<name> --log"
 agent: investigator
 ---
 
@@ -9,6 +9,7 @@ Run a spike on: **$ARGUMENTS**
 
 - If `--for <lens>` is in the arguments, take it out and remember it as the **default lens** (`business`, `engineering` or `leadership`). Otherwise the default lens is `leadership`.
 - If `--timebox <t>` is in the arguments, take it out and remember it (`1h`, `2h`, `4h` or `1d`; Loom sends it from the Investigate card). It sets how far you dig in Step 3.
+- If `--log` is in the arguments, take it out: this is **log mode**. `$1` is a `spike-` folder that already has `log.md` (Loom writes it when you paste a log on Fix a bug). If the folder or its `log.md` is missing, say so in one line and stop. Follow "Log mode" at the end instead of Steps 2 to 5.
 - If `$1` is a work item id (a number, or a local id like `L12`) and a folder in `.work/` starts with `$1-`, use that folder.
 - Otherwise create a new folder `.work/spike-<short-name>/`, where `<short-name>` is 3 to 5 lowercase words from the topic joined with hyphens.
 
@@ -48,3 +49,44 @@ It writes `brief.html` next to `findings.md`: one self-contained page (no web re
 
 - If the folder has a `progress.md`, add an entry for `/spike`.
 - Give the engineer the short answer and recommendation in 3 lines or fewer, the path to `brief.html`, and the next step from `findings.md`.
+
+## Log mode (an error log)
+
+The engineer pasted an error log and wants three things: the probable root cause, why, and a solution. **Prefer a solution that changes no code**: a setting, a feature flag, an environment or pipeline variable, a timeout, a connection, data, or infrastructure. Give a code fix only when nothing else fixes the cause, and say why. Do not change any code or any configuration yourself.
+
+### L1: Read the log
+
+- Read `log.md`. Note the exception type and message, every stack frame, timestamps, the service or host, the environment, request or correlation ids, and the line just before the first error (it often names the cause).
+- The log may hold secrets or personal data. Never copy a password, token, key, connection string, email address or customer data into any file you write. Name the thing instead ("the database connection string").
+- If the log names no service or repo, match its namespaces, file names and messages against the repo map (the workspace root `AGENTS.md`) and its **Products** and **Glossary** tables.
+
+### L2: Find where it happens
+
+- Read the repo guide (`<repo>/AGENTS.local.md` if it exists, otherwise `<repo>/AGENTS.md`) of each repo the log points to, and the product note (see Product notes).
+- Find the first stack frame in our code (not a framework or library) and read that method and its callers. Search the code for the exact error message when there is no stack trace.
+- Run `git -C <repo> log --oneline -15 -- <those files>` to see recent changes there. A change shortly before the first timestamp is a strong lead.
+
+### L3: Check the configuration first
+
+- Find every setting the failing code reads: options classes, `IConfiguration` keys, environment variables, feature flags, connection names, timeouts, retry counts, URLs, certificates. Note the key names.
+- Read where each one is set in the repo: `appsettings*.json`, `web.config` and its transforms, launch settings, Helm or Kubernetes values, Terraform, pipeline YAML and its variables. Compare the environment in the log with the others. Never open `.env` files, key vaults or secret stores (core rules): for a secret, a connection string or a key, compare only its key name, whether it is set, and where, never its value.
+- Look for the usual config causes: a missing or empty key, a value that differs between environments, a wrong URL or host, a timeout shorter than the call takes, an expired certificate or secret (from its name and dates, never its value), a feature flag in the wrong state, a pool or size limit too small.
+- Values you cannot see (portal settings, key vaults, release variables) are Suspected: say where to look and what to compare.
+
+### L4: Decide
+
+- State the probable root cause with Confirmed and Suspected evidence and a confidence: High (the log, the code and the config all agree), Medium (one link is Suspected), Low (several are).
+- Pick the fix type in this order, taking the first that fixes the cause: **Configuration**, **Data**, **Infrastructure**, **Code**. For Configuration: the exact key, where it is set, the value to set (never a secret), how to roll it out, and the log line that should stop.
+- Stop after about 25 files read (or the timebox's limit). Report what you have.
+
+### L5: Write findings.md
+
+- Start from `{{ENG_HOME}}/templates/diagnosis.md`. Write it to the folder as `findings.md`. Fill every header line, including `Fix type:`.
+- Plain words. Every Confirmed step has its `file:line`, config key and file, commit, or command output.
+- Do not export `brief.html` in log mode.
+
+### L6: Hand off
+
+- Add a `progress.md` entry for `/spike` (copy `{{ENG_HOME}}/templates/progress.md` first if the folder has none) with a `- Stats: mode=log fix_type=<type> confidence=<level>` line.
+- Reply in 3 lines or fewer: the probable root cause, the fix type and the change, and the next step. For Configuration, Data or Infrastructure: who applies it and where, then close the spike in Loom. For Code: Fix it in Loom (or `/start new bug` with these findings).
+

@@ -92,7 +92,7 @@ Bug lane rules:
 
 ## Flow cards
 
-Workshop's Loom starts and finishes work from **flow cards** (Loom 4.9.0). Each card is one of the flows below, and each step is a command here. A step marked *you* stops for you; a *fork* ends with path cards to pick from. Loom shows every stop in its Inbox.
+Workshop's Loom starts and finishes work from **flow cards** (Loom 4.10.0). Each card is one of the flows below, and each step is a command here. A step marked *you* stops for you; a *fork* ends with path cards to pick from. Loom shows every stop in its Inbox.
 
 | Card | Steps | Commands |
 |---|---|---|

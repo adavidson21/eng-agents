@@ -18,6 +18,7 @@ If the mode above is `auto`, nobody is watching. Ask nothing: where Step 2 says 
 
 - Write down expected behavior, actual behavior, and repro steps from `workitem.md`.
 - If any of these is missing or unclear, ask the engineer ONE question at a time. Ask at most 3 questions.
+- **Reproduce it.** The engineer approves the root cause with evidence, not a story. Reproduce the bug the cheapest way that shows it: run the repro steps or a command, run an existing test that should catch it, or write a throwaway check in the item's `.work` folder, never in the repo. Note what you ran and what it showed. If you cannot reproduce it (no environment, no data, it needs a person), say why; the code path trace is then the only evidence.
 
 ## Step 3: Trace the code path
 
@@ -28,12 +29,13 @@ If the mode above is `auto`, nobody is watching. Ask nothing: where Step 2 says 
 ## Step 4: Find the root cause
 
 - State the root cause and label your evidence Confirmed or Suspected.
-- Give a confidence level: High, Medium, or Low.
+- Give a confidence level: High, Medium, or Low. **High needs a reproduction** (Step 2) that shows the bug on the code path you traced. Without one, the highest is Medium.
 - **If confidence is Low, stop here.** Write what you found to `bug.md` with the Tasks section empty, and tell the engineer to run `/spike $1` instead.
 
 ## Step 5: Write bug.md
 
 - Start from `{{ENG_HOME}}/templates/bug.md`. Write it to the work folder as `bug.md`. Keep `Status: DRAFT`.
+- **Repro:** fill `Reproduced:` with `yes` and what you ran and saw (the command and the output line that shows it), or `no` and why. Never leave it out.
 - **Impact:** one plain sentence a stakeholder could read: who is affected and how badly. No file or class names.
 - **Same flaw elsewhere:** run one `git -C <repo> grep` for the pattern behind the root cause. List other places with the same flaw, at most 5, with file and line. Do not fix them or add tasks for them; the engineer decides.
 
@@ -50,4 +52,4 @@ If the mode above is `auto`, nobody is watching. Ask nothing: where Step 2 says 
 
 - Stamp the draft as your last change to `bug.md`: run exactly `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/work/Set-DraftHash.ps1" -Path "<work folder>/bug.md"`. It adds a `Draft-hash:` line so `/approve` can tell whether the engineer edited the draft. If you change the file again, run it again.
 - Add a `progress.md` entry for `/bug` with a `- Stats: questions=<n> assumptions=<n> tasks=<number of tasks in tasks.md>` line.
-- Tell the engineer the impact in one sentence, the root cause in one sentence and the confidence level, how many other places have the same flaw (if any), then: "Review `bug.md` and `tasks.md`. If correct, run `/approve $1` (or change `bug.md` to `Status: APPROVED` yourself), start a new session, and run `/do-task $1 1`."
+- Tell the engineer the impact in one sentence, whether you reproduced it, the root cause in one sentence and the confidence level, how many other places have the same flaw (if any), then: "Review `bug.md` and `tasks.md`. If correct, run `/approve $1` (or change `bug.md` to `Status: APPROVED` yourself), start a new session, and run `/do-task $1 1`."

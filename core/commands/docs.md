@@ -31,7 +31,8 @@ Work out these three things from the request, the repo and its existing docs. Do
 ## Step 5: Save sources for the fact check
 
 - Create `.work/docs-<short-name>/sources.md` listing each factual claim and the file that supports it. `<short-name>` is 3 to 5 lowercase words from the doc's topic joined with hyphens.
+- The first line of `sources.md` is `Doc: <the doc's path from the workspace root>`, for example `Doc: gateway/docs/run-locally.md`. Loom reads it to save the doc to Folio, and `/publish` reads it to approve the doc.
 
 ## Step 6: Hand off
 
-- Tell the engineer the doc path, your picks from Step 1 in one line (where, who, what they do next: "Change any of these and run `/docs` again"), any open questions, and: "Start a new session and run `/check-docs <doc path>` to fact-check it against the code."
+- Tell the engineer the doc path, your picks from Step 1 in one line (where, who, what they do next: "Change any of these and run `/docs` again"), any open questions, and: "Read the draft first. When it says the right things, start a new session and run `/check-docs <doc path>` to fact-check it against the code. Then `/publish docs-<short-name>` approves it."

@@ -44,8 +44,9 @@ Run exactly this command:
 - **Area:** suggest the ADO area path that owns it. `Get-Content ~/.workshop/config.json` gives `dataDir` (default `~/Workshop`); read `<dataDir>/settings/products.json` and use the matched product's `areas`, else `<dataDir>/settings/teams.json` and pick the closest of the team's `areas`. Name the area, never a person. If neither file exists or nothing fits, write `unknown`.
 - **Route:** `delegate` when it fits work the team already owns and you can point to where it lives; `myself` when it needs a decision only the engineer can make or is small enough to do now; `undecided` when the questions must be answered first. Never rank or judge people.
 - **Size:** S (a day or less), M (a few days), L (a sprint), XL (more than a sprint: suggest `/scope`).
+- **Path:** the next step you suggest, one word. `interview` when the engineer must decide things the request leaves open (goals, the MVP line, rules); `brief` when the request and the code already say enough to write a brief; `decline` when it duplicates something that exists or is already planned (name it under Related items), or is out of scope for every product in the repo map. Loom shows the three as a fork and marks this one; the engineer picks. With questions for the requester, the path is what to do once they answer.
 
 ## Step 5: Hand off
 
 - Add a `progress.md` entry for `/triage` (copy `{{ENG_HOME}}/templates/progress.md` first if the folder has none, with the folder name as the id and the request's title).
-- Reply in 3 lines or fewer: the summary, how many questions are open, the route, and the next step: send the questions, `/refine <title>` for one story, or `/scope <idea>` for an epic.
+- Reply in 3 lines or fewer: the summary, how many questions are open, the route and the path, and the next step: send the questions, `/shape triage-<name>` (interview), `/shape triage-<name> brief` (skip to the brief), `/refine <title>` for one story, or `/scope <idea>` for an epic.

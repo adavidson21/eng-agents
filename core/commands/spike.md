@@ -1,5 +1,5 @@
 ---
-description: "Investigate a question or an ask without changing code, write findings.md and a shareable brief.html. Usage: /spike <id or topic> [--for business|engineering|leadership]"
+description: "Investigate a question or an ask without changing code, write findings.md and a shareable brief.html. Usage: /spike <id or topic> [--for business|engineering|leadership] [--timebox 1h|2h|4h|1d]"
 agent: investigator
 ---
 
@@ -8,6 +8,7 @@ Run a spike on: **$ARGUMENTS**
 ## Step 1: Pick the folder and the lens
 
 - If `--for <lens>` is in the arguments, take it out and remember it as the **default lens** (`business`, `engineering` or `leadership`). Otherwise the default lens is `leadership`.
+- If `--timebox <t>` is in the arguments, take it out and remember it (`1h`, `2h`, `4h` or `1d`; Loom sends it from the Investigate card). It sets how far you dig in Step 3.
 - If `$1` is a work item id (a number, or a local id like `L12`) and a folder in `.work/` starts with `$1-`, use that folder.
 - Otherwise create a new folder `.work/spike-<short-name>/`, where `<short-name>` is 3 to 5 lowercase words from the topic joined with hyphens.
 
@@ -23,6 +24,7 @@ Run a spike on: **$ARGUMENTS**
 - Do not change any code.
 - Keep a list of facts (Confirmed) and beliefs (Suspected) with evidence, and a list of every file, work item and doc you used (for Sources).
 - Stop when you can answer the question, or after about 25 files read, whichever comes first. If you hit the limit, report what you have.
+- With a timebox, the file limit is the timebox's instead: `1h` about 10 files, `2h` about 15, `4h` about 25, `1d` about 40. When you stop at the limit, say in the Short answer that the timebox ended and what is still unknown.
 
 ## Step 4: Write findings.md
 

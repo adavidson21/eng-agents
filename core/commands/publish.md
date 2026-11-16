@@ -1,5 +1,5 @@
 ---
-description: "Approve a finished document in .work and move it to where it lives, for example a TSD into the product docs folder. Usage: /publish <.work folder, for example tsd-orders>"
+description: "Approve a finished document in .work and move it to where it lives: a TSD into the product docs folder, or a doc from /docs approved in place. Usage: /publish <.work folder, for example tsd-orders or docs-run-gateway>"
 agent: writer
 ---
 
@@ -15,8 +15,10 @@ Running this command is the engineer's approval. It is the only command, besides
 | File | Kind | Default destination | File name at destination |
 |---|---|---|---|
 | `tsd.md` | Technical spec from `/tsd` | The product's "Product docs" folder in the repo map | `technical-spec.md` |
+| `sources.md` (a `docs-` folder) | A doc from `/docs` | Where it already lives: the `Doc:` line of `sources.md` | unchanged |
 
 - If the folder has none of these, stop. If the folder starts with a work item id, tell the engineer that specs, plans, and bug analyses are approved with `/approve <id>`.
+- **A doc from `/docs`** (the folder starts with `docs-`): follow "Docs" at the end instead of Steps 3 to 6.
 - Read the document's `Status:` line.
   - `Status: PUBLISHED ...`: tell the engineer where it was published and stop. To publish again after changes, run `/tsd` (update) first; it sets the draft back to DRAFT.
   - `Status: DRAFT` or `Status: APPROVED`: continue.
@@ -58,3 +60,12 @@ Tell the engineer:
 - "Review the diff and commit it yourself in `<repo that contains the destination>`."
 - For a TSD: "If your doc editor does not render Mermaid, the SVGs are in `.work/$1/render/`."
 - For a TSD: "To revise later, run `/tsd` again and choose update. It starts from the published copy."
+
+## Docs (a `docs-` folder)
+
+A doc from `/docs` already lives in its repo, so publishing it approves it there. Loom calls this **Save in the repo**.
+
+1. Read the `Doc: <path>` line at the top of `sources.md`. If there is none, ask the engineer for the doc's path and add the line. If the file is not there, say so and stop.
+2. Check it is ready, as in Step 2 (`check.md`, and the doc's own open questions).
+3. In `sources.md`, add or replace one line under the `Doc:` line: `Status: SAVED to <path> on <today's date, YYYY-MM-DD>`. Change nothing else, and do not change the doc.
+4. Tell the engineer the path and: "Review the diff and commit it yourself in `<repo that contains the doc>`, on a branch for a PR." You never commit.

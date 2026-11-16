@@ -90,6 +90,22 @@ Bug lane rules:
 - If root-cause confidence is Low, `/bug` stops and points you to `/spike`.
 - If the fix needs more than 3 tasks, it moves to the feature lane (`/spec`).
 
+## Flow cards
+
+Workshop's Loom starts and finishes work from **flow cards** (Loom 4.9.0). Each card is one of the flows below, and each step is a command here. A step marked *you* stops for you; a *fork* ends with path cards to pick from. Loom shows every stop in its Inbox.
+
+| Card | Steps | Commands |
+|---|---|---|
+| Handle a request | Triage (you, fork: interview, skip to the brief, decline), Interview (you), Brief (you, fork: build it, fix it, investigate, hand to a person, decline) | `/triage` (its `Path:` line suggests the fork), `/shape triage-<name>` or `/shape triage-<name> brief`, then `/refine` or `/scope` from the brief |
+| Build a feature | Spec and plan (you), Build, Review (you only on blockers), Ship (you) | `/start`, `/spec`, `/approve`, `/do-task`, `/review`, `/pr`; you push, open the PR and resolve the item. **Small change** is the quick lane. |
+| Fix a bug | Root cause (you, with a repro), Fix, Review (you only on blockers), Ship (you) | `/start <id> bug`, `/bug` (reproduces it first; High confidence needs a repro), then as above |
+| Investigate | Investigate, Findings (you, fork: build it, fix it, write it up, save as note, close) | `/spike <question> [--timebox 1h\|2h\|4h\|1d]` |
+| Plan an epic | Scope, Stories (you), Slice, Milestones (you), Create in ADO (you) | `/scope`, `/approve`, `/slice`, `/approve <folder> milestones`, `/backlog <folder> ado` |
+| Hand to a person | Define (you), Assign (you), With them, Resolve (you) | `/refine`, `/approve`, `/handoff`; Loom assigns in ADO and nudges you after 3 working days with no movement |
+| Write docs | Draft, Read draft (you), Fact-check, Final read (you), Save (you, fork: the repo or Folio) | `/docs` (its `sources.md` starts with `Doc: <path>`), `/check-docs`, `/publish docs-<name>`. Type **Technical spec**: `/tsd`, `/check-docs`, `/publish tsd-<name>` |
+
+Review stops for you only when it finds blockers it cannot turn into fix tasks (autopilot's rule, [Autopilot](#autopilot)). Loom marks a spike closed with `closed.md` and a doc saved to Folio with `saved.md`; Workshop's docs/work-format.md has the rules.
+
 ## Quick lane
 
 For small work even the feature lane's spec, plan and tasks cost more than they catch. `/quick <id>` (planner) writes `quick.md`, one file with the goal, acceptance criteria, assumptions, files and pattern to follow, plus a normal `tasks.md` (at most 2 tasks). You approve once with `/approve <id>`; `/do-task`, `/review` and `/pr` work as in the feature lane and read the criteria from `quick.md`. The branch is `dev/feature/<id>-<name>`.

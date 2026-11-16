@@ -14,7 +14,7 @@ This is the interview the engineer asked for, so core rule 3's limit of 3 questi
 ## Step 1: Pick the folder
 
 - If the request above is empty, stop and reply: `Usage: /shape <idea>, /shape triage-<name>, or /shape shape-<name> [brief|more]`.
-- The mode is the second word, if it is `brief` (write the brief now, ask nothing more) or `more` (ask another round, even if a brief exists). Otherwise there is no mode.
+- The mode is the second word, if it is `brief` (write the brief now, ask nothing more) or `more` (ask another round, even if a brief exists). Otherwise there is no mode. `/shape triage-<name> brief` is Loom's **Skip to the brief**: write the brief on the first run, from the triage, its answers and the code, with no round of questions; what is still open goes under Open questions.
 - **Continue:** if the first word starts with `shape-`, the folder is `.work/<that word>/`. If it does not exist, list the `.work/shape-*` folders and stop.
 - **From a triage:** if the first word starts with `triage-`, the folder is `.work/shape-<the rest>/` (for `triage-1234`, `.work/shape-1234/`). If `.work/<first word>/triage.md` does not exist, list the `.work/triage-*` folders and stop. If the shape folder exists, continue it; otherwise create it as below.
 - **New:** otherwise the whole request is the idea. Make a short name: the first 5 meaningful words, lowercase, joined with `-`, at most 40 characters, filler words (a, an, the, to, of, for, and, add, new) dropped. The folder is `.work/shape-<short name>/`. If it already exists, stop and ask: "`.work/shape-<short name>/` exists. Continue it (`/shape shape-<short name>`) or use another name?"

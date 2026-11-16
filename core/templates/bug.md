@@ -15,6 +15,7 @@ Status: DRAFT
 - Repro steps:
   1. <step>
   2. <step>
+- Reproduced: <yes: what you ran and what it showed | no: why not>
 
 ## Code path
 

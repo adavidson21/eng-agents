@@ -4,6 +4,16 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 4.2.0 (2026-11-16)
+
+For Workshop's Loom flow cards (Loom 4.9.0). Nothing breaks for items in progress.
+- `/triage` writes a `Path:` line (`interview`, `brief` or `decline`), the next step it suggests; Loom marks it on its triage fork. `/shape triage-<name> brief` (Loom's Skip to the brief) writes the brief on the first run, with no round of questions.
+- `/bug` reproduces the bug before the root cause (running the repro, a test, or a throwaway check in `.work`, never the repo) and records it on a new `Reproduced:` line in `bug.md`. High confidence needs a reproduction.
+- `/spike --timebox 1h|2h|4h|1d` sets how far it digs (about 10, 15, 25 or 40 files) and says when the timebox ended.
+- `/docs` starts `sources.md` with `Doc: <path>` and asks you to read the draft before the fact-check. `/publish docs-<name>` approves a doc where it lives (`Status: SAVED to <path> on <date>` in `sources.md`); you commit it.
+- The static dashboard reads a spike closed at Loom's findings fork (`closed.md`) and a saved doc the way Workshop's parser does.
+- docs/pipeline.md: a Flow cards section maps each Loom card to the commands.
+
 ## Core 4.1.0 (2026-11-15)
 
 Evals become the test suite for all of Tandem (Workshop's Bench 2):

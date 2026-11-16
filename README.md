@@ -4,7 +4,7 @@ opencode agents (Tandem) that take a piece of work to a ready-to-open pull reque
 
 ## Daily use
 
-Open opencode from your workspace root (for example `C:\src\work`).
+Open opencode from your workspace root (for example `C:\src\work`). In Workshop, Loom's **flow cards** run the same steps from buttons: Handle a request, Build a feature, Fix a bug, Investigate, Plan an epic, Hand to a person, Write docs (see [Flow cards](docs/pipeline.md#flow-cards)).
 
 | Work | Run |
 |---|---|
@@ -13,14 +13,14 @@ Open opencode from your workspace root (for example `C:\src\work`).
 | Define the work first | `/scope <idea>` → `/approve scope-<name>` → `/slice scope-<name>` → `/approve scope-<name> milestones` → `/backlog scope-<name> [csv\|ado\|local]` → `/start <story id> feature` |
 | Bug | `/start <id> bug` → `/bug <id>` → `/approve <id>` → `/do-task <id> <n>` (repeat) → `/review <id>` → `/pr <id>` |
 | Shape an idea with you first | `/shape <idea>` (or `/shape triage-<name>` after a triage): rounds of up to 5 questions in `.work/shape-<name>/questions.md`, a running `understanding.md`, then `brief.md`. Answer in Slate (or `answers.md`) and run `/shape shape-<name>` again; `/shape shape-<name> brief` writes the brief now. Then `/scope shape-<name>` or `/refine shape-<name>`. |
-| Triage a request before work starts | `/triage <ADO id> [note]` or `/triage <the request in words>`: writes `.work/triage-<id>/triage.md` with a summary, what it touches, questions for the requester, a size and a suggested route (delegate or do it yourself). Never posts. Slate in Workshop runs it from a button. |
+| Triage a request before work starts | `/triage <ADO id> [note]` or `/triage <the request in words>`: writes `.work/triage-<id>/triage.md` with a summary, what it touches, questions for the requester, a size, a suggested route (delegate or do it yourself) and a suggested path (interview, brief or decline). Never posts. Then `/shape triage-<name>` (interview) or `/shape triage-<name> brief` (skip to the brief). Loom in Workshop runs it from a button. |
 | Define one story or bug | `/refine <title>` → `/approve refine-<name>`. Writes `refine.md` with a description and Gherkin acceptance criteria, ready to publish (Slate publishes it to ADO). For anything epic-sized, use `/scope`. |
 | Hand work to a teammate | `/handoff <ADO id> <name>`: a brief with context, acceptance criteria, where to start and what to watch. Posts nothing. |
-| Question or a vague ask, no code changes (writes a shareable `brief.html`) | `/spike <id or topic> [--for business\|engineering\|leadership]` |
+| Question or a vague ask, no code changes (writes a shareable `brief.html`) | `/spike <id or topic> [--for business\|engineering\|leadership] [--timebox 1h\|2h\|4h\|1d]` |
 | First pass on a teammate's PR | `/pr-review <PR link>` (or **PR reviews** in Loom). Drafts comments in `.work/pr-<id>/review.md`; you post the ones you agree with. Never checks out the PR or posts anything. |
 | Ask or capture from Workshop | Type in the hub in Workshop's Loom (Chat tab). It runs `/hub <request>`: captures become proposals you accept, questions are answered from your repo map, repo guides and code, with sources. It writes nothing but its own two files and never changes ADO or git. |
 | Prep a 1:1 | **Draft talking points** in Workshop's 1:1s app runs `/one-on-one <packet>`. It drafts wins, follow-ups, blockers, growth topics and 3 questions from the app's packet; it never rates or judges anyone. |
-| Docs | `/docs <target>`, new session, `/check-docs <doc path>` |
+| Docs | `/docs <target>` → read the draft → new session → `/check-docs <doc path>` → fix → `/publish docs-<name>` (approves it in place; you commit it) |
 | Technical spec with diagrams | `/tsd <product or repo> [repo ...]` → new session → `/check-docs .work/tsd-<name>/tsd.md` → revise → `/publish tsd-<name>` |
 | Where was I? | `/dashboard [id]` (opens Loom in Workshop, at the item when you give an id) or `/status [id]` |
 | Drive it from the browser | Loom in [Workshop](https://github.com/adavidson21/workshop): it runs each step in opencode (see [Dashboard](docs/pipeline.md#dashboard)) |
@@ -38,7 +38,7 @@ Open opencode from your workspace root (for example `C:\src\work`).
 | Update eng-agents | `.\update.ps1` in your clone (see [Updating](docs/onboarding-company.md#updating)) |
 
 - **Approve** a spec, plan, or bug analysis with `/approve <id>` (it picks the current draft; add `spec`, `plan`, or `bug` to choose). Edit the file first if anything is wrong. Changing `Status: DRAFT` to `Status: APPROVED` by hand still works.
-- **Publish** a finished document with `/publish <folder>`, for example `/publish tsd-orders`. It approves it, moves it to the product docs folder, and you commit it.
+- **Publish** a finished document with `/publish <folder>`, for example `/publish tsd-orders` (approves it and moves it to the product docs folder) or `/publish docs-run-gateway` (approves a doc where it lives). You commit it.
 - **New session** (`/new`) before every `/do-task`.
 - **Review findings** you accept become new tasks. Run `/do-task` for each, then `/review` again.
 - **You approve every push** and open the PR. No agent can merge or deploy.

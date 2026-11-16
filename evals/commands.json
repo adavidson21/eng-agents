@@ -30,9 +30,9 @@
     {
       "command": "bug",
       "agent": "investigator",
-      "tokens": 3441,
-      "readTokens": 566,
-      "hash": "f74dc8e02b78",
+      "tokens": 3631,
+      "readTokens": 583,
+      "hash": "5a6262fc942c",
       "files": [
         "core/AGENTS.md",
         "core/agents/investigator.md",
@@ -60,7 +60,7 @@
       "agent": "planner",
       "tokens": 3360,
       "readTokens": 0,
-      "hash": "c0e9657b7f90",
+      "hash": "f0afd4179b84",
       "files": [
         "core/AGENTS.md",
         "core/agents/planner.md",
@@ -85,9 +85,9 @@
     {
       "command": "docs",
       "agent": "writer",
-      "tokens": 2875,
+      "tokens": 2954,
       "readTokens": 0,
-      "hash": "000795fe8c3b",
+      "hash": "4628a97f07dc",
       "files": [
         "core/AGENTS.md",
         "core/agents/writer.md",
@@ -237,9 +237,9 @@
     {
       "command": "publish",
       "agent": "writer",
-      "tokens": 3431,
+      "tokens": 3684,
       "readTokens": 0,
-      "hash": "4691c8343f17",
+      "hash": "04a6c68592bc",
       "files": [
         "core/AGENTS.md",
         "core/agents/writer.md",
@@ -334,9 +334,9 @@
     {
       "command": "shape",
       "agent": "product-manager",
-      "tokens": 4575,
+      "tokens": 4628,
       "readTokens": 732,
-      "hash": "5f9cfc55858c",
+      "hash": "6497294b51c1",
       "files": [
         "core/AGENTS.md",
         "core/agents/product-manager.md",
@@ -392,9 +392,9 @@
     {
       "command": "spike",
       "agent": "investigator",
-      "tokens": 3335,
+      "tokens": 3441,
       "readTokens": 668,
-      "hash": "99ee8ce43ec7",
+      "hash": "b8dc9111628b",
       "files": [
         "core/AGENTS.md",
         "core/agents/investigator.md",
@@ -475,9 +475,9 @@
     {
       "command": "triage",
       "agent": "investigator",
-      "tokens": 3754,
-      "readTokens": 646,
-      "hash": "22eea2c6c2a9",
+      "tokens": 3912,
+      "readTokens": 671,
+      "hash": "506980fe7113",
       "files": [
         "core/AGENTS.md",
         "core/agents/investigator.md",

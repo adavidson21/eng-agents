@@ -4,6 +4,10 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 4.4.0 (2026-11-16)
+
+- For Workshop's opencode connector 1.18.0, which keeps hub requests and 1:1 packets in the data folder's working folder (`<dataDir>/.scratch/opencode/`, removed after 7 days) instead of `~/.workshop`: the **hub** agent may write `route.json` and `answer.md` there, and **people-prep** may write `draft.md` and list its folder there. The old `_connectors` paths still work for older Workshops.
+
 ## Core 4.3.0 (2026-11-16)
 
 - `/spike <folder> --log`: diagnose an error log. Reads `log.md` (Loom writes it from Fix a bug's **Error log**, with secrets masked), finds where it happens, checks the configuration before the code, and writes `findings.md` from the new `templates/diagnosis.md`: the probable root cause with a confidence, why (Confirmed and Suspected steps), and a solution with a `Fix type:` line. It prefers Configuration, then Data, then Infrastructure, then Code, gives the exact setting, where it is set and how to verify, and never copies or opens secrets. No `brief.html` in log mode.

@@ -8,6 +8,8 @@ permission:
     "*": deny
     "**/_connectors/opencode/hub/*/route.json": allow
     "**/_connectors/opencode/hub/*/answer.md": allow
+    "**/.scratch/opencode/hub/*/route.json": allow
+    "**/.scratch/opencode/hub/*/answer.md": allow
   bash:
     "*": deny
     "git log*": allow

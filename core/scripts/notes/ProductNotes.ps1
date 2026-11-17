@@ -1,9 +1,11 @@
-# Shared helpers for product notes: one note per product in Workshop's Notes app, in
-# <Workshop data folder>/folio/products/<slug>.md (notes/products/ with a Workshop that has not renamed the folder yet). Dot-source this file; it defines functions only.
+# Shared helpers for product notes: one note per product in Workshop's Folio app, in
+# <Workshop data folder>/folio/products/<slug>.md (notes/products/ with a Workshop that has not renamed the folder yet),
+# plus the team handbook (team/handbook.md) and Tandem's change log (tandem/changes.md). Dot-source this file; it
+# defines functions only. Also reads Workshop's knowledge from Settings' folder (Workshop docs/knowledge.md).
 #
-# The rules Tandem follows when it writes these notes are Notes' contract (adavidson21/notes README,
-# "Tandem and product notes"): write only products/ and history/, keep a snapshot of the text it replaces in
-# Notes' history format, write atomically, set tandem-changed, never touch reviewed.
+# The rules Tandem follows when it writes these notes are Folio's contract (Workshop apps/notes/README.md,
+# "Tandem and product notes"): write only those notes and history/, keep a snapshot of the text it replaces in
+# Folio's history format, write atomically, set tandem-changed, never touch reviewed.
 #
 # Works in Windows PowerShell 5.1 and PowerShell 7.
 
@@ -27,7 +29,7 @@ tags: [product, product/{{slug}}]
 
 ## Gotchas
 
-## People
+## Who to ask
 
 ## Decisions
 
@@ -35,6 +37,67 @@ tags: [product, product/{{slug}}]
 
 ## Remembered
 "@ -replace "\r\n", "`n"   # LF like Notes, whatever line endings this file was checked out with
+
+# The notes Tandem may write besides products/<slug>.md, with the template used when one is missing.
+$script:HandbookPath = "team/handbook.md"
+$script:ChangesPath = "tandem/changes.md"
+$script:ChangesKeep = 100
+
+$script:BuiltInHandbook = @"
+---
+title: Team handbook
+tags: [team, handbook]
+---
+# Team handbook
+
+How the team works, for you and for Tandem. One short line per fact; Tandem adds what it confirms and you review it like a product note.
+
+## Sprints
+
+## Work item states
+
+## Pull requests
+
+## Releases
+
+## Definition of done
+
+## Who approves what
+
+## Remembered
+"@ -replace "\r\n", "`n"
+
+$script:BuiltInChanges = @"
+---
+title: Tandem's changes
+tags: [tandem]
+---
+# Tandem's changes
+
+What Tandem changed outside Folio: repo guides' Remembered sections and the global rules (memory.md). One line each, newest last; review them like a product note.
+
+## Changes
+"@ -replace "\r\n", "`n"
+
+# The note path Tandem may write for -Note, or `$null: products/<slug>.md, team/handbook.md or tandem/changes.md.
+function Resolve-KnowledgeNote([string]$Note) {
+    $n = ($Note -replace '\\', '/').Trim().TrimStart('/').ToLowerInvariant()
+    if ($n -eq "handbook") { return $script:HandbookPath }
+    if ($n -eq "changes") { return $script:ChangesPath }
+    if ($n -eq $script:HandbookPath -or $n -eq $script:ChangesPath) { return $n }
+    if ($n -match '^products/[a-z0-9][a-z0-9-]{0,39}\.md$') { return $n }
+    return $null
+}
+
+# One of Settings' collections from the data folder (Workshop docs/data-format.md): its items, or @() when it is
+# missing, unreadable, or written by a newer Workshop than this script knows.
+function Get-SettingsItems([hashtable]$Where, [string]$Name, [int]$Version = 1) {
+    $file = Join-Path (Join-Path $Where.DataDir "settings") "$Name.json"
+    if (-not (Test-Path -LiteralPath $file -PathType Leaf)) { return @() }
+    try { $env = Get-Content -LiteralPath $file -Raw -Encoding UTF8 | ConvertFrom-Json } catch { return @() }
+    if (-not $env -or $env.schema -ne "settings.$Name" -or [int]$env.version -ne $Version) { return @() }
+    return @($env.items | Where-Object { $_ })
+}
 
 function Get-WorkshopHome {
     if ($env:WORKSHOP_HOME) { return $env:WORKSHOP_HOME }

@@ -33,7 +33,7 @@ Follow these steps in order. Do not change any code, and never post anything to 
 - Write for a teammate who has not seen the request: plain words, real paths, no judgment about anyone.
 - Write it in the engineer's voice (the writing rules in the Personal and Company sections of `AGENTS.md`), so it can be pasted into the ADO work item as is.
 - **Definition of done:** what done looks like for this item in one or two plain lines (the outcome a person can check), then anything the team always expects.
-- **Who to ask:** the people or roles the product note's People section, the work item or the triage name for questions about this work. If none are named, write "The requester" and nothing else. Never guess.
+- **Who to ask:** the owners and people `Get-Knowledge.ps1` lists (Owners, and the note's Who to ask or People section), the work item or the triage name for questions about this work. If none are named, write "The requester" and nothing else. Never guess.
 
 ## Step 4: Hand off
 

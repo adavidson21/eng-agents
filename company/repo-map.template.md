@@ -1,6 +1,10 @@
 # Workspace repo map
 
 <!--
+WITH WORKSHOP: you do not need this template. Workshop writes the repo map from Settings, Knowledge (products,
+glossary, what each repo is). If you already filled this in, Settings, Knowledge, Repo map, Import into Workshop
+reads it once and keeps your file beside the new one. Use the steps below only without Workshop.
+
 HOW TO USE THIS TEMPLATE (delete this comment when done)
 1. Copy this file to C:\src\work\AGENTS.md on the work PC. Never commit the filled-in copy.
 2. Replace every TODO(you) and every (example) row. Agents warn you while any TODO(you) is left.

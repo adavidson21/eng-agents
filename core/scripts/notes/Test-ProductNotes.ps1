@@ -14,6 +14,7 @@ function Check([string]$Name, [bool]$Ok, [string]$Detail = "") {
 $ps = (Get-Process -Id $PID).Path
 $get = Join-Path $PSScriptRoot "Get-ProductNote.ps1"
 $set = Join-Path $PSScriptRoot "Set-ProductNote.ps1"
+$know = Join-Path $PSScriptRoot "Get-Knowledge.ps1"
 function Run([string]$Script, [string[]]$Arguments) {
     $ErrorActionPreference = "Continue"   # Windows PowerShell 5.1 turns a child's stderr into errors
     $out = & $ps -NoProfile -ExecutionPolicy Bypass -File $Script @Arguments 2>&1 | Out-String
@@ -100,6 +101,60 @@ try {
     Check "read one" ($r.Out -match "Product note: products/wiki-edge\.md" -and $r.Out -match "10k rows") $r.Out
     $r = Run $get @("-Product", "Nope")
     Check "read a missing one" ($r.Code -eq 0 -and $r.Out -match "does not exist yet") $r.Out
+
+    # Flags: a line the code contradicts gets "(check: ...)" and the note needs review again.
+    $r = Run $set @("-Product", "wiki-edge", "-Flag", "capped at 10k", "-Reason", "ExportService (now) uses 20000", "-Source", "src/Export.cs")
+    $text = [IO.File]::ReadAllText($file)
+    Check "flag a contradicted line" ($r.Code -eq 0 -and $text -match "10k rows\. \(\d{4}-\d\d-\d\d, PR 5000\) \(check: ExportService now uses 20000, \d{4}-\d\d-\d\d, src/Export\.cs\)") "$($r.Out) $text"
+    $r = Run $set @("-Product", "wiki-edge", "-Flag", "capped at 10k", "-Reason", "again", "-Source", "x")
+    Check "a flagged line is flagged once" ($r.Code -eq 0 -and $r.Out -match "Already flagged") $r.Out
+    $r = Run $set @("-Product", "wiki-edge", "-Flag", "capped at 10k", "-Source", "x")
+    Check "a flag needs a reason" ($r.Code -eq 1) $r.Out
+
+    # The team handbook and the change log: made from the built-in templates on the first line.
+    $r = Run $set @("-Note", "team/handbook.md", "-Section", "Pull requests", "-Line", "Two approvals before merge.", "-Source", "the engineer")
+    $hb = Join-Path $data "folio/team/handbook.md"
+    $text = if (Test-Path $hb) { [IO.File]::ReadAllText($hb) } else { "" }
+    Check "handbook made and written" ($r.Code -eq 0 -and $text -match "(?m)^title: Team handbook$" -and $text -match "## Pull requests\r?\n\r?\n- Two approvals before merge\." -and $text -match "(?m)^tandem-changed: ") "$($r.Out) $text"
+    $r = Run $set @("-Note", "../secrets.md", "-Line", "x", "-Source", "y")
+    Check "only the allowed notes" ($r.Code -eq 1 -and $r.Out -match "must be") $r.Out
+    $r = Run $set @("-Note", "team/handbook.md", "-Create")
+    Check "-Create is for product notes" ($r.Code -eq 1) $r.Out
+    for ($i = 0; $i -lt 103; $i++) { Run $set @("-Note", "changes", "-Line", "api repo guide, Remembered: rule $i.", "-Source", "/memory") | Out-Null }
+    $log = [IO.File]::ReadAllText((Join-Path $data "folio/tandem/changes.md"))
+    $bul = @($log -split "\r?\n" | Where-Object { $_ -match '^- ' })
+    Check "the change log keeps the newest 100" ($bul.Count -eq 100 -and $bul[0] -match "rule 3\." -and $bul[-1] -match "rule 102\." -and $log -match "## Changes") "$($bul.Count) $($bul[0])"
+
+    # Get-Knowledge: one block from Settings, People, the note and the handbook.
+    $settings = Join-Path $data "settings"
+    New-Item -ItemType Directory -Path $settings -Force | Out-Null
+    $env1 = { param($name, $ver, $items) (@{ schema = "settings.$name"; version = $ver; rev = 1; items = $items; deleted = @{} } | ConvertTo-Json -Depth 6) }
+    [IO.File]::WriteAllText((Join-Path $settings "products.json"), (& $env1 "products" 1 @(
+        @{ id = "p_wiki-edge"; updatedAt = 1; name = "Wiki Edge"; slug = "wiki-edge"; alsoCalled = @("wiki"); repos = @("Platform/wiki-edge-api"); areas = @("Project\Wiki"); changeOrder = @("shared-lib", "Platform/wiki-edge-api"); processes = @("Publish a page") },
+        @{ id = "p_old"; updatedAt = 1; name = "Old"; slug = "old"; archived = $true })))
+    [IO.File]::WriteAllText((Join-Path $settings "people.json"), (& $env1 "people" 2 @(
+        @{ id = "p_a"; kind = "person"; updatedAt = 1; name = "Person One"; handle = "person"; relation = "report"; role = "Senior Engineer"; owns = @("wiki-edge-api") },
+        @{ id = "p_b"; kind = "person"; updatedAt = 1; name = "Gone Person"; handle = "gone"; relation = "peer"; archived = $true; owns = @("wiki") })))
+    [IO.File]::WriteAllText((Join-Path $settings "glossary.json"), (& $env1 "glossary" 1 @(
+        @{ id = "g_page"; updatedAt = 1; term = "Page"; code = "Article"; productId = "p_wiki-edge"; where = "src/Article.cs" },
+        @{ id = "g_any"; updatedAt = 1; term = "Plan year"; code = "CoverageYear" },
+        @{ id = "g_other"; updatedAt = 1; term = "Route"; code = "GatewayRoute"; productId = "p_other" })))
+    $r = Run $know @("-Product", "WIKI")
+    $o = $r.Out
+    Check "knowledge: found by another name, Settings fields" ($r.Code -eq 0 -and $o -match "# Knowledge: Wiki Edge" -and $o -match "- Change order: shared-lib, then Platform/wiki-edge-api" -and $o -match "- Business processes: Publish a page") $o
+    Check "knowledge: owners from People, archived left out" ($o -match "- Person One, Senior Engineer \(owns wiki-edge-api\)" -and $o -notmatch "Gone Person") $o
+    Check "knowledge: the product's words, then any product's (a word whose product is gone counts as any)" ($o -match "- Page = ``Article`` \(src/Article\.cs\)" -and $o -match "- Plan year = ``CoverageYear``" -and $o -match "- Route = ``GatewayRoute``") $o
+    Check "knowledge: the note without its frontmatter, and the handbook" ($o -match "10k rows" -and $o -notmatch "(?m)^tandem-changed:" -and $o -match "Two approvals before merge") $o
+    Check "knowledge: ends with its sources" ($o -match "Sources: settings/products\.json, settings/people\.json, settings/glossary\.json, folio/products/wiki-edge\.md, folio/team/handbook\.md") $o
+    $r = Run $know @("-Product", "Old")
+    Check "knowledge: an archived product is not found, the note is still read" ($r.Code -eq 0 -and $r.Out -match "Not a product in Workshop Settings") $r.Out
+    $r = Run $know @("-Product", "Wiki Edge", "-MaxLines", "40")
+    Check "knowledge: the handbook is cut first when it is long" ($r.Out -match "Handbook cut here") $r.Out
+    $r = Run $know @("-Handbook")
+    Check "knowledge: the handbook alone" ($r.Code -eq 0 -and $r.Out -match "Team handbook: folio/team/handbook\.md" -and $r.Out -match "Two approvals") $r.Out
+    [IO.File]::WriteAllText((Join-Path $settings "products.json"), (& $env1 "products" 2 @()))
+    $r = Run $know @("-Product", "Wiki Edge")
+    Check "knowledge: products from a newer Workshop are skipped, not an error" ($r.Code -eq 0 -and $r.Out -match "Not a product" -and $r.Out -match "10k rows") $r.Out
 
     # A Workshop that has not renamed notes/ to folio/ yet: the old folder is used while it is the only one.
     $old = Join-Path $root "old"

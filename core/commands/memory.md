@@ -29,7 +29,7 @@ If the scope is "one repo" but no repo was named, pick it:
 
 If there are no arguments, reply: `Usage: /memory [-global | -product <product> | <repo folder>] <rule>, or /memory -list [repo folder]`. Stop.
 
-If the scope is one repo or global but the rule is a product fact (it would still be true if the product's code were rewritten: a business rule, who owns what, why a decision was made), ask: "This sounds like a fact about `<product>`. Save it in its product note instead?" Wait. If yes, go to "Product facts".
+If the scope is one repo or global but the rule is a product fact (it would still be true if the product's code were rewritten: a business rule, why a decision was made), ask: "This sounds like a fact about `<product>`. Save it in its product note instead?" Wait. If yes, go to "Product facts".
 
 ## Step 2: Write the rule as one line
 
@@ -73,6 +73,8 @@ Read the whole memory file.
 - Change nothing else in the file, except a line the engineer told you to replace in Step 4.
 - If `## Remembered` now has more than 20 lines, tell the engineer and suggest merging or deleting old ones.
 
+Then log the change for review in Folio (see `{{ENG_HOME}}/guides/product-notes.md`, last part): `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/notes/Set-ProductNote.ps1" -Note tandem/changes.md -Line "<repo> repo guide, Remembered: <rule>" -Source "/memory"` (global: `global rules: <rule>`). If it says notes are not available, skip it.
+
 ## Step 6: Confirm
 
 Reply with:
@@ -87,12 +89,14 @@ Reply with:
 For `-product <product> <fact>`:
 
 1. Match `<product>` to a product in the repo map (Products, "Also called"). If none matches, ask which product. Use its `Note:` line if it has one.
-2. Read the note: `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/notes/Get-ProductNote.ps1" -Product "<product>"`.
+2. Read what is known: `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/notes/Get-Knowledge.ps1" -Product "<product>"`.
    - Not available: reply with the reason it printed and stop.
-   - Does not exist yet: add `-Create` to the call in step 4.
-3. Write the fact as one line (Step 2's rules). Pick the section: `Business rules`, `Gotchas`, `People`, `Decisions`, or `Remembered` when unsure. If a line in the note already covers the subject, show it and ask: "Replace this line, keep both, or cancel?" Wait.
+   - "No product note yet": add `-Create` to the call in step 4.
+   - A fact about how the team works (sprints, PRs, releases, done): it goes in the handbook. Use `-Note team/handbook.md` instead of `-Product` in step 4.
+   - Who owns the product: not a note fact. Reply: "Owners live in Workshop: Settings, People, Owns." Stop.
+3. Write the fact as one line (Step 2's rules). Pick the section: `Business rules`, `Gotchas`, `Who to ask`, `Decisions`, or `Remembered` when unsure (handbook: its section for the subject). If a line in the note already covers the subject, show it and ask: "Replace this line, keep both, or cancel?" Wait.
 4. Run `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/notes/Set-ProductNote.ps1" -Product "<product>" -Section <section> -Line "<fact>" -Source "the engineer"`, with `-Replace "<text of the old line>"` if they chose to replace it.
-5. Reply with what the script printed, and: "It shows as Changed by Tandem in Notes until you mark it reviewed. To undo, restore the earlier version from History in Notes."
+5. Reply with what the script printed, and: "It shows as Changed by Tandem in Folio until you mark it reviewed. To undo, restore the earlier version from History in Folio."
 
 ## Listing
 

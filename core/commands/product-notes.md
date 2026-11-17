@@ -1,5 +1,5 @@
 ---
-description: "Move product facts from repo guides' Remembered sections into product notes, or list the product notes. Usage: /product-notes [move | list]"
+description: "Move product facts from repo guides' Remembered sections into product notes, list the product notes, or draft one product's note from its docs. Usage: /product-notes [move | list | draft <product>]"
 agent: writer
 ---
 
@@ -7,7 +7,7 @@ Product notes: **$ARGUMENTS**
 
 Product notes are explained in the core rules (Product notes) and in `{{ENG_HOME}}/guides/product-notes.md`. This command writes product notes only through `Set-ProductNote.ps1`, and changes repo guides only by removing lines the engineer agreed to move. It changes no code.
 
-If the first word is `list` or there are no arguments, go to "List". If it is `move`, go to "Move". Anything else: reply `Usage: /product-notes [move | list]` and stop.
+If the first word is `list` or there are no arguments, go to "List". If it is `move`, go to "Move". If it is `draft`, go to "Draft". Anything else: reply `Usage: /product-notes [move | list | draft <product>]` and stop.
 
 ## List
 
@@ -27,7 +27,7 @@ For every folder in the workspace root that contains `.git` and has a repo guide
 
 Use the split rule from the core rules:
 
-- **Product fact:** still true if the product's code were rewritten (a business rule, a customer need, who owns what, why a decision was made). Pick the product from the repo map: the products whose repo table lists this repo. If there are several and the line does not say which, mark it `ask`. Pick a section: `Business rules`, `Gotchas`, `People`, `Decisions`, or `Remembered`.
+- **Product fact:** still true if the product's code were rewritten (a business rule, a customer need, why a decision was made). Pick the product from the repo map: the products whose repo table lists this repo. If there are several and the line does not say which, mark it `ask`. Pick a section: `Business rules`, `Gotchas`, `Who to ask`, `Decisions`, or `Remembered`. A line about how the team works (sprints, PRs, releases) goes to the handbook (`-Note team/handbook.md`); a line about who owns what is not moved (owners live in Workshop's People).
 - **Code fact:** about this codebase (a command, a pattern, a file, a library, a test style). It stays in the repo guide.
 - When unsure, it stays.
 
@@ -54,4 +54,14 @@ Reply with:
 - Each product note changed, with the lines added.
 - Each repo guide changed, with the lines removed.
 - Any line not moved and why.
-- "The notes show as Changed by Tandem in Notes until you mark them reviewed. History in Notes has every earlier version."
+- "The notes show as Changed by Tandem in Folio until you mark them reviewed. History in Folio has every earlier version."
+
+## Draft
+
+Started from Workshop (Settings, Knowledge, Products, **Draft from sources**) or by hand. Nobody is watching: ask nothing; if something is unclear, leave it out.
+
+1. The product is everything after `draft` (quotes removed). Run `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/notes/Get-Knowledge.ps1" -Product "<product>"`. If it says knowledge is not available, or the product is not in Workshop Settings, say so and stop.
+2. Read only these, for the repos it lists: each repo's `README.md`, its `docs/` folder (Markdown files, at most 10), files with `architecture`, `adr` or `decision` in the name, and the product docs folder if it names one. Do not read code beyond what a doc points to.
+3. Collect facts the note does not have yet, by its sections: `Summary` (at most 2 lines: what the product is and who uses it), `Business rules`, `Gotchas`, `Decisions` (with the ADR or doc that says why), `Links` (doc paths). Only facts a doc states; never guesses, plans or to-dos; never owners or people. Skip anything already in the note, and anything about one codebase (that belongs in the repo guide).
+4. Write at most 15 lines, each with `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/notes/Set-ProductNote.ps1" -Product "<product>" -Section <section> -Line "<fact>" -Source "<doc path>"` (add `-Create` to the first call if there is no note yet). If a doc contradicts a line in the note, flag that line (`-Flag`, see `{{ENG_HOME}}/guides/product-notes.md`) instead of replacing it.
+5. Reply with each line added (section, line, source), each line flagged, and: "Review them in Folio: the note shows as Changed by Tandem, with the new lines highlighted."

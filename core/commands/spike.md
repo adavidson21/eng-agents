@@ -13,10 +13,12 @@ Run a spike on: **$ARGUMENTS**
 - If `$1` is a work item id (a number, or a local id like `L12`) and a folder in `.work/` starts with `$1-`, use that folder.
 - Otherwise create a new folder `.work/spike-<short-name>/`, where `<short-name>` is 3 to 5 lowercase words from the topic joined with hyphens.
 
-## Step 2: Frame the question
+## Step 2: First look, then gather, then aim
 
 - Keep the ask in the asker's own words. Vague asks ("how hard would it be to add X?") are normal: write what you understood it to mean and the decision it supports.
-- Ask the engineer ONE question only if a wrong reading would send the whole investigation the wrong way. Otherwise write your reading as an assumption and go on. Wait if you asked.
+- **First look (fast).** Read the repo map and at most 5 files or docs that the ask points to most directly. Then write `first-look.md` in the folder from `{{ENG_HOME}}/templates/first-look.md` (question mode): a quick answer, a confidence (Low or Medium) and what you will dig into. Do this before anything else in Step 3; Loom shows it on the card right away.
+- **Gather.** Collect the sources the ask needs (code, git history, docs, work items, product notes) into your list of facts and sources, without writing the answer yet.
+- **Aim.** If the ask is broad (it could be answered for different readers, scopes or depths, and the answer would differ), ask the engineer ONE focus question with 2 to 4 options, your recommendation first, using what you gathered to make the options concrete. Otherwise write your reading as an assumption and go on. Wait if you asked. This is the only question the spike asks.
 
 ## Step 3: Investigate
 
@@ -53,6 +55,11 @@ It writes `brief.html` next to `findings.md`: one self-contained page (no web re
 ## Log mode (an error log)
 
 The engineer pasted an error log and wants three things: the probable root cause, why, and a solution. **Prefer a solution that changes no code**: a setting, a feature flag, an environment or pipeline variable, a timeout, a connection, data, or infrastructure. Give a code fix only when nothing else fixes the cause, and say why. Do not change any code or any configuration yourself.
+
+### L0: First look (fast)
+
+- Read `log.md`. Within the first few minutes, before L2, write `first-look.md` in the folder from `{{ENG_HOME}}/templates/first-look.md` (log mode): product, environment, error, first guess and a confidence (Low or Medium). Match the product from namespaces, hosts and file names against the repo map. Same secrets rule as L1: name things, never copy values. Loom shows it on the card right away.
+- Ask the engineer ONE question only when the log cannot tell you something that changes where you look (most often the environment, or what changed just before). Otherwise go on.
 
 ### L1: Read the log
 

@@ -73,8 +73,8 @@
       "command": "do-task",
       "agent": "implementer",
       "tokens": 4532,
-      "readTokens": 996,
-      "hash": "77a4ebcbb19d",
+      "readTokens": 1036,
+      "hash": "3bdfa562cf1c",
       "files": [
         "core/AGENTS.md",
         "core/agents/implementer.md",
@@ -209,9 +209,9 @@
     {
       "command": "pr",
       "agent": "writer",
-      "tokens": 3022,
-      "readTokens": 163,
-      "hash": "f1d2f5e08e55",
+      "tokens": 3129,
+      "readTokens": 231,
+      "hash": "a8d90b240be0",
       "files": [
         "core/AGENTS.md",
         "core/agents/writer.md",
@@ -305,9 +305,9 @@
     {
       "command": "review",
       "agent": "reviewer",
-      "tokens": 4503,
+      "tokens": 4656,
       "readTokens": 379,
-      "hash": "063cf418e5d8",
+      "hash": "22e5b58849d4",
       "files": [
         "core/AGENTS.md",
         "core/agents/reviewer.md",
@@ -392,9 +392,9 @@
     {
       "command": "spike",
       "agent": "investigator",
-      "tokens": 4552,
-      "readTokens": 1682,
-      "hash": "c608bda63fb8",
+      "tokens": 4889,
+      "readTokens": 1863,
+      "hash": "691b668326db",
       "files": [
         "core/AGENTS.md",
         "core/agents/investigator.md",
@@ -402,6 +402,7 @@
         "core/scripts/briefs/Export-Brief.ps1",
         "core/templates/diagnosis.md",
         "core/templates/findings.md",
+        "core/templates/first-look.md",
         "core/templates/progress.md"
       ]
     },

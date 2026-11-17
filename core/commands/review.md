@@ -20,7 +20,8 @@ If the mode above is `auto`, autopilot is running this review and nobody is watc
 
 ## Step 3: Run the tests
 
-- For each repo, run its "All unit tests" command from its `AGENTS.md`. If the work touched Playwright tests, run the Playwright command too.
+- For each repo, run its "All unit tests" command from its `AGENTS.md`.
+- **UI tests.** If the repo guide has a UI test command (Playwright or similar), run it whenever the work changed anything a person sees or clicks, not only when it touched the UI tests. If the repo has no UI test command, record `UI tests: none in this repo` (this is not a finding).
 - Record each result.
 
 ## Step 4: Read the diff
@@ -45,10 +46,11 @@ Check every changed file against this list, the repo `AGENTS.md`, and the "Revie
 - **Correctness:** null handling, edge cases, off-by-one, errors handled the way the pattern does.
 - **Security:** input validated, authorization not bypassed, no secrets, no personal data in logs.
 - **Tests:** test behavior, not implementation details. No skipped or commented-out tests. No real database, backend or shared environment.
-- **Leftovers:** no debug logging, commented-out code, or TODO comments added.
+- **Leftovers:** no debug logging, commented-out code, unused imports or variables, or TODO comments added. A leftover is a `Blocker`: the code goes to the PR clean.
+- **Docs:** when the change alters behavior, a setting, an API or a command that the repo's docs describe (its README, `docs/`, CHANGELOG, or the docs its repo guide names), those docs are updated in the same change. Missing docs are a `Blocker` (category `docs`), so the fix is a task before the PR.
 - **Overbuild:** no abstractions, interfaces, options or layers that nobody asked for and only one caller uses (core rule 8). `Should fix`.
 
-Give every finding a category: the bold word of the checklist item it falls under, in lower case (`architecture`, `consistency`, `correctness`, `security`, `tests`, `leftovers`, `overbuild`, or the category a stack file's item names, such as `efcore`, `angular` or `playwright`), or `spec`, `scope`, `checklist` or `tdd` for Pass 1 findings. If none fits, use the closest one; do not invent new categories.
+Give every finding a category: the bold word of the checklist item it falls under, in lower case (`architecture`, `consistency`, `correctness`, `security`, `tests`, `leftovers`, `docs`, `overbuild`, or the category a stack file's item names, such as `efcore`, `angular` or `playwright`), or `spec`, `scope`, `checklist` or `tdd` for Pass 1 findings. If none fits, use the closest one; do not invent new categories.
 
 ## Step 7: Write review.md
 

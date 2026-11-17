@@ -2,6 +2,15 @@
 
 One section per repo. Copy each section into your git host (Azure DevOps, GitHub, ...) when you open the PR.
 
+## Checks
+
+- Builds: <clean, or what failed>
+- Unit tests: <n passed, n new>
+- UI tests: <n passed (where), or none in this repo>
+- Docs: <files updated, or no doc change needed>
+- Clean up: <leftovers removed, or none>
+- Review: <READY, with n Should fix and n Nit left>
+
 ---
 
 ## <repo-folder>

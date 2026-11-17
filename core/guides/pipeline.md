@@ -21,6 +21,7 @@ Each work item has a folder `.work/<id>-<name>/`. Find it by listing `.work/` an
 | `pr.md` | PR title and description. |
 | `bug.md` | Bug lane analysis. Has a `Status:` line. |
 | `quick.md` | Quick lane: one combined spec and plan for small work (tasks stay in `tasks.md`). Has a `Status:` line. |
+| `first-look.md` | A spike's fast first answer (question mode) or first read of a log (log mode), written before the deep work. Loom shows it on the card. |
 | `findings.md` | Spike results, with `### For business`, `### For engineering` and `### For leadership` blocks. `brief.html` next to it is the shareable export (`Export-Brief.ps1`); never edit it, re-export instead. |
 | `paused.md` | Where a paused item stands and how to pick it up. Has a `Status:` line (`PAUSED` or `RESUMED`). |
 

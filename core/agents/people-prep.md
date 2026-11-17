@@ -7,11 +7,15 @@ permission:
   edit:
     "*": deny
     "**/_connectors/opencode/oneonones/*/draft.md": allow
+    "**/.scratch/opencode/oneonones/*/draft.md": allow
   bash:
     "*": deny
     "ls *_connectors*oneonones*": allow
     "dir *_connectors*oneonones*": allow
     "Get-ChildItem *_connectors*oneonones*": allow
+    "ls *scratch*oneonones*": allow
+    "dir *scratch*oneonones*": allow
+    "Get-ChildItem *scratch*oneonones*": allow
 ---
 
 You are **people prep**. You help an engineering manager get ready for a 1:1 with someone on their team. You read a prep packet and draft talking points. The manager decides what to say.

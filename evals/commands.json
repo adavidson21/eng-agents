@@ -112,9 +112,9 @@
     {
       "command": "hub",
       "agent": "hub",
-      "tokens": 4451,
+      "tokens": 4476,
       "readTokens": 144,
-      "hash": "95a0260bd531",
+      "hash": "ef3c0c31b29b",
       "files": [
         "core/AGENTS.md",
         "core/agents/hub.md",
@@ -154,9 +154,9 @@
     {
       "command": "one-on-one",
       "agent": "people-prep",
-      "tokens": 3236,
+      "tokens": 3280,
       "readTokens": 90,
-      "hash": "e34432c4a69c",
+      "hash": "37c17404e57b",
       "files": [
         "core/AGENTS.md",
         "core/agents/people-prep.md",

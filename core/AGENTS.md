@@ -41,21 +41,26 @@ The engineer saves rules with `/memory`. Follow them like any other rule.
 |---|---|---|
 | One repo | The `## Remembered` section of that repo's guide | When you read the repo guide |
 | Every repo | `{{ENG_CONFIG}}/memory.md` | Automatically, in every session |
-| One product | Its product note in Workshop's Notes app (see Product notes) | When you work on that product |
+| One product | Its product note in Workshop's Folio app (see Product notes) | When you work on that product |
+| The team | The team handbook in Folio (see Product notes) | With `Get-Knowledge.ps1` |
 
 - A repo's `## Remembered` rule wins over a global memory rule.
 - If the engineer says "remember this", "from now on", or "always do X here", suggest `/memory <rule>` (one repo), `/memory -global <rule>` (every repo) or `/memory -product <product> <fact>` (a product fact; the split rule under Product notes decides which). Do not write memory files yourself unless running `/memory` (or `/retro` saving the rules the engineer ticked).
 
 ## Product notes
 
-Each product can have a **product note** in Workshop's Notes app: one Markdown file per product with what the code cannot tell you (business rules, gotchas, who to ask, why decisions were made). The engineer edits them in Notes; you read them and add to them.
+Workshop keeps what the code cannot tell you in one place each: products, the glossary and owners in Workshop's Settings, and per product a **product note** in Workshop's Folio app (business rules, gotchas, who else to ask, why decisions were made), plus one **team handbook** (sprints, work item states, pull requests, releases, definition of done). The engineer edits them there; you read them and add to them.
 
-- **Read:** after you match work to a product in the repo map, and before you plan, change, review or answer anything about it, run:
-  `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/notes/Get-ProductNote.ps1" -Product "<product name>"`
-  Use the product's `Note:` line in the repo map if it has one (`-Note products/<slug>.md`). Read only the notes of the products the work touches, never all of them. If it says product notes are not available, or the note does not exist yet, go on without it.
-- **What goes where (split rule):** if a fact would still be true after the product's code was rewritten (a business rule, a customer need, who owns what, why a decision was made), it belongs in the product note. If it is about one codebase (a build quirk, a pattern, a file to avoid), it belongs in that repo guide's `## Remembered`. Never write a fact in both.
-- **Write:** when you confirm a product fact that is missing from the note or contradicts it, and it would help the next person, first read `{{ENG_HOME}}/guides/product-notes.md` and follow it exactly: only `Set-ProductNote.ps1`, one fact per call, and list every change in your reply.
-- Agents that may not run scripts or write files (hub, pr-reviewer) only read product notes. pr-reviewer suggests product note lines in `review.md` instead of writing them.
+- **Read:** after you match work to a product in the repo map, and before you plan, change, review or answer anything about it, run once per product the work touches (never for all of them):
+  `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/notes/Get-Knowledge.ps1" -Product "<product name>"`
+  It prints the product's repos, change order and other fields, its owners, its glossary words, its note and the team handbook, in one block. With no product (a team-wide question), run it with `-Handbook` instead. If it says knowledge is not available, go on without it.
+- **What goes where (split rule):** if a fact would still be true after the product's code was rewritten (a business rule, a customer need, why a decision was made), it belongs in the product note; if it is about how the team works rather than one product, in the handbook. If it is about one codebase (a build quirk, a pattern, a file to avoid), it belongs in that repo guide's `## Remembered`. Never write a fact in two places. Owners live only in Workshop's People: never write them into a note.
+- **Write:** when you confirm a fact that is missing from the note or handbook or contradicts it, and it would help the next person, first read `{{ENG_HOME}}/guides/product-notes.md` and follow it exactly: only `Set-ProductNote.ps1`, one fact per call, and list every change in your reply.
+- Agents that may not run scripts or write files (hub, chat) read the same files with `Get-Content`; pr-reviewer runs `Get-Knowledge.ps1` and suggests note lines in `review.md` instead of writing them.
+
+## Writing as the engineer
+
+Text the engineer sends as themselves (PR descriptions, handoffs, briefs, requester messages, review comments, 1:1 drafts) follows their voice from Workshop first: read `<dataDir>/settings/voice.md` (`Get-Content ~/.workshop/config.json` gives `dataDir`, default `~/Workshop`) once per session when it exists. It wins over the writing rules in the Personal and Company sections; follow those for anything it does not cover.
 
 ## Pipeline commands
 

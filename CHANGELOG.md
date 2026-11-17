@@ -4,6 +4,18 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 4.7.0 (2026-11-17)
+
+For Workshop's Knowledge base V1 (Workshop `docs/knowledge.md`): one home for each fact, read in one call.
+- `scripts/notes/Get-Knowledge.ps1 -Product <name>` prints a product's Settings fields (repos, change order, entry points, external systems, processes, docs folder), its owners from People, its glossary words, its product note and the team handbook, ending with a Sources line. `-Handbook` prints the handbook alone. The core rules (Product notes) use it instead of reading the map block and then the note.
+- `Set-ProductNote.ps1 -Note team/handbook.md | tandem/changes.md` writes the team handbook and Tandem's change log (made from built-in templates on the first line; the log keeps its newest 100 lines). `-Flag "<line>" -Reason <why> -Source <where>` marks a line the code contradicts with `(check: ...)`, which Folio shows as stale.
+- `/memory` and `/retro` log every repo guide and global rule change to `tandem/changes.md`, so you review them in Folio with the notes.
+- `/product-notes draft <product>` (Workshop's **Draft from sources**): reads the product's READMEs, docs and product docs folder and writes up to 15 note lines with sources, asking nothing.
+- Owners live only in Workshop's People: the product template's `People` section is now `Who to ask`, and `/memory -product` sends owner facts to People.
+- Writing as the engineer: `<dataDir>/settings/voice.md` (Workshop's Writing voice) wins over the Personal and Company writing rules.
+- The hub and chat agents read the handbook and end answers with a `Sources:` list Workshop's Chat turns into links. pr-reviewer runs `Get-Knowledge.ps1`.
+- `company/repo-map.template.md` says Workshop writes the repo map from Settings when you use it (Settings, Knowledge, Repo map imports a hand-written one).
+
 ## Core 4.6.0 (2026-11-17)
 
 For Workshop's Loom lanes (Loom 5.x: Clarify, Plan, Work, Ready). Nothing breaks for items in progress.

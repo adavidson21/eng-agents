@@ -5,7 +5,8 @@
 .DESCRIPTION
   The only way agents write product notes. It follows Notes' contract (adavidson21/notes README, "Tandem and
   product notes"):
-    - writes only <Workshop data folder>/notes/products/<slug>.md and its snapshots in notes/history/;
+    - writes only <Workshop data folder>/folio/products/<slug>.md and its snapshots in folio/history/ (notes/ instead
+      of folio/ with a Workshop that has not renamed the folder yet);
     - keeps the current text as a snapshot (Notes' History panel can restore it) before every change;
     - writes atomically and starts again if the note changed while it worked;
     - sets tandem-changed in the frontmatter, so Notes shows "Changed by Tandem" until you mark it reviewed.

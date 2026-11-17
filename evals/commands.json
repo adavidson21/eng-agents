@@ -112,9 +112,9 @@
     {
       "command": "hub",
       "agent": "hub",
-      "tokens": 4476,
+      "tokens": 4492,
       "readTokens": 144,
-      "hash": "ef3c0c31b29b",
+      "hash": "5a10b0b64f04",
       "files": [
         "core/AGENTS.md",
         "core/agents/hub.md",
@@ -127,7 +127,7 @@
       "agent": "writer",
       "tokens": 4071,
       "readTokens": 0,
-      "hash": "4c68b1fdf5fa",
+      "hash": "e187212e0188",
       "files": [
         "core/AGENTS.md",
         "core/agents/writer.md",
@@ -141,7 +141,7 @@
       "agent": "investigator",
       "tokens": 4425,
       "readTokens": 932,
-      "hash": "66201c2da7cd",
+      "hash": "9c0553b5062f",
       "files": [
         "core/AGENTS.md",
         "core/agents/investigator.md",
@@ -224,7 +224,7 @@
       "agent": "writer",
       "tokens": 3339,
       "readTokens": 354,
-      "hash": "cc0004b8f17c",
+      "hash": "0017eabe61a1",
       "files": [
         "core/AGENTS.md",
         "core/agents/writer.md",

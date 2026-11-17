@@ -1,5 +1,5 @@
 # Shared helpers for product notes: one note per product in Workshop's Notes app, in
-# <Workshop data folder>/notes/products/<slug>.md. Dot-source this file; it defines functions only.
+# <Workshop data folder>/folio/products/<slug>.md (notes/products/ with a Workshop that has not renamed the folder yet). Dot-source this file; it defines functions only.
 #
 # The rules Tandem follows when it writes these notes are Notes' contract (adavidson21/notes README,
 # "Tandem and product notes"): write only products/ and history/, keep a snapshot of the text it replaces in
@@ -68,8 +68,11 @@ function Get-ProductNotesHome {
     if (-not (Test-Path -LiteralPath $dataDir -PathType Container)) {
         return @{ Ok = $false; Reason = "The Workshop data folder $dataDir does not exist." }
     }
-    $notesDir = Join-Path $dataDir "notes"
-    return @{ Ok = $true; Reason = ""; DataDir = $dataDir; NotesDir = $notesDir; ProductsDir = (Join-Path $notesDir "products") }
+    # Folio's folder is folio/ (Workshop renames notes/ on start); an older Workshop still has notes/ only.
+    $folder = "folio"
+    if (-not (Test-Path -LiteralPath (Join-Path $dataDir "folio") -PathType Container) -and (Test-Path -LiteralPath (Join-Path $dataDir "notes") -PathType Container)) { $folder = "notes" }
+    $notesDir = Join-Path $dataDir $folder
+    return @{ Ok = $true; Reason = ""; DataDir = $dataDir; Folder = $folder; NotesDir = $notesDir; ProductsDir = (Join-Path $notesDir "products") }
 }
 
 # A product name as a Workshop file name: lowercase letters, digits and -, at most 40 characters.
@@ -144,7 +147,7 @@ function Save-NoteSnapshot([hashtable]$Where, [string]$RelPath, [string]$Text, [
     Write-NoteAtomic $file $Text
     $snaps = @(Get-ChildItem -LiteralPath $dir -File | Where-Object { $_.Name -match '^\d{8}t\d{9}z\.md$' } | Sort-Object Name -Descending)
     if ($snaps.Count -gt $script:NotesKeep) {
-        $trash = Join-Path (Join-Path (Join-Path (Join-Path $Where.DataDir ".trash") "notes") "history") $key
+        $trash = Join-Path (Join-Path (Join-Path (Join-Path $Where.DataDir ".trash") $Where.Folder) "history") $key
         New-Item -ItemType Directory -Path $trash -Force | Out-Null
         foreach ($old in $snaps[$script:NotesKeep..($snaps.Count - 1)]) {
             Move-Item -LiteralPath $old.FullName -Destination (Join-Path $trash $old.Name) -Force

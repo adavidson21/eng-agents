@@ -44,14 +44,14 @@ try {
     Check "missing note: refused" ($r.Code -eq 1 -and $r.Out -match "-Create") $r.Out
 
     $r = Run $set @("-Product", "Wiki Edge", "-Create", "-Repos", "wiki-edge-api,wiki-edge-web", "-AlsoCalled", "wiki")
-    $file = Join-Path $data "notes/products/wiki-edge.md"
+    $file = Join-Path $data "folio/products/wiki-edge.md"
     $text = if (Test-Path $file) { [IO.File]::ReadAllText($file) } else { "" }
     Check "create from the built-in template" ($r.Code -eq 0 -and $text -match "(?m)^title: Wiki Edge$" -and $text -match "product/wiki-edge" -and $text -match "(?m)^repos: \[wiki-edge-api, wiki-edge-web\]$" -and $text -match "(?m)^tandem-changed: \d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$") "$($r.Out) $text"
 
     $r = Run $set @("-Product", "wiki-edge", "-Line", "Exports are capped at 5k rows.", "-Source", "PR 4812")
     $text = [IO.File]::ReadAllText($file)
     Check "add a line to Remembered" ($r.Code -eq 0 -and $text -match "## Remembered\r?\n\r?\n- Exports are capped at 5k rows\. \(\d{4}-\d\d-\d\d, PR 4812\)") "$($r.Out) $text"
-    $hist = Join-Path $data "notes/history/products-wiki-edge-11izt4n"
+    $hist = Join-Path $data "folio/history/products-wiki-edge-11izt4n"
     Check "snapshot in Notes' history format" ((Test-Path $hist) -and @(Get-ChildItem $hist -File | Where-Object { $_.Name -match '^\d{8}t\d{9}z\.md$' }).Count -eq 1)
 
     $r = Run $set @("-Product", "wiki-edge", "-Line", "- exports are capped at 5k rows.", "-Source", "PR 9")
@@ -84,14 +84,14 @@ try {
     # Snapshots are trimmed to the newest 20 (older ones go to the trash).
     for ($i = 0; $i -lt 22; $i++) { Run $set @("-Product", "wiki-edge", "-Line", "Fact $i.", "-Source", "PR $i") | Out-Null; Start-Sleep -Milliseconds 5 }
     Check "history trimmed to 20" (@(Get-ChildItem $hist -File).Count -eq 20) "$(@(Get-ChildItem $hist -File).Count)"
-    Check "older versions in the trash" (Test-Path (Join-Path $data ".trash/notes/history/products-wiki-edge-11izt4n"))
-    Check "no temp files left" (@(Get-ChildItem (Join-Path $data "notes/products") -Force -File | Where-Object { $_.Name -like ".tandem-*" }).Count -eq 0)
+    Check "older versions in the trash" (Test-Path (Join-Path $data ".trash/folio/history/products-wiki-edge-11izt4n"))
+    Check "no temp files left" (@(Get-ChildItem (Join-Path $data "folio/products") -Force -File | Where-Object { $_.Name -like ".tandem-*" }).Count -eq 0)
 
     # A template in Notes wins over the built-in one.
-    New-Item -ItemType Directory -Path (Join-Path $data "notes/templates") -Force | Out-Null
-    [IO.File]::WriteAllText((Join-Path $data "notes/templates/product.md"), "---`ntitle: {{title}}`ntags: [product, product/{{slug}}]`n---`n# {{title}}`n`n## Mine`n")
+    New-Item -ItemType Directory -Path (Join-Path $data "folio/templates") -Force | Out-Null
+    [IO.File]::WriteAllText((Join-Path $data "folio/templates/product.md"), "---`ntitle: {{title}}`ntags: [product, product/{{slug}}]`n---`n# {{title}}`n`n## Mine`n")
     $r = Run $set @("-Product", "Stencil", "-Create")
-    $text = [IO.File]::ReadAllText((Join-Path $data "notes/products/stencil.md"))
+    $text = [IO.File]::ReadAllText((Join-Path $data "folio/products/stencil.md"))
     Check "create from templates/product.md" ($text -match "## Mine" -and $text -match "product/stencil") $text
 
     $r = Run $get @("-List")
@@ -100,6 +100,13 @@ try {
     Check "read one" ($r.Out -match "Product note: products/wiki-edge\.md" -and $r.Out -match "10k rows") $r.Out
     $r = Run $get @("-Product", "Nope")
     Check "read a missing one" ($r.Code -eq 0 -and $r.Out -match "does not exist yet") $r.Out
+
+    # A Workshop that has not renamed notes/ to folio/ yet: the old folder is used while it is the only one.
+    $old = Join-Path $root "old"
+    New-Item -ItemType Directory -Path (Join-Path $old "notes/products") -Force | Out-Null
+    [IO.File]::WriteAllText((Join-Path $wsHome "config.json"), (@{ dataDir = $old } | ConvertTo-Json))
+    $r = Run $set @("-Product", "Lighthouse", "-Create")
+    Check "an old notes/ folder is used while there is no folio/" ($r.Code -eq 0 -and (Test-Path (Join-Path $old "notes/products/lighthouse.md")) -and -not (Test-Path (Join-Path $old "folio"))) $r.Out
 } finally {
     Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue
     Remove-Item Env:WORKSHOP_HOME -ErrorAction SilentlyContinue

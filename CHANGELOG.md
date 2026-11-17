@@ -4,6 +4,10 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 4.5.0 (2026-11-16)
+
+- Product notes follow Workshop's renamed Folio folder: `<dataDir>/folio/products/` (Workshop renames `notes/` to `folio/` on start). `ProductNotes.ps1`, `/hub` and the **chat** agent use `folio/`, or `notes/` while that is the only one there, so an older Workshop keeps working. Old snapshots go to `.trash/folio/history/`.
+
 ## Core 4.4.0 (2026-11-16)
 
 - For Workshop's opencode connector 1.18.0, which keeps hub requests and 1:1 packets in the data folder's working folder (`<dataDir>/.scratch/opencode/`, removed after 7 days) instead of `~/.workshop`: the **hub** agent may write `route.json` and `answer.md` there, and **people-prep** may write `draft.md` and list its folder there. The old `_connectors` paths still work for older Workshops.

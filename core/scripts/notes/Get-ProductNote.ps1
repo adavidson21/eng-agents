@@ -3,7 +3,7 @@
   Prints a product note from Workshop's Notes app, or lists them all.
 
 .DESCRIPTION
-  Product notes are one Markdown file per product in <Workshop data folder>/notes/products/<slug>.md.
+  Product notes are one Markdown file per product in <Workshop data folder>/folio/products/<slug>.md (notes/products/ before Workshop renamed the folder).
   They hold what the code cannot tell you: business rules, gotchas, who to ask, decisions. Read-only.
 
   If product notes are not available (Workshop not installed, Notes switched off), it prints why and exits 0,

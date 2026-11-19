@@ -17,6 +17,9 @@
                                    outside the markers is kept.
       opencode.json                permission keys merged into your existing
                                    file. Provider and model settings are kept.
+                                   When Workshop is installed (its agent token
+                                   exists), an MCP server "workshop" too: its
+                                   tools for agents (-NoWorkshopMcp to skip).
       eng-agents\templates\        templates (later layer replaces same name)
       eng-agents\scripts\          scripts
       eng-agents\stacks\           rules per tech stack, read when a repo guide names the stack
@@ -59,6 +62,7 @@ param(
     # so -Component dashboard installs everything.
     [ValidateSet("all", "dashboard")]
     [string]$Component = "all",
+    [switch]$NoWorkshopMcp,
     [switch]$DryRun
 )
 
@@ -460,6 +464,41 @@ function Merge-Bash {
     $Config["permission"]["bash"] = $merged
 }
 
+# Workshop as an MCP server (Workshop docs/agent-api.md, MCP for agents): its connector tools, your MCP servers'
+# tools and approval status, as native tools. Added only when Workshop's agent token exists. opencode reads the
+# token from its file at each start ({file:...}); it is never copied into opencode.json. An existing "workshop"
+# entry keeps your other keys (enabled, timeout); its address and token reference are refreshed.
+$workshopMcp = $null
+if (-not $NoWorkshopMcp) {
+    . (Join-Path $ScriptDir "core/scripts/workshop/WorkshopCommon.ps1")
+    $wsAgent = Get-WorkshopAgent
+    if (-not $wsAgent.Problem) {
+        $userHome = if ($env:USERPROFILE) { $env:USERPROFILE } else { $HOME }
+        $ref = if ($wsAgent.TokenFile -eq (Join-Path (Join-Path $userHome ".workshop") "agent-token")) { "~/.workshop/agent-token" } else { $wsAgent.TokenFile -replace '\\', '/' }
+        $workshopMcp = [ordered]@{ url = "http://127.0.0.1:$($wsAgent.Port)/api/mcp"; ref = $ref }
+    }
+}
+
+function Add-WorkshopMcp {
+    param($Config)
+    if (-not $workshopMcp) { return }
+    if (-not $Config.Contains("mcp")) { $Config["mcp"] = [ordered]@{} }
+    $mcp = $Config["mcp"]
+    if ($mcp -isnot [System.Collections.Specialized.OrderedDictionary]) { Write-Warning "opencode.json: 'mcp' is not an object, so the Workshop MCP server was not added."; return }
+    # opencode 2 lists servers under mcp.servers and has no "enabled"; opencode 1 lists them under mcp.
+    $v2 = $mcp.Contains("servers") -and ($mcp["servers"] -is [System.Collections.Specialized.OrderedDictionary])
+    $list = if ($v2) { $mcp["servers"] } else { $mcp }
+    $had = $list.Contains("workshop") -and ($list["workshop"] -is [System.Collections.Specialized.OrderedDictionary])
+    $entry = if ($had) { $list["workshop"] } else { [ordered]@{} }
+    $entry["type"] = "remote"
+    $entry["url"] = $workshopMcp.url
+    if (-not $had -and -not $v2) { $entry["enabled"] = $true }
+    $entry["oauth"] = $false
+    $entry["headers"] = [ordered]@{ "X-Workshop-Agent-Token" = "{file:$($workshopMcp.ref)}" }
+    $list["workshop"] = $entry
+    Write-Host ("  opencode.json: Workshop MCP server {0} ({1})" -f $(if ($had) { "refreshed" } else { "added" }), $workshopMcp.url)
+}
+
 $writeSidecar = $false
 if (Test-Path $jsoncPath) {
     Write-Warning "Found opencode.jsonc. It may contain comments, so it was not modified."
@@ -471,6 +510,7 @@ elseif (Test-Path $jsonPath) {
         Backup-File $jsonPath "opencode.json"
         Merge-Ordered $config $layerConfig
         Merge-Bash $config
+        Add-WorkshopMcp $config
         if ($DryRun) { Write-Host "  would merge permissions into: $jsonPath" }
         else { Write-Utf8 $jsonPath ($config | ConvertTo-Json -Depth 32); Write-Host "  opencode.json: permissions merged (other settings kept)" }
     }
@@ -480,6 +520,7 @@ elseif (Test-Path $jsonPath) {
     }
 }
 else {
+    Add-WorkshopMcp $layerConfig
     if ($DryRun) { Write-Host "  would write: $jsonPath" }
     else { Write-Utf8 $jsonPath ($layerConfig | ConvertTo-Json -Depth 32); Write-Host "  opencode.json: created" }
 }

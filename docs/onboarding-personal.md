@@ -100,6 +100,7 @@ pwsh ./install.ps1
 - The `Layers :` line lists **Personal**.
 - No warning about `TODO(you)`.
 - In opencode, ask: "What does the Personal section of your instructions say?"
+- With Workshop installed and started once (its agent token exists), install adds an MCP server `workshop` to `opencode.json`. While Workshop runs, `opencode mcp list` shows it connected. `-NoWorkshopMcp` leaves it out.
 
 On Windows, run `.\install.ps1` instead. Never run it with `sudo` (it refuses to run as root).
 

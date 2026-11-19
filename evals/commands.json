@@ -61,9 +61,9 @@
     {
       "command": "cloudflare",
       "agent": "investigator",
-      "tokens": 4986,
+      "tokens": 5043,
       "readTokens": 2595,
-      "hash": "d9723128b231",
+      "hash": "bd5743e85f2d",
       "files": [
         "core/AGENTS.md",
         "core/agents/investigator.md",
@@ -228,9 +228,9 @@
     {
       "command": "pr-review",
       "agent": "pr-reviewer",
-      "tokens": 5774,
+      "tokens": 5768,
       "readTokens": 340,
-      "hash": "4a5de1febe9d",
+      "hash": "4a6341eac92a",
       "files": [
         "core/AGENTS.md",
         "core/agents/pr-reviewer.md",
@@ -462,9 +462,9 @@
     {
       "command": "start",
       "agent": "planner",
-      "tokens": 7449,
+      "tokens": 7443,
       "readTokens": 3582,
-      "hash": "9b018800af1e",
+      "hash": "74d025d994e5",
       "files": [
         "core/AGENTS.md",
         "core/agents/planner.md",

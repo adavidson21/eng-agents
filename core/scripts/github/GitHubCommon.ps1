@@ -4,9 +4,13 @@
     Dot-source it: . (Join-Path $PSScriptRoot "GitHubCommon.ps1")
 
 .DESCRIPTION
-    Read-only. The token comes from the first environment variable that is set of GITHUB_PAT (the name
-    Workshop's GitHub connector uses), GH_TOKEN and GITHUB_TOKEN, or else from "gh auth token" when the
-    GitHub CLI is installed and signed in. It is sent only in the Authorization header and never written to disk.
+    Read-only. Where the token comes from, first match wins:
+      1. An environment variable: GITHUB_PAT (the name Workshop's GitHub connector uses), GH_TOKEN, GITHUB_TOKEN.
+      2. Workshop: when Workshop is running here and its GitHub connector offers api.get, the calls go through
+         Workshop's tools for agents (api.get, graphql.query) and the token stays in Workshop's secret store (the
+         Mac Keychain, Windows Credential Manager): this script never sees it.
+      3. "gh auth token", when the GitHub CLI is installed and signed in.
+    A token is sent only in the Authorization header and never written to disk.
 
     The API URL is https://api.github.com unless GITHUB_API_URL is set (GitHub Enterprise Server:
     https://<server>/api/v3).
@@ -25,31 +29,75 @@ function Get-GitHubGraphQlUrl {
     return "$api/graphql"
 }
 
-function Get-GitHubToken {
+. (Join-Path $PSScriptRoot "../workshop/WorkshopCommon.ps1")
+
+function Get-NoGitHubTokenText {
+    return "NOTOKEN: no GitHub token. Save one in Workshop (workshop secret set github-pat --expires <date>, then Settings, GitHub: Token secret github-pat), set GITHUB_PAT, or sign in with: gh auth login"
+}
+
+function Get-GitHubEnvToken {
     foreach ($name in @("GITHUB_PAT", "GH_TOKEN", "GITHUB_TOKEN")) {
         $v = [Environment]::GetEnvironmentVariable($name)
         if ($v -and $v.Trim()) { return $v.Trim() }
     }
+    return $null
+}
+
+function Get-GitHubCliToken {
     if (Get-Command gh -ErrorAction SilentlyContinue) {
         $ErrorActionPreference = "Continue"
         $t = (& gh auth token 2>$null | Select-Object -First 1)
         if ($LASTEXITCODE -eq 0 -and $t -and "$t".Trim()) { return "$t".Trim() }
     }
-    throw "NOTOKEN: no GitHub token. Set GITHUB_PAT (workshop pat GITHUB_PAT), or sign in with: gh auth login"
+    return $null
 }
 
-function New-GitHubHeaders {
-    $token = Get-GitHubToken
+# A token from the environment or the GitHub CLI. Not Workshop's: that one never leaves Workshop.
+function Get-GitHubToken {
+    $t = Get-GitHubEnvToken
+    if (-not $t) { $t = Get-GitHubCliToken }
+    if ($t) { return $t }
+    throw (Get-NoGitHubTokenText)
+}
+
+function New-GitHubTokenHeaders([string]$Token) {
     return @{
-        Authorization          = "Bearer $token"
+        Authorization          = "Bearer $Token"
         Accept                 = "application/vnd.github+json"
         "X-GitHub-Api-Version" = "2022-11-28"
         "User-Agent"           = "eng-agents"
     }
 }
 
+# What Invoke-GitHubRest and Invoke-GitHubGraphQl send with: token headers, or @{ Workshop = <agent> } when the calls
+# go through Workshop (the order is in the description above).
+function New-GitHubHeaders {
+    $t = Get-GitHubEnvToken
+    if ($t) { return (New-GitHubTokenHeaders $t) }
+    $agent = Get-WorkshopAgent
+    if (Test-WorkshopOffers $agent "github" "api.get") { return @{ Workshop = $agent } }
+    $t = Get-GitHubCliToken
+    if ($t) { return (New-GitHubTokenHeaders $t) }
+    throw (Get-NoGitHubTokenText)
+}
+
+# One read through Workshop's GitHub connector, with the same errors as a direct call.
+function Invoke-GitHubViaWorkshop {
+    param($Agent, [string]$Action, [hashtable]$ToolArgs, [string]$What)
+    try { return (Invoke-WorkshopApi $Agent "POST" "/github/$Action" @{ args = $ToolArgs }).result }
+    catch {
+        $e = Read-WorkshopError $_
+        $msg = if ($e.Message) { $e.Message } else { "HTTP $($e.Status)." }
+        if (-not $e.Status) { throw "GitHub request failed for ${What}: Workshop stopped answering on port $($Agent.Port)." }
+        if ($e.Status -eq 404 -and $msg -notmatch '^There is no ') { throw "NOTFOUND: $What was not found on GitHub, or the token cannot see it." }
+        if ($msg -match '(?i)token') { throw "NOTOKEN: $msg" }
+        throw "GitHub request failed for ${What}: $msg"
+    }
+}
+
 function Invoke-GitHubRest {
     param([hashtable]$Headers, [string]$Path, [string]$What)
+    if ($Headers.ContainsKey("Workshop")) { return Invoke-GitHubViaWorkshop $Headers["Workshop"] "api.get" @{ path = $Path } $What }
     $uri = "$(Get-GitHubApiUrl)$Path"
     try { return Invoke-RestMethod -Method Get -Uri $uri -Headers $Headers }
     catch {
@@ -63,6 +111,7 @@ function Invoke-GitHubRest {
 
 function Invoke-GitHubGraphQl {
     param([hashtable]$Headers, [string]$Query, [hashtable]$Variables)
+    if ($Headers.ContainsKey("Workshop")) { return Invoke-GitHubViaWorkshop $Headers["Workshop"] "graphql.query" @{ query = $Query; variables = $Variables } "a GraphQL query" }
     $body = @{ query = $Query; variables = $Variables } | ConvertTo-Json -Depth 10 -Compress
     $r = Invoke-RestMethod -Method Post -Uri (Get-GitHubGraphQlUrl) -Headers $Headers -Body $body -ContentType "application/json"
     if ($r.errors) { throw "GitHub GraphQL: $($r.errors[0].message)" }

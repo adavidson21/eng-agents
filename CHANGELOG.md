@@ -4,6 +4,13 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 4.11.0 (2026-11-19)
+
+Cloudflare through Workshop (Workshop 1.11.0, its Cloudflare connector). Agents never hold a token: Workshop does, in this computer's secret store. Nothing breaks for items in progress.
+- `/cloudflare <what you want>`: reads your account through Workshop, writes `.work/cf-<name>/plan.md` and a change set (DNS records, a Worker on a custom domain, Pages projects, domains and variables, rollbacks, build retries), checks it, and proposes it. You apply it in Workshop (Settings, Cloudflare; Needs you links there). `/cloudflare why <worker or project>` reads the failed build's log and says the probable cause and the fix; `/cloudflare cf-<name> check` confirms what was applied. Runs as the investigator: it changes no code and applies nothing.
+- `scripts/workshop/Invoke-WorkshopTool.ps1`: runs one of Workshop's tools for agents (`/api/tools`, read actions a connector marks for agents) with Workshop's agent token, and prints JSON or a `NOWORKSHOP`, `NOTOOL`, `REFUSED` or `FAILED` line. `-Arg name=value,...` avoids JSON quoting in Windows PowerShell; `-ArgsFile` for change sets. `Test-WorkshopTool.ps1` checks it against a fake Workshop, in CI.
+- Guards: every agent asks before reading a secret store (`security`, `secret-tool`, `CredRead`, `Get-StoredCredential`) or Workshop's agent token and secret list, and is refused Workshop's per-install token. `opencode.json` asks before reading anything in `~/.workshop`. The hub and chat agents deny all of these.
+
 ## Core 4.10.0 (2026-11-19)
 
 Epics hand off to builds, and products onboard themselves (Workshop project doc `claude/loom-floor-v1-plan.md`, Loom 6.5.0). Nothing breaks for items in progress.

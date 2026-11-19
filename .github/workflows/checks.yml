@@ -22,6 +22,7 @@ jobs:
       - run: ./core/scripts/notes/Test-ProductNotes.ps1
       - run: ./core/scripts/ado/Test-ExportBacklog.ps1
       - run: ./core/scripts/github/Test-GitHub.ps1
+      - run: ./core/scripts/workshop/Test-WorkshopTool.ps1
       - run: ./core/scripts/briefs/Test-ExportBrief.ps1
       - run: ./core/scripts/stats/Test-PipelineStats.ps1
       - run: ./tests/Test-Guards.ps1

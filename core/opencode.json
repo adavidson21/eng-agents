@@ -23,6 +23,7 @@
       "~/.docker/**": "ask",
       "~/.gnupg/**": "ask",
       "~/.git-credentials": "ask",
+      "~/.workshop/**": "ask",
       "~/.npmrc": "ask",
       "~/AppData/Roaming/Microsoft/Credentials/**": "ask",
       "~/AppData/Roaming/Microsoft/Protect/**": "ask"

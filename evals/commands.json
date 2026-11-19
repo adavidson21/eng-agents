@@ -59,6 +59,20 @@
       ]
     },
     {
+      "command": "cloudflare",
+      "agent": "investigator",
+      "tokens": 4986,
+      "readTokens": 2509,
+      "hash": "a055eeafbb04",
+      "files": [
+        "core/AGENTS.md",
+        "core/agents/investigator.md",
+        "core/commands/cloudflare.md",
+        "core/guides/pipeline.md",
+        "core/scripts/workshop/Invoke-WorkshopTool.ps1"
+      ]
+    },
+    {
       "command": "dashboard",
       "agent": "planner",
       "tokens": 3941,
@@ -115,9 +129,9 @@
     {
       "command": "hub",
       "agent": "hub",
-      "tokens": 5100,
+      "tokens": 5150,
       "readTokens": 195,
-      "hash": "7aa00a4d8ee1",
+      "hash": "a575d89d5551",
       "files": [
         "core/AGENTS.md",
         "core/agents/hub.md",

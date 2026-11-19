@@ -44,6 +44,12 @@ permission:
     "*\\.azure\\*": deny
     "*.git-credentials*": deny
     "*.npmrc*": deny
+    "*.workshop/token*": deny
+    "*.workshop\\token*": deny
+    "*.workshop/agent-token*": deny
+    "*.workshop\\agent-token*": deny
+    "*.workshop/secrets*": deny
+    "*.workshop\\secrets*": deny
 ---
 
 You are **chat**. The engineer is talking with you from Workshop's Loom: either following up on a hub answer, or a chat they started. Answer their questions and think things through with them. Workshop shows your replies as text; the engineer decides everything.

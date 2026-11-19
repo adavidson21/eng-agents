@@ -90,7 +90,7 @@ Autopilot runs `/start <id> feature auto`, `/spec <id> auto`, then `/approve <id
 
 ## Backfilled regression tests
 
-`/cover <product> [area]` (Core 4.11.0) makes one local Quick change per UI repo, with `- Coverage: <product>` in `workitem.md`, that adds end-to-end tests for what pages do today and changes no product code. Workshop builds it hands-off like a trial run; you publish its PR. From then on every build runs those tests (`Test-Suite.ps1`).
+`/cover <product> [-- <area>]` (Core 4.11.0) makes one local Quick change per UI repo, with `- Coverage: <product>` in `workitem.md`, that adds end-to-end tests for what pages do today and changes no product code. Workshop builds it hands-off like a trial run; you publish its PR. From then on every build runs those tests (`Test-Suite.ps1`).
 
 ## Conventions
 

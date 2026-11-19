@@ -35,7 +35,7 @@ Open opencode from your workspace root (for example `C:\src\work`). In Workshop,
 | Switch to something urgent | `/pause <id> [reason]`, later `/resume <id>` |
 | New repo in the workspace | `/onboard-repo <folder>` |
 | New product, ready for its first build | `/onboard-product <product>` (repo guides, product note, gaps to answer, a trial run) |
-| Regression tests for a product that has few | `/cover <product> [area]` (one hands-off Quick change per UI repo that adds end-to-end tests) |
+| Regression tests for a product that has few | `/cover <product> [-- <area>]` (one hands-off Quick change per UI repo that adds end-to-end tests) |
 | Remember a rule | `/memory <rule>` (one repo) or `/memory -global <rule>` (every repo). `/memory -list` shows them. |
 | Remember a product fact | `/memory -product <product> <fact>` writes it to the product's note in Workshop's Notes app (`notes/products/<product>.md`), where you review it. Agents read the note when they work on that product and add facts they confirm. `/product-notes move` moves product facts out of repo guides; `/product-notes list` lists the notes. |
 | Work item in another ADO collection | `/start <id> <lane> <repo folder or connection>` |

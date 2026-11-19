@@ -4,6 +4,20 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 4.9.0 (2026-11-18)
+
+The software factory (Workshop project doc `claude/software-factory-v1-plan.md`): you approve the plan and publish the PR, everything between runs on its own with lighter checks. Nothing breaks for items in progress.
+- Factory settings: commands read `.work/factory.json` (written by Workshop's Settings, Factory; defaults when missing): task size cap, quick lane task cap, retries, which review findings become fix tasks, review rounds, UI checks, worktrees. See the pipeline guide.
+- Lighter checks: a task may change 6 files and test files do not count (was 3, tests counted); the quick lane allows 3 tasks (was 2), and `/approve <id> quick auto` approves up to 3; `/do-task` runs only its verify command and a full check on the last task (`/review` runs the full build and tests once for the item and reads `baseline.md`).
+- `/review auto` also turns Should fix findings into fix tasks (factory `autoFix`, default `should-fix`); Nits are never tasks. Later rounds read only what changed since the `Reviewed at:` commit.
+- Catch up with the base: `/review` and `/pr` rebase each branch on its base first (never force, never push). A conflict becomes a `conflict` Blocker with a fix task; at `/pr` it stops with "Needs you".
+- UI checks: the new `scripts/ui/Test-Ui.ps1` starts the app from the repo guide's new `## UI checks` table, screenshots its pages at two widths in headless Chromium (Playwright), checks load errors, console errors, failed requests and simple accessibility, compares with the `before` run `/start` takes, and stops the app. `/review` runs it when a change touches UI files; problems are `ui` Blockers. It skips (never fails) when the app cannot start locally or Playwright is missing. `/onboard-repo` fills the table.
+- Knowledge gaps: core rule 3 logs missing knowledge with the new `scripts/work/Add-Gap.ps1` (`.work/gaps.md`) instead of asking, and keeps going on a safe assumption. The new `/teach G<n> <answer>` (Workshop's Teach card) writes the answer where it belongs and closes the gap with `Close-Gap.ps1`.
+- Run retro: `/pr` runs the new `scripts/work/Find-Repeats.ps1`, which suggests a fix once for a review finding (same repo and category) or a gap (same kind and product) that comes back in 3 items, in Folio's review list.
+- Core rule 6: the retry limit comes from the factory settings; in `auto` mode Workshop gives a failed step one fresh session before it waits for you.
+- `/start` puts every repo of a build in its own worktree by default (factory `worktrees: always`), so several projects build side by side.
+- Local items: only an item linked to ADO (`- ADO item: <n>`, or a numbered item not marked unlinked) gets `AB#<n>` in commits and PR text; a local item gets its id.
+
 ## Core 4.8.0 (2026-11-18)
 
 Ideas from Diraigent (Workshop project doc `claude/diraigent-ideas-v1-plan.md`). Nothing breaks for items in progress.

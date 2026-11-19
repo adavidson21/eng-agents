@@ -1,7 +1,7 @@
 # Tasks: <id> <title>
 
 Rules for every task:
-- Changes at most 3 files, all in ONE repo.
+- Changes at most 6 files (the task size cap; test files do not count), all in ONE repo.
 - Has exactly one verify command that can be run as written.
 - Can be done in one fresh session without reading other tasks.
 

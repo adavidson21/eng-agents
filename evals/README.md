@@ -109,12 +109,12 @@ Runs are unattended. A command that hits an `ask` rule waits for an answer nobod
 |---|---|---|
 | `spec-basic` | `/spec L1 auto` | spec is DRAFT with a matching draft hash, 2+ Given/When/Then ACs covering the threshold and smaller orders, cited paths exist, no questions, no code changed |
 | `plan-paths` | `/plan L1 auto` | the pattern file and every changed file exist, the test plan covers every AC, settings go in `PricingOptions` |
-| `tasks-shape` | `/tasks L1 auto` | each task: one repo, 3 files or fewer, a Human interface line, a verify command from the repo guide; coverage complete; Stats counts the tasks |
+| `tasks-shape` | `/tasks L1 auto` | each task: one repo, 6 files or fewer (tests not counted), a Human interface line, a verify command from the repo guide; coverage complete; Stats counts the tasks |
 | `do-task` | `/do-task L1 1 auto` | one commit with only the task's files, `LegacyRound` (Do not touch) kept, settings in `PricingOptions`, Red and Green runs logged, all tests pass including hidden acceptance tests |
 | `review-planted` | `/review L1 auto` | finds a planted off-by-one (exactly 10 items get no discount) that the branch's own tests miss |
 | `review-clean` | `/review L1 auto` | a correct branch gets READY with no invented Blockers |
 | `bug-lane` | `/bug L2 auto` | root cause in `OrderTotals.cs` with a confidence, 1 to 3 tasks, Task 1 a test that must fail |
-| `small-lane` | `/quick L3 auto` | a one-task change stays quick: quick.md with Given/When/Then ACs and a real pattern file, 1 or 2 tasks with verify commands from the repo guide |
+| `small-lane` | `/quick L3 auto` | a one-task change stays quick: quick.md with Given/When/Then ACs and a real pattern file, 1 to 3 tasks with verify commands from the repo guide |
 | `small-lane-escalate` | `/quick L4 auto` | a schema plus API change steps up: `Lane: feature`, no quick.md or tasks.md, `escalated=1` logged |
 | `feature-outcome` | the whole feature lane (`/spec`, `/plan`, `/tasks`, `/do-task` per task), or one plain prompt (`-Arm baseline`) | outcome only: hidden outcome tests pass, `LegacyRound` kept, settings in `PricingOptions`, changes only under `src/` and `tests/` (committed or not) |
 | `retro-repeat` | `/retro --since 2026-01-01` | spots the same repo and category in two items and proposes a rule (or flags the existing one as broken) without writing memory |

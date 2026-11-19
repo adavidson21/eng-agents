@@ -26,6 +26,16 @@ jobs:
       - run: ./core/scripts/stats/Test-PipelineStats.ps1
       - run: ./tests/Test-Guards.ps1
       - run: ./core/scripts/work/Test-WorkScripts.ps1
+      - run: ./core/scripts/ui/Test-UiScript.ps1
+  ui-checks:
+    # The UI check's PNG diff, argument and problem helpers (node --test). The real browser run is skipped here
+    # (no Playwright install in CI); it runs locally with UI_TEST_PLAYWRIGHT_DIR set.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: node --test "core/scripts/ui/test/*.test.mjs"
   work-format:
     # Tandem writes .work; Workshop's Dispatch reads it. Check this repo's parser against Workshop's contract
     # (docs/work-format.md and its example workspace), on pwsh and on Windows PowerShell 5.1.

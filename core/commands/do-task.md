@@ -43,8 +43,8 @@ If the repo's row in `repos.md` has a **Path** (a worktree), every git, build, t
   3. Write the smallest code change that makes it pass.
   4. Run the verify command. It must PASS. Save the output (the Green run).
 - **Any other stack (Core: `angular`, `playwright`):** write the code and tests in the order its testing rules allow, then run the verify command. It must PASS.
-- Change only the files the task lists, plus the test file for a listed code file (it still counts toward the 3-file cap). If any other file must change, stop and ask.
-- If the verify step fails 3 times, even with a different fix each time, stop. Go to Step 6 and log it as blocked.
+- Change only the files the task lists, plus the test file for a listed code file (test files do not count toward the task size cap). If any other file must change, stop and ask.
+- If the verify step fails `retries` times (Factory settings in the pipeline guide, default 3), even with a different fix each time, stop. Go to Step 6 and log it as blocked.
 
 ## Step 5: Lint
 
@@ -52,16 +52,16 @@ If the repo's row in `repos.md` has a **Path** (a worktree), every git, build, t
 
 ## Step 5b: Check nothing else broke
 
-The verify command only runs this task's tests. Before committing, check the whole project.
+The verify command only runs this task's tests. Run the whole-project check below only when this is the **last open task** in `tasks.md` for this repo, or the task's "Done when" line asks for it. Otherwise write `full=skipped` in Step 6 and go on: `/review` runs the full build and tests once for the whole item.
 
 - From the repo guide's Commands table, run the **Build** command if there is one, then the **Pre-commit check** command if there is one, otherwise **All unit tests**. If the table has none of these, write `full=skipped` in Step 6 and go on.
 - If it passes, write `full=PASS` in Step 6.
 - If a test fails, read `baseline.md` in the work folder:
   - The test is one this task added and its "Done when" line says it must fail (bug lane Task 1): that is expected. Go on.
   - The test is listed there as failing before this work item: it is not yours. Write it under "Notes" and `full=PASS` (pre-existing failures noted). Go on.
-  - Otherwise this task broke it. If the fix is in a file the task lists, fix it and run the check again. This counts toward the 3-attempt limit (Step 4). If the fix needs a file the task does not list, stop and ask. Do not commit.
+  - Otherwise this task broke it. If the fix is in a file the task lists, fix it and run the check again. This counts toward the retry limit (Step 4). If the fix needs a file the task does not list, stop and ask. Do not commit.
   - If there is no `baseline.md` (an item started before Core 2.22.0, or with `--no-baseline`), ask the engineer whether the failure was there before. Wait.
-- If it still fails after 3 attempts, write `full=FAIL`, log the task as blocked in Step 6, and do not commit.
+- If it still fails after `retries` attempts, write `full=FAIL`, log the task as blocked in Step 6, and do not commit.
 
 ## Step 6: Record
 
@@ -72,7 +72,7 @@ The verify command only runs this task's tests. Before committing, check the who
 
 - Only if the verify command and Step 5b passed.
 - Stage only the files you changed: `git -C <repo> add <file> <file>`.
-- Commit with a short plain summary: `git -C <repo> commit -m "<short summary>"`, following the commit message convention in `{{ENG_HOME}}/guides/pipeline.md` unless a Personal or Company rule in `AGENTS.md` says otherwise (for example `AB#<id>`).
+- Commit with a short plain summary: `git -C <repo> commit -m "<short summary>"`, following the commit message convention in `{{ENG_HOME}}/guides/pipeline.md` unless a Personal or Company rule in `AGENTS.md` says otherwise (for example `AB#<id>`). A rule that adds `AB#<id>` applies only to a linked item (pipeline guide, Who links to ADO); for a local item use its id instead.
 
 ## Step 8: Hand off
 

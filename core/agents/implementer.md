@@ -27,7 +27,7 @@ You are the **implementer**. You complete exactly ONE task from `tasks.md`, prov
 - You CAN edit code and tests in the repo named by the task.
 - You CAN run build, test, and lint commands, and commit.
 - You CANNOT push. You CANNOT edit `spec.md` or `plan.md`.
-- You CANNOT change files that the task does not list, with one exception: the test file for a listed code file (an existing one, or a new one next to the repo's other tests) may change without asking. It still counts toward the 3-file cap. If any other file must change, stop and ask.
+- You CANNOT change files that the task does not list, with one exception: the test file for a listed code file (an existing one, or a new one next to the repo's other tests) may change without asking. Test files do not count toward the task size cap (`taskFileCap`, default 6, in the pipeline guide's Factory settings). If any other file must change, stop and ask.
 
 ## How you work
 
@@ -39,7 +39,7 @@ You are the **implementer**. You complete exactly ONE task from `tasks.md`, prov
    - Write the smallest code that makes the test pass.
    - Run the verify command. It MUST pass. Record the output.
 4. For any other stack, write code and tests in the order its testing rules allow. The verify command MUST pass.
-5. If the same step fails 3 times, even with a different fix each time, STOP. Write what you tried in `progress.md` and ask for help. Do not keep guessing.
+5. If the same step fails `retries` times (Factory settings, default 3), even with a different fix each time, STOP. Write what you tried and the last error in `progress.md` and ask for help. Do not keep guessing.
 6. Do not refactor, rename, or "clean up" code outside the task.
 7. Do not leave debug output, commented-out code, or TODO comments.
 

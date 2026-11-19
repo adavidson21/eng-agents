@@ -5,7 +5,7 @@ agent: planner
 
 Write the quick plan for work item **$1**. Mode: **$2**
 
-The quick lane is for small work: one repo (not a shared one), at most 2 tasks, no schema, migration or public API contract change, and acceptance criteria that are already clear. It replaces `/spec`, `/plan` and `/tasks` with one file and one approval.
+The quick lane is for small work: one repo (not a shared one), at most `quickTasks` tasks (Factory settings in the pipeline guide, default 3), no schema, migration or public API contract change, and acceptance criteria that are already clear. It replaces `/spec`, `/plan` and `/tasks` with one file and one approval.
 
 If the mode above is `auto`, nobody is watching. Ask nothing: write every question you would have asked under "Assumptions", and write `questions=0` on the Stats line.
 
@@ -27,7 +27,7 @@ If the mode above is `auto`, nobody is watching. Ask nothing: write every questi
 
 Step up to the feature lane if any of these is true:
 
-- It needs more than 2 tasks (each task: one repo, at most 3 files).
+- It needs more than `quickTasks` tasks (each task: one repo, at most `taskFileCap` files, test files not counted).
 - It needs a second repo, or the repo is shared.
 - It changes a database schema, a migration, or a public API contract.
 - The acceptance criteria are missing or contradict each other, and a wrong guess would change what gets built.
@@ -53,8 +53,8 @@ To step up:
 
 ## Step 6: Write tasks.md
 
-- Start from `{{ENG_HOME}}/templates/tasks.md`. Write it to the work folder as `tasks.md`, following every rule in `/tasks` Step 3: one repo, at most 3 files, for .NET the test and its code in the same task, one verify command from the repo guide's Commands table, a "Done when" line, a "Pattern to follow" file and a "Human interface" line.
-- At most 2 tasks. Fill the coverage table: every acceptance criterion in `quick.md` is covered.
+- Start from `{{ENG_HOME}}/templates/tasks.md`. Write it to the work folder as `tasks.md`, following every rule in `/tasks` Step 3: one repo, at most `taskFileCap` files (test files not counted), for .NET the test and its code in the same task, one verify command from the repo guide's Commands table, a "Done when" line, a "Pattern to follow" file and a "Human interface" line.
+- At most `quickTasks` tasks. Fill the coverage table: every acceptance criterion in `quick.md` is covered.
 
 ## Step 7: Log and hand off
 

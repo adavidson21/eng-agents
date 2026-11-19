@@ -2,11 +2,19 @@
 
 Verdict: <READY | CHANGES NEEDED>
 
+Reviewed at: <repo> <short commit>, <repo> <short commit>
+
 ## Test results
 
 | Repo | Command | Result |
 |---|---|---|
 | <repo> | `<command>` | <PASS / FAIL (n failed)> |
+
+## UI checks
+
+| Repo | Result |
+|---|---|
+| <repo> | <UI: PASS 2 pages at 2 widths, 1 changed since before / UI: SKIPPED why / UI: FAIL ...> |
 
 ## Pass 1: Spec compliance
 
@@ -19,7 +27,7 @@ Scope creep (changes no criterion or task asked for):
 
 ## Pass 2: Code quality
 
-Every finding goes in this table, including Pass 1 problems and missing checklists. Category is one word from the `/review` checklist (`architecture`, `consistency`, `correctness`, `efcore`, `security`, `tests`, `angular`, `playwright`, `leftovers`, `overbuild`, `tdd`) or `spec`, `scope`, `checklist`. `/retro` groups findings by it.
+Every finding goes in this table, including Pass 1 problems and missing checklists. Category is one word from the `/review` checklist (`architecture`, `consistency`, `correctness`, `efcore`, `security`, `tests`, `angular`, `playwright`, `leftovers`, `overbuild`, `tdd`) or `spec`, `scope`, `checklist`, `ui`, `conflict`. `/retro` groups findings by it.
 
 | # | Severity | Category | Location | Problem | Suggested fix |
 |---|---|---|---|---|---|

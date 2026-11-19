@@ -4,6 +4,15 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 4.14.0 (2026-11-19)
+
+Automated regression and new feature testing (Workshop project doc `claude/test-suite-v1-plan.md`). Nothing breaks for items in progress; a repo without the new table behaves as before.
+- Regression suite: the new `scripts/tests/Test-Suite.ps1` runs a repo's whole end-to-end suite from the repo guide's new `## Regression tests` table (Command, Runner, Folder), with Playwright's JSON reporter and one retry, and writes `tests/results-<name>.json`: passed, failed, flaky, the item's new tests and the `[AC-n]` criteria they cover. `/start` runs it as the baseline, `/review` on every build whatever it touched, `/pr` again after a rebase brought new commits. Factory setting `regression` (default on).
+- Failures: a test that failed before the change is a note; one that passed before and fails now is a `regression` Blocker whose fix task fixes the code, not the test; one that passes on retry is a `flaky` Nit.
+- Acceptance tests: every criterion a person can see or click gets an end-to-end test titled with `[AC-n]` (playwright stack, `/plan`, `/quick`); `/review` makes a missing one a Should fix, which autopilot writes. Its task's manual validation becomes `Covered by tests`.
+- The new `/cover <product> [-- <area>]`: adds the Regression tests table where missing and makes one local Quick change per UI repo (`- Coverage: <product>`, `New-LocalWorkItem.ps1 -Coverage`) that adds tests for what pages do today. Workshop builds them hands-off.
+- `/onboard-repo` fills the Regression tests table from `playwright.config.*`. `review.md` and `pr.md` templates gain a Regression tests line.
+
 ## Core 4.13.0 (2026-11-19)
 
 Approvals, MCP and Keychain tokens through Workshop (Workshop agent 1.12.0). Agents still never hold a token. Nothing breaks for items in progress.

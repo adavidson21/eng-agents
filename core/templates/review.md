@@ -10,6 +10,12 @@ Reviewed at: <repo> <short commit>, <repo> <short commit>
 |---|---|---|
 | <repo> | `<command>` | <PASS / FAIL (n failed)> |
 
+## Regression tests
+
+| Repo | Result |
+|---|---|
+| <repo> | <Tests: PASS 48 passed, 3 new (AC-1, AC-2), 1 flaky / Tests: SKIPPED why / Tests: FAIL ...> |
+
 ## UI checks
 
 | Repo | Result |
@@ -27,7 +33,7 @@ Scope creep (changes no criterion or task asked for):
 
 ## Pass 2: Code quality
 
-Every finding goes in this table, including Pass 1 problems and missing checklists. Category is one word from the `/review` checklist (`architecture`, `consistency`, `correctness`, `efcore`, `security`, `tests`, `angular`, `playwright`, `leftovers`, `overbuild`, `tdd`) or `spec`, `scope`, `checklist`, `ui`, `conflict`. `/retro` groups findings by it.
+Every finding goes in this table, including Pass 1 problems and missing checklists. Category is one word from the `/review` checklist (`architecture`, `consistency`, `correctness`, `efcore`, `security`, `tests`, `angular`, `playwright`, `leftovers`, `overbuild`, `tdd`) or `spec`, `scope`, `checklist`, `ui`, `conflict`, `regression`, `flaky`. `/retro` groups findings by it.
 
 | # | Severity | Category | Location | Problem | Suggested fix |
 |---|---|---|---|---|---|

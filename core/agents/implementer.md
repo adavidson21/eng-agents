@@ -53,6 +53,7 @@ Before you stop, you MUST write a hyper-specific, physical checklist the enginee
 - Use only URLs, routes, button labels, field names, and commands you actually saw in the task, the code, or the repo `AGENTS.md`. If you do not know the local URL or port, say where to find it (for example "the URL `npm start` prints") instead of guessing.
 - 3 to 5 steps. Each step is one physical action or one check.
 - If the task's "Human interface" line is `none, covered by <test command>` (nothing a person can click, call or run besides the tests), write one line instead of steps: `Covered by tests: <test command>`.
+- If an end-to-end test titled `[AC-<n>]` (playwright stack) already checks every criterion the task covers, and you saw it pass, write one line instead of steps: `Covered by tests: <test command> [AC-1, AC-2]`. Nobody needs to click through what a test already clicks through.
 - If the task was blocked or its verify command did not pass, skip the checklist. Say it is blocked instead.
 
 Put the checklist in the `progress.md` entry (the reviewer reads it there), then print it as your final output in this EXACT format:

@@ -48,7 +48,10 @@ param(
     [switch]$BreakdownApproved,
 
     # A product's trial run (/onboard-product, Core 4.10.0): the product it proves.
-    [string]$Trial
+    [string]$Trial,
+
+    # Regression tests backfilled for a product (/cover, Core 4.14.0): the product. Workshop builds it hands-off.
+    [string]$Coverage
 )
 
 $ErrorActionPreference = "Stop"
@@ -111,6 +114,7 @@ if ($Repos) { $meta += "- Repos: $(& $clean $Repos)`n" }
 if ($Areas) { $meta += "- Areas: $(& $clean $Areas)`n" }
 if ($BreakdownApproved) { $meta += "- Breakdown: approved $today`n" }
 if ($Trial) { $meta += "- Trial: $(& $clean $Trial)`n" }
+if ($Coverage) { $meta += "- Coverage: $(& $clean $Coverage)`n" }
 
 $header = "- Type: $Type`n- Source: Local (no tracker item)`n- Created: $today"
 if ($meta) { $header += "`n" + $meta.TrimEnd("`n") }

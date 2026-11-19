@@ -62,14 +62,29 @@
       "command": "cloudflare",
       "agent": "investigator",
       "tokens": 5043,
-      "readTokens": 2595,
-      "hash": "bd5743e85f2d",
+      "readTokens": 2772,
+      "hash": "aedfb8009f5d",
       "files": [
         "core/AGENTS.md",
         "core/agents/investigator.md",
         "core/commands/cloudflare.md",
         "core/guides/pipeline.md",
         "core/scripts/workshop/Invoke-WorkshopTool.ps1"
+      ]
+    },
+    {
+      "command": "cover",
+      "agent": "investigator",
+      "tokens": 3974,
+      "readTokens": 1274,
+      "hash": "c1924e98242e",
+      "files": [
+        "core/AGENTS.md",
+        "core/agents/investigator.md",
+        "core/commands/cover.md",
+        "core/scripts/notes/Get-Knowledge.ps1",
+        "core/scripts/work/New-LocalWorkItem.ps1",
+        "core/templates/repo-agents.md"
       ]
     },
     {
@@ -89,9 +104,9 @@
     {
       "command": "do-task",
       "agent": "implementer",
-      "tokens": 5417,
-      "readTokens": 2595,
-      "hash": "2f29323e24dd",
+      "tokens": 5486,
+      "readTokens": 2772,
+      "hash": "df1dae6f9a57",
       "files": [
         "core/AGENTS.md",
         "core/agents/implementer.md",
@@ -160,7 +175,7 @@
       "agent": "investigator",
       "tokens": 4263,
       "readTokens": 0,
-      "hash": "4d22e09fc1f9",
+      "hash": "aead019136f3",
       "files": [
         "core/AGENTS.md",
         "core/agents/investigator.md",
@@ -173,9 +188,9 @@
     {
       "command": "onboard-repo",
       "agent": "investigator",
-      "tokens": 5102,
-      "readTokens": 1139,
-      "hash": "0a1e8b713614",
+      "tokens": 5148,
+      "readTokens": 1274,
+      "hash": "098c8da60633",
       "files": [
         "core/AGENTS.md",
         "core/agents/investigator.md",
@@ -214,9 +229,9 @@
     {
       "command": "plan",
       "agent": "planner",
-      "tokens": 4092,
+      "tokens": 4141,
       "readTokens": 222,
-      "hash": "655b1b03e5dd",
+      "hash": "6f01dd14ca57",
       "files": [
         "core/AGENTS.md",
         "core/agents/planner.md",
@@ -243,9 +258,9 @@
     {
       "command": "pr",
       "agent": "writer",
-      "tokens": 3992,
-      "readTokens": 2830,
-      "hash": "52b1c94ecf42",
+      "tokens": 4037,
+      "readTokens": 3017,
+      "hash": "641d9b227479",
       "files": [
         "core/AGENTS.md",
         "core/agents/writer.md",
@@ -286,9 +301,9 @@
     {
       "command": "quick",
       "agent": "planner",
-      "tokens": 4439,
+      "tokens": 4480,
       "readTokens": 547,
-      "hash": "bf850dcc68b5",
+      "hash": "2feb939d28ca",
       "files": [
         "core/AGENTS.md",
         "core/agents/planner.md",
@@ -343,14 +358,15 @@
     {
       "command": "review",
       "agent": "reviewer",
-      "tokens": 5901,
-      "readTokens": 3029,
-      "hash": "2f0753e24397",
+      "tokens": 6254,
+      "readTokens": 3250,
+      "hash": "8915ae7f421b",
       "files": [
         "core/AGENTS.md",
         "core/agents/reviewer.md",
         "core/commands/review.md",
         "core/guides/pipeline.md",
+        "core/scripts/tests/Test-Suite.ps1",
         "core/scripts/ui/Test-Ui.ps1",
         "core/scripts/work/Set-Step.ps1",
         "core/templates/review.md"
@@ -462,9 +478,9 @@
     {
       "command": "start",
       "agent": "planner",
-      "tokens": 7443,
-      "readTokens": 3582,
-      "hash": "74d025d994e5",
+      "tokens": 7522,
+      "readTokens": 3758,
+      "hash": "a4f33a7f9806",
       "files": [
         "core/AGENTS.md",
         "core/agents/planner.md",

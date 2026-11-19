@@ -59,6 +59,16 @@ Only for a repo with pages people use. Workshop's factory starts the app with th
 | UI files | `<patterns of files that change what people see, for example src/app/**, *.html, *.scss>` |
 | Seed | `<optional command that loads test data before Start>` |
 
+## Regression tests
+
+Only for a repo with an end-to-end suite (Playwright). Workshop's factory runs the whole suite at `/start`, `/review` and `/pr` (`Test-Suite.ps1`), and every build adds a test per visible acceptance criterion, titled with `[AC-<n>]`. Leave the section out until the repo has one (`/cover` sets it up).
+
+| Field | Value |
+|---|---|
+| Command | `<runs the whole suite, for example npx playwright test>` |
+| Runner | `<playwright, or other (pass or fail only)>` |
+| Folder | `<where the tests live, for example e2e/>` |
+
 ## Architecture
 
 <Layers and what each one holds.>

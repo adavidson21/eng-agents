@@ -1,5 +1,5 @@
 ---
-description: "Approve a work item's spec, plan, or bug analysis, a scope's stories or milestones, or a refined story, so the next phase can start. Usage: /approve <id> [spec|plan|bug|quick], /approve <id> quick auto, /approve scope-<name> [stories|milestones], or /approve refine-<name>"
+description: "Approve a work item's spec, plan, or bug analysis, a scope's stories or milestones, or a refined story, so the next phase can start. Usage: /approve <id> [spec|plan|bug|quick], /approve <id> quick auto, /approve <id> spec auto (a story from an approved breakdown), /approve scope-<name> [stories|milestones], or /approve refine-<name>"
 agent: planner
 ---
 
@@ -9,11 +9,11 @@ Running this command is the engineer's approval. It is the only command that may
 
 Mode: **$3**
 
-## Auto mode (review by exception, quick lane only)
+## Auto mode (review by exception: the quick lane, and stories from an approved breakdown)
 
-If the mode above is `auto`, Workshop's autopilot is running this and nobody is watching. It only runs it when the engineer turned on hands-off Quick changes. Ask nothing. Do these steps instead of Steps 2 to 6:
+If the mode above is `auto`, Workshop's autopilot is running this and nobody is watching. It only runs it when the engineer turned on hands-off Quick changes, or for a story whose breakdown the engineer approved. Ask nothing. Do these steps instead of Steps 2 to 6:
 
-1. `$2` must be `quick` and the lane in `repos.md` must be `quick`. Otherwise do not approve: say `Needs you: auto approval is only for the quick lane.` and stop.
+1. `$2` must be `quick` with `quick` as the lane in `repos.md`, or `spec` for a story from an approved breakdown (`workitem.md` has a `- Breakdown: approved` line). Otherwise do not approve: say `Needs you: auto approval is only for the quick lane and stories from an approved breakdown.` and stop. For `spec`, follow **Story auto approval** below instead of steps 2 to 4.
 2. Read `quick.md` and `tasks.md`. Approve only if **all** of these hold:
    - `quick.md` says `Status: DRAFT`.
    - `Test-DraftHash.ps1` (Step 3's command) prints `unchanged`: the draft is as the agent wrote it.
@@ -23,6 +23,26 @@ If the mode above is `auto`, Workshop's autopilot is running this and nobody is 
    - "Why this fits the quick lane" is filled in.
 3. **Clean:** change `Status: DRAFT` to `Status: APPROVED` in `quick.md` (nothing else), read it back to confirm, add a `progress.md` entry for `/approve` with `- Stats: gate=auto file=quick`, and say `Approved automatically: quick.md is clean.` Write no product notes (Step 5b): assumptions are not the engineer's answers.
 4. **Not clean:** change nothing in `quick.md`. Add a `progress.md` entry for `/approve` that names every check that failed, with `- Stats: gate=held file=quick`, and end your reply with one line: `Needs you: <the failed checks, in a few words>.` The engineer reviews it and runs `/approve $1` themselves.
+
+### Story auto approval (`/approve <id> spec auto`, Core 4.10.0)
+
+The engineer approved the epic's breakdown (`milestones.md`), so a story's plan needs them only when it drifts from what they approved.
+
+1. Run exactly this command, with the work folder:
+
+   ```
+   {{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/work/Test-StoryDrift.ps1" -Folder "<work folder>"
+   ```
+
+   It prints a `drift: <reason>` line for each place the plan leaves the breakdown (over the task file cap, a new dependency, a migration, auth or security code, files outside the story's areas or repos), then `CLEAN` or `DRIFT`.
+2. Approve only if **all** of these hold:
+   - The script printed `CLEAN`.
+   - `spec.md` and `plan.md` say `Status: DRAFT`, and `tasks.md` exists.
+   - `Test-DraftHash.ps1` (Step 3's command) prints `unchanged` for both.
+   - "Open questions" in `spec.md` is empty, or holds only placeholder text.
+   - `tasks.md`'s coverage table covers every acceptance criterion.
+3. **Clean:** change `Status: DRAFT` to `Status: APPROVED` in `spec.md` and in `plan.md` (nothing else), read both back to confirm, add one `progress.md` entry for `/approve` with `- Stats: gate=auto file=spec` and `- Breakdown: clean`, and say `Approved automatically: the plan stays inside the approved breakdown.` Write no product notes (Step 5b).
+4. **Drift, or another check failed:** change nothing. Add a `progress.md` entry for `/approve` that copies every `drift:` line and names every other failed check, with `- Stats: gate=held file=spec`, and end your reply with one line: `Needs you: <the drift or failed checks, in a few words>.` The engineer reviews it in Workshop and approves it themselves.
 
 ## Step 1: Find the work folder
 

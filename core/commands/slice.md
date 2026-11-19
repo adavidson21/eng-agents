@@ -53,6 +53,7 @@ Write down real paths only. If you cannot find where a story belongs, ask ONE qu
 - Order features so each one only needs features above it. Order stories inside each feature the same way.
 - Renumber to match the order: features 1, 2, 3; stories `<feature>.<n>`.
 - Fill "Depends on" for each story with stories above it, or "none".
+- Fill "Areas" for each story: the folders or modules it changes, as `<repo>/<folder>` (one to three, as narrow as you can tell from Step 3). Workshop builds stories from an approved breakdown hands-off, and a plan that leaves these areas waits for the engineer, so name every folder the story really needs.
 
 ## Step 6: Write milestones.md
 

@@ -4,24 +4,25 @@
     {
       "command": "approve",
       "agent": "planner",
-      "tokens": 5439,
+      "tokens": 5955,
       "readTokens": 587,
-      "hash": "5ebbdb7c8aa6",
+      "hash": "69437d6d9f19",
       "files": [
         "core/AGENTS.md",
         "core/agents/planner.md",
         "core/commands/approve.md",
         "core/guides/product-notes.md",
         "core/scripts/notes/Set-ProductNote.ps1",
-        "core/scripts/work/Test-DraftHash.ps1"
+        "core/scripts/work/Test-DraftHash.ps1",
+        "core/scripts/work/Test-StoryDrift.ps1"
       ]
     },
     {
       "command": "backlog",
       "agent": "milestone-architect",
-      "tokens": 4515,
+      "tokens": 4608,
       "readTokens": 0,
-      "hash": "3751e86cfe34",
+      "hash": "9503bed2d428",
       "files": [
         "core/AGENTS.md",
         "core/agents/milestone-architect.md",
@@ -75,8 +76,8 @@
       "command": "do-task",
       "agent": "implementer",
       "tokens": 5303,
-      "readTokens": 2097,
-      "hash": "e0ecec2e1f93",
+      "readTokens": 2509,
+      "hash": "64e290ae03c4",
       "files": [
         "core/AGENTS.md",
         "core/agents/implementer.md",
@@ -137,6 +138,21 @@
         "core/guides/product-notes.md",
         "core/scripts/notes/Get-Knowledge.ps1",
         "core/scripts/notes/Set-ProductNote.ps1"
+      ]
+    },
+    {
+      "command": "onboard-product",
+      "agent": "investigator",
+      "tokens": 4263,
+      "readTokens": 0,
+      "hash": "4d22e09fc1f9",
+      "files": [
+        "core/AGENTS.md",
+        "core/agents/investigator.md",
+        "core/commands/onboard-product.md",
+        "core/scripts/notes/Get-Knowledge.ps1",
+        "core/scripts/work/New-LocalWorkItem.ps1",
+        "core/scripts/work/Set-Onboarding.ps1"
       ]
     },
     {
@@ -213,8 +229,8 @@
       "command": "pr",
       "agent": "writer",
       "tokens": 3992,
-      "readTokens": 2332,
-      "hash": "607739939ba0",
+      "readTokens": 2743,
+      "hash": "a072de807771",
       "files": [
         "core/AGENTS.md",
         "core/agents/writer.md",
@@ -313,8 +329,8 @@
       "command": "review",
       "agent": "reviewer",
       "tokens": 5820,
-      "readTokens": 2531,
-      "hash": "ce8279fdad99",
+      "readTokens": 2942,
+      "hash": "a6d45614c784",
       "files": [
         "core/AGENTS.md",
         "core/agents/reviewer.md",
@@ -372,9 +388,9 @@
     {
       "command": "slice",
       "agent": "milestone-architect",
-      "tokens": 4937,
-      "readTokens": 607,
-      "hash": "8cce7056c59e",
+      "tokens": 5014,
+      "readTokens": 637,
+      "hash": "fe9459606cc3",
       "files": [
         "core/AGENTS.md",
         "core/agents/milestone-architect.md",
@@ -387,9 +403,9 @@
     {
       "command": "spec",
       "agent": "planner",
-      "tokens": 4457,
+      "tokens": 4583,
       "readTokens": 247,
-      "hash": "f1113288723e",
+      "hash": "cfdf62eb27ad",
       "files": [
         "core/AGENTS.md",
         "core/agents/planner.md",
@@ -430,9 +446,9 @@
     {
       "command": "start",
       "agent": "planner",
-      "tokens": 7202,
-      "readTokens": 3084,
-      "hash": "0699c07a66db",
+      "tokens": 7449,
+      "readTokens": 3495,
+      "hash": "39b3987d3109",
       "files": [
         "core/AGENTS.md",
         "core/agents/planner.md",

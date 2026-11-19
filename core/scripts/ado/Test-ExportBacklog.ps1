@@ -87,6 +87,44 @@ try {
     $wi = if ($item) { [IO.File]::ReadAllText((Join-Path $item.FullName "workitem.md")) } else { "" }
     Check "local: story keeps builder notes" ($r.Code -eq 0 -and $wi -match "OrdersController" -and $wi -match "Part of") "$($r.Out) $wi"
 
+    # Core 4.10.0: each local story names its scope, story, what it waits for (as local ids), repos and areas.
+    $two = $good -replace "## Open questions", @'
+### Story 1.2: Filter past orders
+
+As a customer, I want to filter my past orders by date, so that I find an old one fast.
+
+#### Acceptance criteria
+
+```gherkin
+Scenario: Filter by month
+  Given I have orders in March and April
+  When I filter by March
+  Then I see only the March orders
+```
+
+#### Notes for the builder
+
+- Repos: `orders-api`, `orders-web`
+- Areas: `orders-api/src/Orders`, `orders-web/src/app/orders`
+- Depends on: Story 1.1
+
+## Open questions
+'@
+    $scope2 = Join-Path $work "scope-two"
+    New-Item -ItemType Directory -Path $scope2 -Force | Out-Null
+    Write-Text (Join-Path $scope2 "milestones.md") $two
+    $before = @(Get-ChildItem $work -Directory | Where-Object { $_.Name -like "L*" }).Count
+    $r = Run @("-Folder", $scope2, "-Local", "-ConfigPath", $config)
+    $made = @(Get-ChildItem $work -Directory | Where-Object { $_.Name -like "L*" } | Sort-Object { [int]($_.Name -replace '^L(\d+)-.*$', '$1') })
+    $first = $made[$before]; $second = $made[$before + 1]
+    $wi1 = [IO.File]::ReadAllText((Join-Path $first.FullName "workitem.md"))
+    $wi2 = [IO.File]::ReadAllText((Join-Path $second.FullName "workitem.md"))
+    $id1 = $first.Name -replace '^(L\d+)-.*$', '$1'
+    Check "local story: names its scope and story, approved breakdown" ($r.Code -eq 0 -and $wi1 -match "(?m)^- Epic: scope-two\r?$" -and $wi1 -match "(?m)^- Story: 1\.1\r?$" -and $wi1 -match "(?m)^- Depends on: none\r?$" -and $wi1 -match "(?m)^- Breakdown: approved \d{4}-\d{2}-\d{2}\r?$") "$($r.Out) $wi1"
+    Check "local story: waits for the story it depends on, by local id" ($wi2 -match "(?m)^- Story: 1\.2\r?$" -and $wi2 -match "(?m)^- Depends on: $id1\r?$") $wi2
+    Check "local story: repos and areas from the builder notes, without backticks" ($wi2 -match "(?m)^- Repos: orders-api, orders-web\r?$" -and $wi2 -match "(?m)^- Areas: orders-api/src/Orders, orders-web/src/app/orders$") $wi2
+    Check "local story: no Repos or Areas line when the notes have none" ($wi1 -notmatch "(?m)^- (Repos|Areas):") $wi1
+
     Write-Text $milestones ($good -replace "(?s)#### Release note\s+You can now[^\n]*\n", "")
     $r = Run @("-Folder", $scope, "-Check")
     Check "check: missing release note fails" ($r.Code -eq 1 -and $r.Out -match "FORMAT: Feature 1 has no '#### Release note'") $r.Out

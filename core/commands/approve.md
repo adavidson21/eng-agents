@@ -1,11 +1,28 @@
 ---
-description: "Approve a work item's spec, plan, or bug analysis, a scope's stories or milestones, or a refined story, so the next phase can start. Usage: /approve <id> [spec|plan|bug|quick], /approve scope-<name> [stories|milestones], or /approve refine-<name>"
+description: "Approve a work item's spec, plan, or bug analysis, a scope's stories or milestones, or a refined story, so the next phase can start. Usage: /approve <id> [spec|plan|bug|quick], /approve <id> quick auto, /approve scope-<name> [stories|milestones], or /approve refine-<name>"
 agent: planner
 ---
 
 Approve a gate file for work item **$1**. File named by the engineer, if any: **$2**
 
 Running this command is the engineer's approval. It is the only command that may change a `Status:` line to `APPROVED`. Change only that one line.
+
+Mode: **$3**
+
+## Auto mode (review by exception, quick lane only)
+
+If the mode above is `auto`, Workshop's autopilot is running this and nobody is watching. It only runs it when the engineer turned on hands-off Quick changes. Ask nothing. Do these steps instead of Steps 2 to 6:
+
+1. `$2` must be `quick` and the lane in `repos.md` must be `quick`. Otherwise do not approve: say `Needs you: auto approval is only for the quick lane.` and stop.
+2. Read `quick.md` and `tasks.md`. Approve only if **all** of these hold:
+   - `quick.md` says `Status: DRAFT`.
+   - `Test-DraftHash.ps1` (Step 3's command) prints `unchanged`: the draft is as the agent wrote it.
+   - "Open questions" is empty, or holds only placeholder text.
+   - "Assumptions" has at most 3 lines.
+   - `tasks.md` has at most 2 tasks, and its coverage table covers every acceptance criterion.
+   - "Why this fits the quick lane" is filled in.
+3. **Clean:** change `Status: DRAFT` to `Status: APPROVED` in `quick.md` (nothing else), read it back to confirm, add a `progress.md` entry for `/approve` with `- Stats: gate=auto file=quick`, and say `Approved automatically: quick.md is clean.` Write no product notes (Step 5b): assumptions are not the engineer's answers.
+4. **Not clean:** change nothing in `quick.md`. Add a `progress.md` entry for `/approve` that names every check that failed, with `- Stats: gate=held file=quick`, and end your reply with one line: `Needs you: <the failed checks, in a few words>.` The engineer reviews it and runs `/approve $1` themselves.
 
 ## Step 1: Find the work folder
 
@@ -68,6 +85,16 @@ It prints one word: `unchanged` (approved as the agent wrote it), `edited` (the 
 
 - Change the line `Status: DRAFT` to `Status: APPROVED`. Apart from the marks added in Step 4, change nothing else in the file.
 - Read the file again and confirm the line now says `Status: APPROVED`.
+
+## Step 5b: Record decisions in the product note
+
+The engineer's answers while drafting are facts worth keeping. Only for `spec.md` (with or without `plan.md`):
+
+- Read the "Decisions made during clarification" table in `spec.md`. Skip it if it is empty or has only the template row.
+- Keep a row only if its answer would still be true after the product's code was rewritten (a business rule, a scope call, why one way was picked over another: the split rule in `AGENTS.md`, Product notes). Skip rows about one codebase or only this work item.
+- If the work matches a product in the repo map, write at most 3 of them to its product note's `Decisions` section, following `{{ENG_HOME}}/guides/product-notes.md`: `-Section Decisions -Source "<id>"`, one short line each, the decision and why. Skip one the note already says.
+- If there is no product, product notes are not available, or nothing qualifies, skip this step without saying so. It never blocks approval.
+- Name each line you wrote in Step 6.
 
 ## Step 6: Log and hand off
 

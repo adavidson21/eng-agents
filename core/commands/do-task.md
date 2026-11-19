@@ -29,6 +29,8 @@ If the mode above is `auto`, nobody is watching (autopilot or an eval run). Neve
 
 ## Step 3: Check the repo
 
+If the repo's row in `repos.md` has a **Path** (a worktree), every git, build, test and file command for it in this task runs in that Path (`{{ENG_HOME}}/guides/pipeline.md`, Where the work happens).
+
 - Run `git -C <repo> branch --show-current`. It must match the branch in `repos.md`. If not, stop and tell the engineer.
 - Run `git -C <repo> status --porcelain`. If there are changes to files this task does not list, stop and ask.
 

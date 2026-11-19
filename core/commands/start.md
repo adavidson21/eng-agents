@@ -117,21 +117,23 @@ For a bare `#<number>`, add `-From "$3"` at the end.
 
 For each repo in `repos.md`, in order:
 
-1. Run `git -C <repo> status --porcelain`. If there is any output, the repo has uncommitted changes. Skip this repo and tell the engineer.
-2. Run `git -C <repo> branch --show-current`. If the repo is on any `dev/` branch, it belongs to another work item, even if there are no uncommitted changes. **Do not switch it.** Ask the engineer first: "`<repo>` is on `<branch>` for another work item. Switch it to `<new branch>` anyway, skip this repo, or use a git worktree?" Wait for the answer and do what they choose.
+1. Run `git -C <repo> status --porcelain`. Any output means the repo has uncommitted changes: it is **busy**.
+2. Run `git -C <repo> branch --show-current`. A `dev/` branch belongs to another work item, even with no uncommitted changes: the repo is **busy**. **Never switch or stash a busy repo.** Ask nothing: a busy repo gets a worktree in step 4.
 3. Find the base branch (the repo's main line, which is not always called `main`):
    - Run `git -C <repo> remote`.
    - **If it prints `origin`:** run `git -C <repo> fetch origin`, then `git -C <repo> rev-parse --abbrev-ref origin/HEAD`. If that prints `origin/<name>`, the base is exactly what it printed. If it fails, run `git -C <repo> remote set-head origin --auto` and try once more. If it still fails, the base is `origin/main` if `git -C <repo> rev-parse --verify --quiet origin/main` prints a hash, else `origin/master` if that prints one, else ask the engineer which branch to start from.
    - **If it prints nothing** (a repo with no remote): the base is `main` if `git -C <repo> rev-parse --verify --quiet main` prints a hash, else `master` if that prints one, else the current branch if it does not start with `dev/`, else ask the engineer.
    - Write the base in the repo's **Base** column in `repos.md`.
-4. Run `git -C <repo> checkout -b <branch> <base>`.
+4. Make the branch:
+   - **Not busy:** run `git -C <repo> checkout -b <branch> <base>`. Leave the repo's **Path** empty.
+   - **Busy:** run exactly `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/work/New-Worktree.ps1" -Workspace "." -Repo "<repo>" -Folder "<work folder name without .work/>" -Branch "<branch>" -Base "<base>"`. Its last line is the worktree path (`.worktrees/<folder>/<repo>`): write it in the repo's **Path** column in `repos.md`. From here on, everything for this repo runs there (`{{ENG_HOME}}/guides/pipeline.md`, Where the work happens). If it fails, show the error in one line, skip this repo and tell the engineer.
 
 ## Step 7b: Record the test baseline (skip with `--no-baseline`)
 
 `/do-task` runs each repo's full unit tests before it commits. This baseline tells it which failures were already there before this work item, so it does not chase them.
 
 - Copy `{{ENG_HOME}}/templates/baseline.md` into the work folder as `baseline.md`.
-- For each repo in `repos.md` that has its branch: read its repo guide's Commands table. If it has a **Pre-commit check** row, run that command; otherwise run the **All unit tests** row. If it has neither, write `no command` for that repo.
+- For each repo in `repos.md` that has its branch (in its Path when it has one): read its repo guide's Commands table. If it has a **Pre-commit check** row, run that command; otherwise run the **All unit tests** row. If it has neither, write `no command` for that repo.
 - Write one row per repo: the command, `PASS` or `FAIL`, and the names of the failing tests (at most 20; if more, write the count). Paste nothing else.
 - Run each command once. If it cannot run at all (for example a build error on the base branch), write `could not run` and the first error line.
 - This step never blocks `/start`. If it fails, say so in one line and go on.
@@ -163,6 +165,6 @@ Skip this step unless `--brief` was given. Otherwise write a short brief, so the
 
 Reply with:
 - The folder path.
-- The repos and branches created, and any that were skipped.
+- The repos and branches created, which ones got a worktree (and why: uncommitted changes or another item's branch), and any that were skipped.
 - If a brief was written: its path, and its Goal and First tiny step lines. Do not print the whole brief.
 - The next command: `/spec $1` for a feature, `/bug $1` for a bug, or `/quick $1` for the quick lane.

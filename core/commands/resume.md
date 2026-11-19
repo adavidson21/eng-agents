@@ -23,13 +23,14 @@ Before you touch any repo, print these for the engineer, so coming back gets the
 
 For each repo in the Repos table of `paused.md`:
 
+- **If its row in `repos.md` has a Path** (a worktree): run steps 1 and 2 in that Path. It is always on its own branch; do not switch anything in the repo folder.
+
 1. Run `git -C <repo> branch --list <branch>`. If the branch does not exist, stop and tell the engineer.
 2. Run `git -C <repo> branch --show-current` and `git -C <repo> status --porcelain`.
 3. Decide:
    - **Already on the branch:** nothing to do.
-   - **On another `dev/` branch** (another work item): do not switch. Ask the engineer: "`<repo>` is on `<other branch>` for another work item. Switch it to `<branch>`, skip this repo for now, or use a git worktree?" Wait and do what they choose. If that repo has uncommitted changes, never switch it; tell the engineer to pause or commit that work first.
+   - **On another `dev/` branch** (another work item), **or on any branch with uncommitted changes:** never switch it. Ask nothing: run exactly `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/work/New-Worktree.ps1" -Workspace "." -Repo "<repo>" -Folder "<work folder name>" -Branch "<branch>" -Existing`, write its last line in the repo's **Path** column in `repos.md` (add the column if the table has none), and use that Path from here on. If it fails, show the error in one line and skip this repo.
    - **On any other branch with no uncommitted changes:** run `git -C <repo> checkout <branch>`.
-   - **On any other branch with uncommitted changes:** do not switch. Tell the engineer.
 4. Take the repo's base from the **Base** column in `repos.md` (`origin/main` if there is no Base column, from an older item). If the base starts with `origin/`, run `git -C <repo> fetch origin`. Then run `git -C <repo> log --oneline <branch>..<base>`. If it prints commits, note how many: the base has moved since this branch was made. Do not rebase or merge; tell the engineer.
 5. If the pause recorded a WIP commit, confirm it is in `git -C <repo> log -3 --oneline`.
 

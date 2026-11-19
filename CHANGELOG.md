@@ -4,6 +4,15 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 4.8.0 (2026-11-18)
+
+Ideas from Diraigent (Workshop project doc `claude/diraigent-ideas-v1-plan.md`). Nothing breaks for items in progress.
+- Observations: core rule 5 now logs what an agent notices out of scope with the new `scripts/work/Add-Observation.ps1` (into `.work/observations.md`, at most 3 per command, duplicates skipped), instead of burying it in progress notes. Workshop's Loom shows them in its Inbox (Noticed).
+- Decisions: `/approve` writes the engineer's lasting answers from spec.md's Decisions table to the product note's `Decisions` section (at most 3, through `Set-ProductNote.ps1`), so the next item does not argue them again.
+- Review by exception: `/approve <id> quick auto` approves a clean quick plan (unedited draft, no open questions, at most 3 assumptions, at most 2 tasks) and otherwise leaves it with "Needs you: <why>". Workshop's autopilot runs it only when hands-off Quick changes are on.
+- Worktrees: `/start` and `/resume` never switch a busy repo. They make a git worktree with the new `scripts/work/New-Worktree.ps1` (`.worktrees/<work folder>/<repo>`) and write it in repos.md's new **Path** column; every command then works there. Two items on one repo can build at once.
+- `scripts/work/Test-WorkScripts.ps1` checks both scripts, in CI.
+
 ## Core 4.7.0 (2026-11-17)
 
 For Workshop's Knowledge base V1 (Workshop `docs/knowledge.md`): one home for each fact, read in one call.

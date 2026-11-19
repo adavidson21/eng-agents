@@ -176,7 +176,7 @@ try {
     $r = Run "Set-Onboarding.ps1" @("-WorkRoot", $wr, "-Product", "Sample Portal", "-Step", "trial", "-Value", "L42")
     $obText = [IO.File]::ReadAllText($ob)
     Check "onboarding: a step is replaced, not repeated" (([regex]::Matches($obText, '(?m)^- Trial:')).Count -eq 1 -and $obText -match '(?m)^- Trial: L42$') $obText
-    # ---------------------------------------------------------------- coverage items (Core 4.12.0)
+    # ---------------------------------------------------------------- coverage items (Core 4.13.0)
     $r = Run "New-LocalWorkItem.ps1" @("-WorkRoot", $wr, "-Title", "Regression tests for portal-ui orders", "-Repos", "portal-ui", "-Coverage", "Sample Portal")
     $cvText = if ($r.Last -and (Test-Path (Join-Path $r.Last "workitem.md"))) { [IO.File]::ReadAllText((Join-Path $r.Last "workitem.md")) } else { "" }
     Check "coverage: local item with a Coverage line" ($r.Code -eq 0 -and $cvText -match '(?m)^- Coverage: Sample Portal\r?$' -and $cvText -match '(?m)^- Repos: portal-ui\r?$') "$($r.Out) $cvText"

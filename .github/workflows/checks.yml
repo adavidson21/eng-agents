@@ -25,6 +25,7 @@ jobs:
       - run: ./core/scripts/briefs/Test-ExportBrief.ps1
       - run: ./core/scripts/stats/Test-PipelineStats.ps1
       - run: ./tests/Test-Guards.ps1
+      - run: ./core/scripts/work/Test-WorkScripts.ps1
   work-format:
     # Tandem writes .work; Workshop's Dispatch reads it. Check this repo's parser against Workshop's contract
     # (docs/work-format.md and its example workspace), on pwsh and on Windows PowerShell 5.1.

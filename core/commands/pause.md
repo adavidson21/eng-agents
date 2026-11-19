@@ -24,6 +24,8 @@ Do not change any code. The only files you write are `paused.md` and `progress.m
 
 For each repo in `repos.md`:
 
+For a repo with a **Path** in `repos.md` (a worktree), run these in that Path.
+
 1. Run `git -C <repo> branch --show-current`.
 2. Run `git -C <repo> status --porcelain`.
 3. Run `git -C <repo> log -1 --oneline`.

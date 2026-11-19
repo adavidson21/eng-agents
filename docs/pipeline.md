@@ -330,12 +330,24 @@ The repo map is what makes "what version of .NET is the portal on" work: keep ea
 - The repo map records which repos depend on each shared repo. `repos.md`, the plan, and tasks put shared repos first.
 - `/review` runs tests in every repo in `repos.md`. Add any other consumer that could break so its tests run too.
 - If a shared repo is consumed as a published package instead, the plan needs a version bump task. Note that in the repo map.
-- Need a shared repo on two branches at once? Add a worktree instead of a second clone, and remove it after the PR merges. Relative-path consumers still point at the main clone.
+- Relative-path consumers always point at the main clone, even when a shared repo's work happens in a worktree (below).
 
-  ```powershell
-  git -C C:\src\work\<shared-repo> worktree add ..\<shared-repo>-12345 dev/feature/12345-short-name
-  git -C C:\src\work\<shared-repo> worktree remove ..\<shared-repo>-12345
-  ```
+## Worktrees and parallel work
+
+`/start` never switches a busy repo (uncommitted changes, or on another item's `dev/` branch). It makes a git worktree for it instead, at `.worktrees/<work folder>/<repo>` in the workspace, with `New-Worktree.ps1`, and writes that in the repo's **Path** column in `repos.md`. `/resume` does the same for a paused item whose repo got busy. From then on every command runs git, builds, tests and edits for that repo in its Path, and reads the repo guide from the repo folder (core `guides/pipeline.md`, Where the work happens).
+
+- A worktree shares the repo's branches and commits: you can push, diff and review the branch from the repo folder too.
+- Two items on the same repo can now build at once (Workshop's autopilot runs up to 3, 2 by default).
+- Workshop's Loom removes an item's worktrees when you remove the item (`git worktree remove`, never forced; one with uncommitted changes is kept). By hand: `git -C <repo> worktree remove .worktrees/<folder>/<repo>` from the workspace root.
+- Dot folders are never listed as repos, so `.worktrees` does not show up in the repo list.
+
+## Observations
+
+Agents log what they notice out of scope (a bug next door, debt, missing docs or tests, an idea) with `Add-Observation.ps1` into `.work/observations.md`, at most 3 per command, and keep going without asking (core rule 5). Workshop's Loom shows them in its Inbox under **Noticed**: start one as a Quick change, send it to Docket, or dismiss it.
+
+## Review by exception (quick lane)
+
+With Workshop's hands-off Quick changes on, autopilot builds a Quick change end to end: `/quick <id> auto`, then `/approve <id> quick auto`, which approves `quick.md` only when it is clean (unedited draft, no open questions, at most 3 assumptions, at most 2 tasks). A plan that is not clean stops for you like any other gate. The rest is the usual build, review and PR text; nothing is pushed, so you still read the diff before it ships.
 
 ## End of day
 

@@ -4,6 +4,10 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 4.12.0 (2026-11-19)
+
+- Where a build is: the new `scripts/work/Set-Step.ps1` writes `step.md` in the work folder (`- Step: <build | test | ui | review | fix> | <time>`). `/do-task` records `build` (or `fix` for a task from `review.md`) and `test` before its full check; `/review` records `test`, `ui` and `review` as it goes. Workshop's Loom (6.6.0) puts the item at that station on its floor instead of guessing. Nothing breaks for items in progress: an item without `step.md` is placed as before.
+
 ## Core 4.11.0 (2026-11-19)
 
 Cloudflare through Workshop (Workshop 1.11.0, its Cloudflare connector). Agents never hold a token: Workshop does, in this computer's secret store. Nothing breaks for items in progress.

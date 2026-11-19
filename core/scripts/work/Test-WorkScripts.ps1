@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Self-test for Add-Observation.ps1, Add-Gap.ps1, Close-Gap.ps1, Find-Repeats.ps1, New-Worktree.ps1, Test-StoryDrift.ps1 and Set-Onboarding.ps1. Writes only to a temp folder. Needs git.
+  Self-test for Add-Observation.ps1, Add-Gap.ps1, Close-Gap.ps1, Find-Repeats.ps1, New-Worktree.ps1, Test-StoryDrift.ps1, Set-Onboarding.ps1 and Set-Step.ps1. Writes only to a temp folder. Needs git.
   Run: pwsh -NoProfile -File core/scripts/work/Test-WorkScripts.ps1   (also works in Windows PowerShell 5.1)
 #>
 $ErrorActionPreference = "Stop"
@@ -178,6 +178,18 @@ try {
     Check "onboarding: a step is replaced, not repeated" (([regex]::Matches($obText, '(?m)^- Trial:')).Count -eq 1 -and $obText -match '(?m)^- Trial: L42$') $obText
     $r = Run "Set-Onboarding.ps1" @("-WorkRoot", $wr, "-Product", "Sample Portal", "-Step", "nope", "-Value", "x")
     Check "onboarding: bad step refused" ($r.Code -ne 0)
+
+    # ---------------------------------------------------------------- step (Core 4.12.0)
+    $r = Run "Set-Step.ps1" @("-Folder", $story, "-Step", "test")
+    $stepText = [IO.File]::ReadAllText((Join-Path $story "step.md"))
+    Check "step: one line with the step and a UTC time" ($r.Last -eq "test" -and $stepText -match '^- Step: test \| \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z\n$') $stepText
+    $r = Run "Set-Step.ps1" @("-Folder", $story, "-Step", "fix")
+    $stepText = [IO.File]::ReadAllText((Join-Path $story "step.md"))
+    Check "step: replaced, not appended" ($stepText -match '^- Step: fix \|' -and ($stepText -split "`n").Count -eq 2) $stepText
+    $r = Run "Set-Step.ps1" @("-Folder", $story, "-Step", "deploy")
+    Check "step: unknown step refused" ($r.Code -ne 0)
+    $r = Run "Set-Step.ps1" @("-Folder", (Join-Path $wr "nope"), "-Step", "build")
+    Check "step: missing folder refused" ($r.Code -ne 0)
 }
 finally {
     Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue

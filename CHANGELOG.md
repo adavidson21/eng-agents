@@ -4,7 +4,7 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
-## Core 4.13.0 (2026-11-19)
+## Core 4.14.0 (2026-11-19)
 
 Automated regression and new feature testing (Workshop project doc `claude/test-suite-v1-plan.md`). Nothing breaks for items in progress; a repo without the new table behaves as before.
 - Regression suite: the new `scripts/tests/Test-Suite.ps1` runs a repo's whole end-to-end suite from the repo guide's new `## Regression tests` table (Command, Runner, Folder), with Playwright's JSON reporter and one retry, and writes `tests/results-<name>.json`: passed, failed, flaky, the item's new tests and the `[AC-n]` criteria they cover. `/start` runs it as the baseline, `/review` on every build whatever it touched, `/pr` again after a rebase brought new commits. Factory setting `regression` (default on).
@@ -12,6 +12,14 @@ Automated regression and new feature testing (Workshop project doc `claude/test-
 - Acceptance tests: every criterion a person can see or click gets an end-to-end test titled with `[AC-n]` (playwright stack, `/plan`, `/quick`); `/review` makes a missing one a Should fix, which autopilot writes. Its task's manual validation becomes `Covered by tests`.
 - The new `/cover <product> [-- <area>]`: adds the Regression tests table where missing and makes one local Quick change per UI repo (`- Coverage: <product>`, `New-LocalWorkItem.ps1 -Coverage`) that adds tests for what pages do today. Workshop builds them hands-off.
 - `/onboard-repo` fills the Regression tests table from `playwright.config.*`. `review.md` and `pr.md` templates gain a Regression tests line.
+
+## Core 4.13.0 (2026-11-19)
+
+Approvals, MCP and Keychain tokens through Workshop (Workshop agent 1.12.0). Agents still never hold a token. Nothing breaks for items in progress.
+- Workshop as an MCP server: `install.ps1` adds `workshop` to `opencode.json` when Workshop's agent token exists (start Workshop once first). opencode then has Workshop's tools for agents, the tools of MCP servers you add in Workshop, and `workshop__approval_status` as native tools. The token is read from its file at each start (`{file:~/.workshop/agent-token}`), never copied in. An existing entry keeps your other keys; its address follows Workshop's port. `-NoWorkshopMcp` leaves it out.
+- `/cloudflare`: change sets wait in Workshop's Approvals (Settings, Manager), not Settings, Cloudflare. `plan.md` records the `Approval:` id. When an always-allow rule you made applies a set at once, the command records `Status: APPLIED` and checks it.
+- GitHub scripts: with no `GITHUB_PAT`, `GH_TOKEN` or `GITHUB_TOKEN` set, `Get-GitHubIssue.ps1` and `Get-GitHubPullRequest.ps1` read through Workshop's GitHub connector (`api.get`, `graphql.query`) when Workshop offers them, so the token can stay in the Mac Keychain; `gh auth token` comes after. `NOTOKEN` says how to save one in Workshop.
+- `Invoke-WorkshopTool.ps1`: `-Approval <id>` prints where a change you asked for stands (status, and the result once approved); `-List` marks changes that wait for approval `(asks)`. Its Workshop helpers moved to `scripts/workshop/WorkshopCommon.ps1`, shared with the GitHub scripts.
 
 ## Core 4.12.0 (2026-11-19)
 

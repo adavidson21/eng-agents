@@ -61,9 +61,9 @@
     {
       "command": "cloudflare",
       "agent": "investigator",
-      "tokens": 4986,
+      "tokens": 5043,
       "readTokens": 2772,
-      "hash": "0fd8758939f5",
+      "hash": "aedfb8009f5d",
       "files": [
         "core/AGENTS.md",
         "core/agents/investigator.md",
@@ -77,7 +77,7 @@
       "agent": "investigator",
       "tokens": 3974,
       "readTokens": 1274,
-      "hash": "ad6ef9383fee",
+      "hash": "c1924e98242e",
       "files": [
         "core/AGENTS.md",
         "core/agents/investigator.md",
@@ -106,7 +106,7 @@
       "agent": "implementer",
       "tokens": 5486,
       "readTokens": 2772,
-      "hash": "cfd31672f1da",
+      "hash": "df1dae6f9a57",
       "files": [
         "core/AGENTS.md",
         "core/agents/implementer.md",
@@ -175,7 +175,7 @@
       "agent": "investigator",
       "tokens": 4263,
       "readTokens": 0,
-      "hash": "1f890d001ec4",
+      "hash": "aead019136f3",
       "files": [
         "core/AGENTS.md",
         "core/agents/investigator.md",
@@ -243,9 +243,9 @@
     {
       "command": "pr-review",
       "agent": "pr-reviewer",
-      "tokens": 5774,
+      "tokens": 5768,
       "readTokens": 340,
-      "hash": "4a5de1febe9d",
+      "hash": "4a6341eac92a",
       "files": [
         "core/AGENTS.md",
         "core/agents/pr-reviewer.md",
@@ -260,7 +260,7 @@
       "agent": "writer",
       "tokens": 4037,
       "readTokens": 3017,
-      "hash": "0353d6f140ae",
+      "hash": "641d9b227479",
       "files": [
         "core/AGENTS.md",
         "core/agents/writer.md",
@@ -360,7 +360,7 @@
       "agent": "reviewer",
       "tokens": 6254,
       "readTokens": 3250,
-      "hash": "2acdb802fd3b",
+      "hash": "8915ae7f421b",
       "files": [
         "core/AGENTS.md",
         "core/agents/reviewer.md",
@@ -478,9 +478,9 @@
     {
       "command": "start",
       "agent": "planner",
-      "tokens": 7528,
+      "tokens": 7522,
       "readTokens": 3758,
-      "hash": "9d8d5236b6ce",
+      "hash": "a4f33a7f9806",
       "files": [
         "core/AGENTS.md",
         "core/agents/planner.md",

@@ -92,7 +92,7 @@ For a bare `#<number>`, add `-From "$3"` at the end.
 - It makes a local work item (`L<n>-<name>`) from the issue. `workitem.md` keeps the issue as `- GitHub: owner/repo#<number>` and its link. Use the new local id (the folder name before the first `-`) in place of `$1` from here on, and tell the engineer: "GitHub issue $1 is local work item `L<n>`."
 - If it succeeds, the last line of output is the new folder path. Remember it.
 - If the first line starts with `ALREADY:`, the issue is already started: stop and suggest `/status <the L id in the folder name>`.
-- If the error contains `NOTOKEN:`, tell the engineer to set a GitHub token (`workshop pat GITHUB_PAT`, or `gh auth login`) and stop.
+- If the error contains `NOTOKEN:`, tell the engineer the line (it says how to save a GitHub token) and stop.
 - If the error contains `BADID:` or `NOTFOUND:`, show it in one line and stop.
 - If it fails for any other reason, show the error in one line, then do Step 3a instead (describe it as local work), using the issue's title as the title.
 

@@ -56,6 +56,22 @@ try {
     Check "list asks 127.0.0.1 on the configured port" ($calls[0].Uri -eq "http://127.0.0.1:4399/api/tools" -and $calls[0].Method -eq "Get") $calls[0].Uri
     Check "sends the agent token" ($calls[0].Token -eq $token)
 
+    $global:WstReply = [pscustomobject]@{ tools = @([pscustomobject]@{ connector = "mcp"; action = "tools.call"; title = "Call a tool"; asks = $true }) }
+    $r = Run @{ List = $true }
+    Check "a change that waits for approval is marked (asks)" ($r.Out -eq "mcp tools.call: Call a tool (asks)") $r.Out
+
+    $global:WstReply = [pscustomobject]@{ id = "ap-20261119-1a2b3c4d"; status = "approved"; title = "Cloudflare: Add notes"; result = [pscustomobject]@{ status = "applied" } }
+    $r = Run @{ Approval = "ap-20261119-1a2b3c4d" }
+    Check "-Approval asks for that approval" ($calls[0].Uri -eq "http://127.0.0.1:4399/api/tools/approvals/ap-20261119-1a2b3c4d" -and $calls[0].Method -eq "Get") $calls[0].Uri
+    Check "-Approval prints its status and result" ((($r.Out | ConvertFrom-Json).status -eq "approved") -and (($r.Out | ConvertFrom-Json).result.status -eq "applied")) $r.Out
+    $global:WstReply = { Fail-With 404 "not_found" "There is no approval ap-20261119-00000000." }
+    $r = Run @{ Approval = "ap-20261119-00000000" }
+    Check "an unknown approval is NOTOOL" ($r.Out -like "NOTOOL: There is no approval*") $r.Out
+    $bad = $null
+    $global:WstCalls.Clear()
+    try { & $script -WorkshopHome $tmp -Approval "../../config" 2>&1 | Out-Null } catch { $bad = $_.Exception.Message }
+    Check "-Approval takes only an approval id" ("$bad" -match 'ap-' -and $calls.Count -eq 0) "$bad"
+
     $global:WstReply = [pscustomobject]@{ result = [pscustomobject]@{ zone = "example.org"; records = @() } }
     $r = Run @{ Connector = "cloudflare"; Action = "dns.list"; Arg = "zone=example.org,limit=5,proxied=true" }
     $sent = $calls[0].Body | ConvertFrom-Json

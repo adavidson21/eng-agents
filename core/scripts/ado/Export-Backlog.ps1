@@ -289,6 +289,26 @@ function ConvertTo-Html {
 
 # ------------------------------------------------------------- item list
 
+function Read-BuilderNotes {
+    # The story's "Notes for the builder" lines that Workshop builds from (Core 4.10.0): Repos, Areas and Depends on.
+    # Backticks and placeholders are dropped. DependsOn is a list of story refs like "1.1".
+    param($Lines)
+    $get = {
+        param([string]$Name)
+        foreach ($l in @($Lines)) { if ($l -match "^\s*-\s*${Name}:\s*(.+?)\s*$") { return $Matches[1] } }
+        return ""
+    }
+    $tidy = {
+        param([string]$v)
+        $v = ($v -replace '`', '' -replace '\([^)]*\)', '').Trim()
+        if ($v -match '^<.*>$' -or $v -match '^(none|n/a|-)$') { return "" }
+        return (@($v -split '\s*,\s*' | Where-Object { $_ }) -join ", ")
+    }
+    $deps = @()
+    foreach ($m in [regex]::Matches((& $get "Depends on"), '(\d+\.\d+)')) { $deps += $m.Groups[1].Value }
+    return [pscustomobject]@{ Repos = (& $tidy (& $get "Repos")); Areas = (& $tidy (& $get "Areas")); DependsOn = $deps }
+}
+
 function Get-Items {
     # Flattens the parsed file into Epic, Feature, and Story items in order.
     param($Parsed, [string]$ScopeName)
@@ -307,7 +327,8 @@ function Get-Items {
             $local = $story
             if ($work) { $local += "`n`n#### Notes for the builder`n`n$work" }
             $local += "`n`n#### Part of`n`n- Epic: $($Parsed.EpicTitle)`n- Feature $($f.Num): $($f.Title)`n- Scope: ``$ScopeName``, Story $($s.Ref)"
-            [void]$items.Add([ordered]@{ Ref = "Story $($s.Ref)"; Kind = "Story"; Level = 3; Title = $s.Title; Parent = $fref; ExistingId = $null; Description = $story; ReleaseNote = ""; Acceptance = (Join-Block $s.Ac); Markdown = $local })
+            $notes = Read-BuilderNotes $s.Work
+            [void]$items.Add([ordered]@{ Ref = "Story $($s.Ref)"; Kind = "Story"; Level = 3; Title = $s.Title; Parent = $fref; ExistingId = $null; Description = $story; ReleaseNote = ""; Acceptance = (Join-Block $s.Ac); Markdown = $local; StoryRef = $s.Ref; Repos = $notes.Repos; Areas = $notes.Areas; DependsOn = $notes.DependsOn })
         }
     }
     return $items
@@ -436,14 +457,27 @@ if ($Local) {
     $workRoot = Split-Path $folderPath -Parent
     Initialize-Published $publishedPath $scopeName "local"
     $made = 0
+    $created = @{}
     foreach ($it in $items) {
         if ($it.Kind -ne "Story") { continue }
         if ($published.Ids.ContainsKey($it.Ref)) { Write-Output "Skip $($it.Ref): already $($published.Ids[$it.Ref])"; continue }
-        $out = @(& $newLocal -WorkRoot $workRoot -Title $it.Title -Type Feature -Description $it.Markdown -AcceptanceCriteria $it.Acceptance)
+        # Core 4.10.0: each story says which scope it came from, what it waits for (as local ids), and the repos and
+        # areas the approved breakdown gives it, so Workshop can build the stories in order, hands-off.
+        $deps = @()
+        foreach ($ref in @($it.DependsOn)) {
+            $key = "Story $ref"
+            if ($created.ContainsKey($key)) { $deps += $created[$key] }
+            elseif ($published.Ids.ContainsKey($key)) { $deps += $published.Ids[$key] }
+        }
+        $extra = @{ Epic = $scopeName; Story = $it.StoryRef; DependsOn = $deps; BreakdownApproved = $true }
+        if ($it.Repos) { $extra.Repos = $it.Repos }
+        if ($it.Areas) { $extra.Areas = $it.Areas }
+        $out = @(& $newLocal -WorkRoot $workRoot -Title $it.Title -Type Feature -Description $it.Markdown -AcceptanceCriteria $it.Acceptance @extra)
         $itemFolder = [string]$out[-1]
         $leaf = Split-Path $itemFolder -Leaf
         if ($leaf -notmatch '^(L\d+)-') { throw "Could not read the local id from '$itemFolder'." }
         $localId = $Matches[1]
+        $created[$it.Ref] = $localId
         Add-PublishedRow $publishedPath $it.Ref "Local story" $it.Title $localId ".work/$leaf"
         Write-Output "Created $($it.Ref) as ${localId}: $($it.Title)"
         $made++

@@ -4,6 +4,16 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 4.10.0 (2026-11-19)
+
+Epics hand off to builds, and products onboard themselves (Workshop project doc `claude/loom-floor-v1-plan.md`, Loom 6.5.0). Nothing breaks for items in progress.
+- Approve the breakdown once: `/backlog scope-<name> local` gives each story's `workitem.md` its epic, story number, the local ids it waits for (`- Depends on:`), its repos and areas, and `- Breakdown: approved`. `milestones.md`'s builder notes gain an `Areas:` line, which `/slice` fills.
+- Hold by exception: the new `scripts/work/Test-StoryDrift.ps1` checks a story's plan against its breakdown (task file cap, new dependency, migration, auth or security code, files outside its areas or repos). `/approve <id> spec auto` approves a story's spec and plan only when it prints `CLEAN` and the draft is unedited with no open questions; otherwise it holds the plan for the engineer with the reasons.
+- `/start <L id> [lane] auto`: for autopilot, asks nothing, takes the repos from `workitem.md`'s `- Repos:` line.
+- `/spec` keeps a story's plan inside its breakdown's areas and says why under Risks when it cannot.
+- The new `/onboard-product <product>`: drafts missing repo guides and the product note, logs what it cannot find as gaps (Teach) instead of asking, and creates a trial run (a local Quick change with `- Trial:` that adds one test). Each step is recorded in `.work/_onboarding/<product>.md` by the new `scripts/work/Set-Onboarding.ps1`, for Loom's onboarding view.
+- `New-LocalWorkItem.ps1` takes `-Epic`, `-Story`, `-DependsOn`, `-Repos`, `-Areas`, `-BreakdownApproved` and `-Trial`.
+
 ## Core 4.9.0 (2026-11-18)
 
 The software factory (Workshop project doc `claude/software-factory-v1-plan.md`): you approve the plan and publish the PR, everything between runs on its own with lighter checks. Nothing breaks for items in progress.

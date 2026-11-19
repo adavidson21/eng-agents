@@ -50,7 +50,7 @@ param(
     # A product's trial run (/onboard-product, Core 4.10.0): the product it proves.
     [string]$Trial,
 
-    # Regression tests backfilled for a product (/cover, Core 4.11.0): the product. Workshop builds it hands-off.
+    # Regression tests backfilled for a product (/cover, Core 4.12.0): the product. Workshop builds it hands-off.
     [string]$Coverage
 )
 

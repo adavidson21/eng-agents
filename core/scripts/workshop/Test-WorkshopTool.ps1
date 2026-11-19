@@ -106,3 +106,5 @@ finally {
 
 if ($failed) { Write-Output "$failed check(s) failed."; exit 1 }
 Write-Output "Invoke-WorkshopTool: all checks passed."
+# The last case above ends with exit code 1 on purpose; CI's shell reports $LASTEXITCODE, so end clean.
+exit 0

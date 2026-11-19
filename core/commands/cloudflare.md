@@ -1,11 +1,11 @@
 ---
-description: "Work with your Cloudflare account through Workshop: look things up, find out why a build failed, or propose changes (DNS, Worker custom domains, Pages projects, variables, rollbacks) for you to apply in Workshop. Never applies anything. Usage: /cloudflare <what you want>, /cloudflare why <worker or Pages project>, /cloudflare cf-<name> check"
+description: "Work with your Cloudflare account through Workshop: look things up, find out why a build failed, or propose changes (DNS, Worker custom domains, Pages projects, variables, rollbacks) for you to approve in Workshop. Never applies anything. Usage: /cloudflare <what you want>, /cloudflare why <worker or Pages project>, /cloudflare cf-<name> check"
 agent: investigator
 ---
 
 Cloudflare request: **$ARGUMENTS**
 
-You work with Cloudflare only through Workshop's tools for agents. Workshop holds the token; you never see it, never ask for it, and never call Cloudflare (or `wrangler`) yourself. You can read everything and **propose** a change set. Only the engineer applies it, in Workshop. Read `{{ENG_HOME}}/guides/pipeline.md` first (work folders).
+You work with Cloudflare only through Workshop's tools for agents. Workshop holds the token; you never see it, never ask for it, and never call Cloudflare (or `wrangler`) yourself. You can read everything and **propose** a change set. Only the engineer approves it, in Workshop's Approvals (or an always-allow rule they made there covers it). Read `{{ENG_HOME}}/guides/pipeline.md` first (work folders).
 
 Every call below is one command:
 
@@ -69,8 +69,8 @@ Rules:
 ## Step 4: Check, then propose
 
 1. Run `changes.check` with `-ArgsFile` on `check.json`, a file holding `{"changes": [...]}` (the `changes` part of `propose.json`). Every problem comes back at once. Fix `propose.json` and check again, at most 3 times (Core rule 6).
-2. Run `changes.propose` with `-ArgsFile ".work/cf-<name>/propose.json"`. Write the `id` it returns at the top of `plan.md` as `Change set: <id>` and `Status: WAITING`.
-3. Reply with the steps it returned (they are what the engineer will see), then: "Apply it in Workshop: Settings, Cloudflare (Needs you links there). Then run `/cloudflare cf-<name> check`." Stop. Do not wait or poll.
+2. Run `changes.propose` with `-ArgsFile ".work/cf-<name>/propose.json"`. Write the `id` it returns at the top of `plan.md` as `Change set: <id>`, with `Approval: <approval.id>` and `Status: WAITING`. If it returns `status: applied`, an always-allow rule applied it: write `Status: APPLIED` and go to Step 6, item 3.
+3. Reply with the steps it returned (they are what the engineer will see), then: "Approve it in Workshop: Settings, Manager, Approvals (Needs you links there). Then run `/cloudflare cf-<name> check`." Stop. Do not wait or poll.
 
 ## Step 5: Diagnose (`why <name>`)
 
@@ -84,6 +84,6 @@ Rules:
 ## Step 6: Check (`cf-<name> check`)
 
 1. Read `plan.md` for the change set id. Run `changes.get` with it.
-2. `waiting`: say "Still waiting for you to apply it in Settings, Cloudflare." Stop. `rejected`: write `Status: REJECTED` (with the note, if any) in `plan.md` and stop.
+2. `waiting`: say "Still waiting for you to approve it in Workshop's Approvals." Stop. `rejected`: write `Status: REJECTED` (with the note, if any) in `plan.md` and stop.
 3. `applied` or `failed`: for each result, read back what it changed (`dns.list`, `workers.domains`, `pages.project`) and confirm it is there. Write `result.md`: each step as Done, Failed (with the error) or Skipped, and what you saw. Set `Status: APPLIED` or `Status: FAILED` in `plan.md`.
 4. If it failed, say why in one line and offer a new change set for what is left (Steps 3 and 4). New domains can take a few minutes for their certificate: say so rather than calling it a failure.

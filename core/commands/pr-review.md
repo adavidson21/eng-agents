@@ -50,7 +50,7 @@ For a number, run exactly this command, adding `-From "<repo folder or connectio
 - If the error contains:
   - `AMBIGUOUS:` or `UNKNOWN:`: ask "Which repo folder or ADO connection is this PR in?" Run the number command again with `-From "<their answer>"`.
   - `NOCONN:`: tell the engineer the link's server and collection are not in their ADO `config.json`, and stop.
-  - `NOTOKEN:` (GitHub): tell the engineer to set a GitHub token (`workshop pat GITHUB_PAT`, or `gh auth login`), and stop.
+  - `NOTOKEN:` (GitHub): tell the engineer the line (it says how to save a GitHub token), and stop.
   - `BADURL:` or `NOTFOUND:` (GitHub): show it in one line, and stop.
   - `NOREPO:`: tell the engineer which repo to clone into the workspace (the error names it and its URL), and stop.
   - `FETCH:`: show the git error in one line, and stop.

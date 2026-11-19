@@ -4,6 +4,14 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 4.13.0 (2026-11-19)
+
+Approvals, MCP and Keychain tokens through Workshop (Workshop agent 1.12.0). Agents still never hold a token. Nothing breaks for items in progress.
+- Workshop as an MCP server: `install.ps1` adds `workshop` to `opencode.json` when Workshop's agent token exists (start Workshop once first). opencode then has Workshop's tools for agents, the tools of MCP servers you add in Workshop, and `workshop__approval_status` as native tools. The token is read from its file at each start (`{file:~/.workshop/agent-token}`), never copied in. An existing entry keeps your other keys; its address follows Workshop's port. `-NoWorkshopMcp` leaves it out.
+- `/cloudflare`: change sets wait in Workshop's Approvals (Settings, Manager), not Settings, Cloudflare. `plan.md` records the `Approval:` id. When an always-allow rule you made applies a set at once, the command records `Status: APPLIED` and checks it.
+- GitHub scripts: with no `GITHUB_PAT`, `GH_TOKEN` or `GITHUB_TOKEN` set, `Get-GitHubIssue.ps1` and `Get-GitHubPullRequest.ps1` read through Workshop's GitHub connector (`api.get`, `graphql.query`) when Workshop offers them, so the token can stay in the Mac Keychain; `gh auth token` comes after. `NOTOKEN` says how to save one in Workshop.
+- `Invoke-WorkshopTool.ps1`: `-Approval <id>` prints where a change you asked for stands (status, and the result once approved); `-List` marks changes that wait for approval `(asks)`. Its Workshop helpers moved to `scripts/workshop/WorkshopCommon.ps1`, shared with the GitHub scripts.
+
 ## Core 4.12.0 (2026-11-19)
 
 - Where a build is: the new `scripts/work/Set-Step.ps1` writes `step.md` in the work folder (`- Step: <build | test | ui | review | fix> | <time>`). `/do-task` records `build` (or `fix` for a task from `review.md`) and `test` before its full check; `/review` records `test`, `ui` and `review` as it goes. Workshop's Loom (6.6.0) puts the item at that station on its floor instead of guessing. Nothing breaks for items in progress: an item without `step.md` is placed as before.

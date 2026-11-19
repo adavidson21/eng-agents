@@ -259,7 +259,7 @@ All state lives in the workspace, outside every git repo, and never leaves the w
                                          backlog.csv or published.md
 .work/spike-<short-name>/findings.md     spike without a work item
 .work/pr-<pr id>/                        first-pass PR review: context.md, threads.md, review.md (drafts), history/
-.work/cf-<short-name>/                   /cloudflare: plan.md (Change set: <id>, Status), propose.json, check.json,
+.work/cf-<short-name>/                   /cloudflare: plan.md (Change set, Approval, Status), propose.json, check.json,
                                          findings.md (why mode), result.md (check mode). Workshop keeps the change
                                          set itself in its data folder (cloudflare/changes/).
 .work/docs-<short-name>/sources.md       docs lane: claims and their source files
@@ -288,7 +288,7 @@ All state lives in the workspace, outside every git repo, and never leaves the w
 | Milestone (a major version) | Parents: the Epic |
 | Comments | Comments |
 
-A bare `#12` works with the repo folder as the third argument: `/start #12 feature web`. The token comes from `GITHUB_PAT` (Workshop's GitHub connector uses the same one), `GH_TOKEN`, `GITHUB_TOKEN`, or `gh auth token`; `GITHUB_API_URL` points at GitHub Enterprise Server.
+A bare `#12` works with the repo folder as the third argument: `/start #12 feature web`. The token comes from `GITHUB_PAT`, `GH_TOKEN` or `GITHUB_TOKEN`; else, when Workshop runs here with its GitHub connector on, the reads go through Workshop and the token stays in its secret store (on a Mac, the Keychain: `workshop secret set github-pat --expires <date>`, then Settings, GitHub, Token secret); else `gh auth token`. `GITHUB_API_URL` points at GitHub Enterprise Server.
 
 ## Reviewing teammates' PRs
 
@@ -298,7 +298,7 @@ A bare `#12` works with the repo folder as the third argument: `/start #12 featu
 2. The agent reads the diff and, where it needs more, whole files at the PR's commit with `git show`, plus your repo guide. Pass 1 checks the linked acceptance criteria; pass 2 looks for real problems (correctness, security, contracts, error handling, data, patterns, tests, build, leftovers). It skips anything already raised on the PR.
 3. It writes `.work/pr-<id>/review.md`: a recommendation, a risk level, and numbered draft comments (file, line, severity `blocking` / `should-fix` / `optional`, why, and the comment as you would post it).
 
-**GitHub PRs** work the same way: paste a `.../pull/<number>` link and `scripts/github/Get-GitHubPullRequest.ps1` does step 1 (it fetches `refs/pull/<number>/head`, so forks work too, and lists the issues the PR closes as its linked work items). It needs a GitHub token (`GITHUB_PAT`, `GH_TOKEN`, `GITHUB_TOKEN`, or `gh auth login`).
+**GitHub PRs** work the same way: paste a `.../pull/<number>` link and `scripts/github/Get-GitHubPullRequest.ps1` does step 1 (it fetches `refs/pull/<number>/head`, so forks work too, and lists the issues the PR closes as its linked work items). It needs a GitHub token (`GITHUB_PAT`, `GH_TOKEN`, `GITHUB_TOKEN`, Workshop's GitHub connector, or `gh auth login`).
 
 **It never posts.** No comments, votes, approvals, or rejections. The agent cannot check out, fetch, push, or make web requests. You read the drafts, edit them, and post the ones you agree with.
 

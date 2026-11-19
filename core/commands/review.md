@@ -14,15 +14,38 @@ If the mode above is `auto`, autopilot is running this review and nobody is watc
 - If any task in `tasks.md` is not checked, list them and ask the engineer whether to review anyway. Wait.
   - `auto`: do not review. Add a `progress.md` entry that names the unchecked tasks, and stop.
 
+## Step 1b: Catch up with the base
+
+- Read the Factory settings in `{{ENG_HOME}}/guides/pipeline.md` (`autoFix`, `uiChecks`, `taskFileCap`).
+- Follow "Catch up with the base" in the pipeline guide for each repo. A conflict becomes a `Blocker` finding (category `conflict`) in Step 7.
+
 ## Step 2: Read the rules
 
 - Read the repo guide (`<repo>/AGENTS.local.md` if it exists, otherwise `<repo>/AGENTS.md`) for every repo in `repos.md`, and the stack files its `Stack:` line names.
 
 ## Step 3: Run the tests
 
-- For each repo, run its "All unit tests" command from its `AGENTS.md`.
+This is the item's one full check before review (`/do-task` only runs each task's verify command, plus a full check on the last task).
+
+- For each repo, run its **Build** command if its `AGENTS.md` has one, then its "All unit tests" command.
+- A failing test listed as failing in `baseline.md` was failing before this work item: note it, it is not a finding. Any other failure is a `Blocker` (category `tests`).
 - **UI tests.** If the repo guide has a UI test command (Playwright or similar), run it whenever the work changed anything a person sees or clicks, not only when it touched the UI tests. If the repo has no UI test command, record `UI tests: none in this repo` (this is not a finding).
 - Record each result.
+
+## Step 3b: UI checks
+
+Only if `uiChecks` is on (Factory settings, default on). For each repo whose guide has a `## UI checks` table, run exactly (in its Path when it has one):
+
+```
+{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/ui/Test-Ui.ps1" -WorkFolder "<work folder>" -Repo "<repo or its Path>" -Guide "<repo guide path>" -Name after -Base "<base>"
+```
+
+The script starts the app, screenshots the table's pages at two widths, checks them, compares with the `before` run from `/start` and stops the app; you never start the app yourself. Its last line is the result:
+
+- `UI: PASS ...`: record it.
+- `UI: FAIL ...`: read `ui/results-after.json`. Each line in its `problems` is a `Blocker` (category `ui`, location the page and width).
+- `UI: SKIPPED <why>`: record the reason. Not a finding.
+- Pages in `changed` that no task or acceptance criterion meant to change: one line under "Questions for you" each (not findings).
 
 ## Step 4: Read the diff
 
@@ -30,6 +53,7 @@ For a repo with a **Path** in `repos.md` (a worktree), run its tests and git com
 
 - For each repo, take its base from the **Base** column in `repos.md` (`origin/main` if there is no Base column, from an older item).
 - For each repo, run `git -C <repo> diff --stat <base>...HEAD`, then `git -C <repo> diff <base>...HEAD`.
+- **A later round.** If `review.md` already exists and has a `Reviewed at:` line for the repo, the earlier findings that were not fix tasks stand. Read only what changed since: `git -C <repo> diff <that commit>..HEAD` (if the commit is gone after a rebase, read the full diff). Pass 1 still checks every criterion; Pass 2 checks only the changed files.
 - If the diff is large, read it one file at a time with `git -C <repo> diff <base>...HEAD -- <file>`.
 
 ## Step 5: Pass 1, spec compliance
@@ -57,17 +81,17 @@ Give every finding a category: the bold word of the checklist item it falls unde
 ## Step 7: Write review.md
 
 - If `review.md` already exists (an earlier review round), first copy it unchanged to `history/review-<yyyy-mm-dd>-<n>.md` in the work folder (`<n>` = 1, 2, ... so nothing is overwritten). `/retro` reads every round.
-- Start from `{{ENG_HOME}}/templates/review.md`. Write it to the work folder as `review.md`.
+- Start from `{{ENG_HOME}}/templates/review.md`. Write it to the work folder as `review.md`. Fill `Reviewed at:` with each repo and `git -C <repo> rev-parse --short HEAD`, and the UI checks section with each repo's UI line.
 - Put every finding, from both passes, in the findings table with its category.
 - Anything you are not sure is a problem goes under "Questions for you" as one line with its location, not in the findings table. Questions do not change the verdict.
 - Copy every task's Manual Validation Checklist into the "Manual validation" section, in task order, so the engineer has one list to walk through.
-- Verdict is `READY` only if all tests pass, every criterion is `Met`, and there are no Blockers.
+- Verdict is `READY` only if all tests pass (baseline failures aside), every criterion is `Met`, and there are no Blockers.
 
 ## Step 8: Hand off
 
 - Add a `progress.md` entry for `/review` with a `- Stats: blockers=<n> should_fix=<n> nits=<n> verdict=<READY or CHANGES_NEEDED>` line.
 - Summarize for the engineer: verdict, number of findings by severity, and the Blockers in one line each.
-- `auto`: if the verdict is not READY, append one fix task for each `Blocker` finding to the end of `tasks.md`, numbered after the last task, in the normal task format (one repo, at most 3 files, one verify command from the repo `AGENTS.md`). Do not add tasks for `Should fix` or `Nit`. Do not add tasks for checklist Blockers either: they change no code. Name those tasks in the `progress.md` entry so the engineer can add the checklists. Name the added tasks in the `progress.md` entry. Do not ask anything, and stop.
+- `auto`: append one fix task for each `Blocker` finding, and when `autoFix` is `should-fix` (the default) also for each `Should fix` finding, to the end of `tasks.md`, numbered after the last task, in the normal task format (one repo, at most `taskFileCap` files, one verify command from the repo `AGENTS.md`). Should fix tasks do not change the verdict: a review with only Should fix findings is still READY, and autopilot builds those tasks before the PR text. Never add tasks for `Nit` (they stay in `review.md`), or for checklist Blockers: they change no code. Name the checklist tasks and the added tasks in the `progress.md` entry. Do not ask anything, and stop.
 - If there are checklist Blockers, list the tasks that need one and tell the engineer to add each checklist as a new `progress.md` entry for that task (by hand, or by asking the implementer), then run `/review $1` again. These never become fix tasks.
 - Not `auto`: append one fix task for each `Blocker` finding (except checklist Blockers) to the end of `tasks.md`, numbered after the last task, in the normal task format, without asking. Then, if there are `Should fix` or `Nit` findings or Questions, list them and ask: "Which of these should also become fix tasks?" Append the ones they pick the same way. Then tell them to run `/do-task $1 <n>` for each in a new session, then `/review $1` again.
 - If the verdict is READY, tell them to run `/pr $1`.

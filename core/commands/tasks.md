@@ -25,7 +25,7 @@ Start from `{{ENG_HOME}}/templates/tasks.md`. Write it to the work folder as `ta
 
 Rules for every task:
 - One repo only.
-- At most 3 files (or the task size cap in `AGENTS.md`, if different).
+- At most `taskFileCap` files (Factory settings in the pipeline guide, default 6). Test files do not count.
 - Follow each stack file's task rules (for example, `dotnet` puts the test and the code it tests in the same task, so the implementer can do TDD).
 - Exactly one verify command, copied from the repo `AGENTS.md` and narrowed to the relevant tests with a filter when possible.
 - A "Done when" line that anyone could check.

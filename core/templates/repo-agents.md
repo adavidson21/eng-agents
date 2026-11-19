@@ -46,6 +46,19 @@ Run from the workspace root unless stated otherwise. One command per line.
 | Format check | `<command>` |
 | Playwright tests | `<command>` |
 
+## UI checks
+
+Only for a repo with pages people use. Workshop's factory starts the app with these, screenshots the pages at two widths and checks them on every build that changes a UI file (`Test-Ui.ps1`). Leave the section out for a repo with no UI. The app must start locally with no real database, key vault or shared service (a mock or seeded mode is fine).
+
+| Field | Value |
+|---|---|
+| Start | `<command that starts the app, for example npm start>` |
+| URL | `<where it serves, for example http://localhost:4200>` |
+| Ready | `<a path that loads once it is up, for example />` |
+| Pages | `<paths to check, comma separated, for example /, /orders>` |
+| UI files | `<patterns of files that change what people see, for example src/app/**, *.html, *.scss>` |
+| Seed | `<optional command that loads test data before Start>` |
+
 ## Architecture
 
 <Layers and what each one holds.>

@@ -44,7 +44,7 @@ Write down real paths only. If you cannot find where a story belongs, ask ONE qu
 ## Step 4: Check the slices
 
 - **Vertical slices.** For each feature, check that once its stories are done, a user can use it and someone can verify it end to end (data, backend, and UI as needed). If not, move the missing story into it, or merge it with the next feature.
-- **Story size.** Each story must fit one `/start` run: at most 2 repos and 4 to 6 tasks (at most 8) of at most 3 files each. Split a bigger story; keep every scenario covered. Merge stories that are too small to be worth their own pull request.
+- **Story size.** Each story must fit one `/start` run: at most 2 repos and 4 to 6 tasks (at most 8) within the task size cap (6 files, tests not counted). Split a bigger story; keep every scenario covered. Merge stories that are too small to be worth their own pull request.
 - **Foundation.** Schema changes, migrations, and shared setup become the first story of the first feature that needs them. Never a feature of their own.
 - Record every split, merge, move, or rewording under "Changes from stories.md". If you changed nothing, write "None".
 

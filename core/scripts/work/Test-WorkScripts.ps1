@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Self-test for Add-Observation.ps1 and New-Worktree.ps1. Writes only to a temp folder. Needs git.
+  Self-test for Add-Observation.ps1, Add-Gap.ps1, Close-Gap.ps1, Find-Repeats.ps1 and New-Worktree.ps1. Writes only to a temp folder. Needs git.
   Run: pwsh -NoProfile -File core/scripts/work/Test-WorkScripts.ps1   (also works in Windows PowerShell 5.1)
 #>
 $ErrorActionPreference = "Stop"
@@ -54,6 +54,51 @@ try {
 
     $r = Run "Add-Observation.ps1" @("-WorkRoot", $wr, "-Kind", "nope", "-Text", "x")
     Check "observation: bad kind refused" ($r.Code -ne 0)
+
+    # ---------------------------------------------------------------- gaps
+    $r = Run "Add-Gap.ps1" @("-WorkRoot", $wr, "-Kind", "fact", "-Product", "Sample Portal", "-Source", "L12", "-Question", "May a refund exceed the order total?", "-Assumed", "No, capped at the total")
+    Check "gap: first gets G1" ($r.Last -eq "G1") $r.Out
+    $text = [IO.File]::ReadAllText((Join-Path $wr "gaps.md"))
+    Check "gap: header written" ($text -match '^# Knowledge gaps')
+    Check "gap: line format" ($text -match "(?m)^- G1 \| \d{4}-\d{2}-\d{2} \| fact \| Sample Portal \| L12 \| May a refund exceed the order total\? \| No, capped at the total \| open$") $text
+    $r = Run "Add-Gap.ps1" @("-WorkRoot", $wr, "-Kind", "term", "-Product", "sample portal", "-Question", "  may a refund EXCEED the order total? ")
+    Check "gap: same product and question is a duplicate" ($r.Last -eq "DUPLICATE: G1") $r.Out
+    $r = Run "Add-Gap.ps1" @("-WorkRoot", $wr, "-Kind", "repo", "-Question", "Which repo | owns`nexports?")
+    Check "gap: second gets G2, defaults to -" ($r.Last -eq "G2") $r.Out
+    $text = [IO.File]::ReadAllText((Join-Path $wr "gaps.md"))
+    Check "gap: pipes and newlines cleaned, no assumption is -" ($text -match "(?m)^- G2 \| [^|]+ \| repo \| - \| - \| Which repo / owns exports\? \| - \| open$") $text
+    $r = Run "Add-Gap.ps1" @("-WorkRoot", $wr, "-Kind", "nope", "-Question", "x")
+    Check "gap: bad kind refused" ($r.Code -ne 0)
+    $r = Run "Close-Gap.ps1" @("-WorkRoot", $wr, "-Id", "G1", "-Where", "products/sample-portal.md, Rules")
+    Check "gap: close" ($r.Last -eq "CLOSED: G1") $r.Out
+    $text = [IO.File]::ReadAllText((Join-Path $wr "gaps.md"))
+    Check "gap: closed line says where" ($text -match "(?m)^- G1 \|.*\| No, capped at the total \| answered \d{4}-\d{2}-\d{2}: products/sample-portal.md, Rules$") $text
+    Check "gap: other lines unchanged" ($text -match "(?m)^- G2 .*\| open$") $text
+    $r = Run "Close-Gap.ps1" @("-WorkRoot", $wr, "-Id", "G1", "-Where", "again")
+    Check "gap: closing twice says already" ($r.Last -eq "ALREADY: G1") $r.Out
+    $r = Run "Close-Gap.ps1" @("-WorkRoot", $wr, "-Id", "G9", "-Where", "x")
+    Check "gap: unknown id not found" ($r.Last -eq "NOT FOUND: G9" -and $r.Code -ne 0) $r.Out
+    [IO.File]::WriteAllText((Join-Path $wr "gaps.md"), "# Knowledge gaps`n`n")
+    $r = Run "Add-Gap.ps1" @("-WorkRoot", $wr, "-Kind", "process", "-Question", "Who approves releases?")
+    Check "gap: ids never reused" ($r.Last -eq "G3") $r.Out
+
+    # ---------------------------------------------------------------- repeats (the run retro)
+    $rw = Join-Path $root "rep\.work"
+    foreach ($i in 1..3) {
+        $f = Join-Path $rw "L$i-item-$i"
+        New-Item -ItemType Directory -Path $f -Force | Out-Null
+        [IO.File]::WriteAllText((Join-Path $f "review.md"), "# Review: L$i x`n`nVerdict: READY`n`n## Pass 2: Code quality`n`n| # | Severity | Category | Location | Problem | Suggested fix |`n|---|---|---|---|---|---|`n| 1 | Should fix | leftovers | ``api/src/A$i.cs:3`` | debug log | remove |`n")
+    }
+    $r = Run "Find-Repeats.ps1" @("-WorkRoot", $rw)
+    Check "repeats: a finding in 3 items is suggested" ($r.Out -match "reviews keep finding leftovers problems in api \(3 items" -and $r.Last -eq "REPEATS: 1 new") $r.Out
+    foreach ($q in "Is A allowed?", "Is B allowed?", "Is C allowed?") { $null = Run "Add-Gap.ps1" @("-WorkRoot", $rw, "-Kind", "fact", "-Product", "Portal", "-Question", $q) }
+    $r = Run "Find-Repeats.ps1" @("-WorkRoot", $rw)
+    Check "repeats: 3 gaps of one kind and product are suggested" ($r.Out -match "asked 3 fact questions about Portal" -and $r.Last -eq "REPEATS: 2 new") $r.Out
+    Add-Content -LiteralPath (Join-Path $rw ".repeats") -Value "finding|api|leftovers"
+    $r = Run "Find-Repeats.ps1" @("-WorkRoot", $rw)
+    Check "repeats: a key already suggested is not suggested again" ($r.Out -notmatch "leftovers" -and $r.Last -eq "REPEATS: 1 new") $r.Out
+    $r = Run "Find-Repeats.ps1" @("-WorkRoot", (Join-Path $root "none"))
+    Check "repeats: no .work is 0" ($r.Last -eq "REPEATS: 0 new") $r.Out
 
     # ---------------------------------------------------------------- worktrees
     $repo = Join-Path $root "api"

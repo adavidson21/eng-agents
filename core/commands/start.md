@@ -16,7 +16,7 @@ Follow these steps in order. Do not skip any step, except the ones marked "only 
   - a GitHub issue, `owner/repo#<number>` (for example `acme/web#12`): it is fetched into a new local work item (Step 3c). A bare `#12` is a GitHub issue too; then the third argument must be the repo folder it belongs to.
   - a local id, `L` and a number (for example `L12`): work with no tracker item, already described. Workshop's Loom creates its folder before it runs `/start`.
   - `new`: work with no tracker item that is not described yet.
-- The lane is optional. If `$2` is `feature`, `bug` or `quick`, that is the lane. Otherwise there is no lane argument: every argument after `$1` moves up one place (what this command calls the third argument is `$2`), and Step 4 takes the lane from the work item's type: `bug` if the type is Bug, otherwise `feature`. `quick` is never inferred; the engineer types it. `quick` is the small lane: one repo, at most 2 tasks, no schema or API contract change (see `/quick`).
+- The lane is optional. If `$2` is `feature`, `bug` or `quick`, that is the lane. Otherwise there is no lane argument: every argument after `$1` moves up one place (what this command calls the third argument is `$2`), and Step 4 takes the lane from the work item's type: `bug` if the type is Bug, otherwise `feature`. `quick` is never inferred; the engineer types it. `quick` is the small lane: one repo, at most 3 tasks, no schema or API contract change (see `/quick`).
 - For `new` with no lane, ask for the lane with the description in Step 3a (`feature`, `bug` or `quick`; recommend `feature`).
 - If `$1` is wrong, stop and reply: `Usage: /start <id|owner/repo#n|new> [feature|bug|quick] [repo folder or ADO connection] [--brief] [--no-baseline]`.
 - `--no-baseline` is optional and can come anywhere after `$1`. If any argument is `--no-baseline`, remember it: Step 7b is skipped. Like `--brief`, it is never the third argument.
@@ -124,7 +124,7 @@ For each repo in `repos.md`, in order:
    - **If it prints `origin`:** run `git -C <repo> fetch origin`, then `git -C <repo> rev-parse --abbrev-ref origin/HEAD`. If that prints `origin/<name>`, the base is exactly what it printed. If it fails, run `git -C <repo> remote set-head origin --auto` and try once more. If it still fails, the base is `origin/main` if `git -C <repo> rev-parse --verify --quiet origin/main` prints a hash, else `origin/master` if that prints one, else ask the engineer which branch to start from.
    - **If it prints nothing** (a repo with no remote): the base is `main` if `git -C <repo> rev-parse --verify --quiet main` prints a hash, else `master` if that prints one, else the current branch if it does not start with `dev/`, else ask the engineer.
    - Write the base in the repo's **Base** column in `repos.md`.
-4. Make the branch:
+4. Make the branch. Read `worktrees` in the pipeline guide's Factory settings (default `always`): with `always`, every repo is treated as **busy** here, so each build gets its own worktree and two builds never share a folder.
    - **Not busy:** run `git -C <repo> checkout -b <branch> <base>`. Leave the repo's **Path** empty.
    - **Busy:** run exactly `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/work/New-Worktree.ps1" -Workspace "." -Repo "<repo>" -Folder "<work folder name without .work/>" -Branch "<branch>" -Base "<base>"`. Its last line is the worktree path (`.worktrees/<folder>/<repo>`): write it in the repo's **Path** column in `repos.md`. From here on, everything for this repo runs there (`{{ENG_HOME}}/guides/pipeline.md`, Where the work happens). If it fails, show the error in one line, skip this repo and tell the engineer.
 
@@ -137,6 +137,7 @@ For each repo in `repos.md`, in order:
 - Write one row per repo: the command, `PASS` or `FAIL`, and the names of the failing tests (at most 20; if more, write the count). Paste nothing else.
 - Run each command once. If it cannot run at all (for example a build error on the base branch), write `could not run` and the first error line.
 - This step never blocks `/start`. If it fails, say so in one line and go on.
+- **UI baseline.** If `uiChecks` is on (Factory settings) and a repo's guide has a `## UI checks` table, run `Test-Ui.ps1` once for that repo with `-Name before` (the command is in `/review` Step 3b), so the review can show before and after. It never blocks `/start`.
 
 ## Step 8: Start the log
 

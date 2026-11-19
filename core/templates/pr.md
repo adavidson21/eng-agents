@@ -31,4 +31,4 @@ Testing: <how to test it, then the command(s) run and the result, in one or two 
 <Only when the change touches UI:>
 Screenshots: <add before and after screenshots>
 
-<ADO work item: AB#<id>. GitHub issue: Closes owner/repo#<n>. Local item: leave this line out.>
+<Linked ADO work item: AB#<number>. GitHub issue: Closes owner/repo#<n>. Local item: its id, for example L12.>

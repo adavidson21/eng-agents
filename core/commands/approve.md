@@ -19,7 +19,7 @@ If the mode above is `auto`, Workshop's autopilot is running this and nobody is 
    - `Test-DraftHash.ps1` (Step 3's command) prints `unchanged`: the draft is as the agent wrote it.
    - "Open questions" is empty, or holds only placeholder text.
    - "Assumptions" has at most 3 lines.
-   - `tasks.md` has at most 2 tasks, and its coverage table covers every acceptance criterion.
+   - `tasks.md` has at most `quickTasks` tasks (Factory settings in the pipeline guide, default 3), and its coverage table covers every acceptance criterion.
    - "Why this fits the quick lane" is filled in.
 3. **Clean:** change `Status: DRAFT` to `Status: APPROVED` in `quick.md` (nothing else), read it back to confirm, add a `progress.md` entry for `/approve` with `- Stats: gate=auto file=quick`, and say `Approved automatically: quick.md is clean.` Write no product notes (Step 5b): assumptions are not the engineer's answers.
 4. **Not clean:** change nothing in `quick.md`. Add a `progress.md` entry for `/approve` that names every check that failed, with `- Stats: gate=held file=quick`, and end your reply with one line: `Needs you: <the failed checks, in a few words>.` The engineer reviews it and runs `/approve $1` themselves.
@@ -103,7 +103,7 @@ The engineer's answers while drafting are facts worth keeping. Only for `spec.md
 
 | Approved | Next |
 |---|---|
-| `spec.md` and `plan.md` together | Start a new session, then `/do-task $1 1` |
+| `spec.md` and `plan.md` together | Start a new session, then `/do-task $1 1` (in Workshop, approving starts the build on its own) |
 | `spec.md` alone (no plan yet, an older item) | `/plan $1` |
 | `plan.md` alone | `/tasks $1` if there is no `tasks.md`, otherwise start a new session, then `/do-task $1 1` |
 | `bug.md` | Start a new session, then `/do-task $1 1` |

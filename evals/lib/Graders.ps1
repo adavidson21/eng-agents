@@ -141,7 +141,7 @@ function Test-TasksShape($Ws, [switch]$NoExec) {
     $cmds = @([regex]::Matches((Get-MdSection $guide "Commands"), '(?m)^\|[^|]+\|\s*`([^`]+)`') | ForEach-Object { ($_.Groups[1].Value -split ' --filter')[0].Trim() })
     foreach ($k in $tasks) {
         Add-Check $c "task $($k.N): one repo" ($k.Repo -and $k.Repo.Trim('`') -eq "sample-api") "Repo: $($k.Repo)"
-        Add-Check $c "task $($k.N): 3 files or fewer" ($k.Files.Count -ge 1 -and $k.Files.Count -le 3) "$($k.Files.Count) files"
+        $code = @($k.Files | Where-Object { $_ -notmatch '(?i)(test|spec)' }); Add-Check $c "task $($k.N): 6 files or fewer, tests not counted" ($k.Files.Count -ge 1 -and $code.Count -le 6) "$($code.Count) files besides tests"
         Add-Check $c "task $($k.N): has a Human interface line" ($k.Human -and $k.Human -notmatch '^<')
         $v = if ($k.Verify) { $k.Verify.Trim('`').Trim() } else { "" }
         Add-Check $c "task $($k.N): verify command comes from the repo guide" (@($cmds | Where-Object { $v.StartsWith($_) }).Count -ge 1) "Verify: $v"
@@ -283,11 +283,11 @@ function Test-QuickLane($Ws, [switch]$NoExec) {
         Add-Check $c "cited paths exist" ($missing.Count -eq 0) "missing: $($missing -join ', ')"
     }
     $tasks = Get-Tasks (Read-WorkFile $Ws "tasks.md")
-    Add-Check $c "1 or 2 tasks" ($tasks.Count -ge 1 -and $tasks.Count -le 2) "$($tasks.Count) tasks"
+    Add-Check $c "1 to 3 tasks" ($tasks.Count -ge 1 -and $tasks.Count -le 3) "$($tasks.Count) tasks"
     $guide = [IO.File]::ReadAllText((Join-Path $Ws.Repo "AGENTS.md"))
     $cmds = @([regex]::Matches((Get-MdSection $guide "Commands"), '(?m)^\|[^|]+\|\s*`([^`]+)`') | ForEach-Object { ($_.Groups[1].Value -split ' --filter')[0].Trim() })
     foreach ($k in $tasks) {
-        Add-Check $c "task $($k.N): 3 files or fewer" ($k.Files.Count -ge 1 -and $k.Files.Count -le 3) "$($k.Files.Count) files"
+        $code = @($k.Files | Where-Object { $_ -notmatch '(?i)(test|spec)' }); Add-Check $c "task $($k.N): 6 files or fewer, tests not counted" ($k.Files.Count -ge 1 -and $code.Count -le 6) "$($code.Count) files besides tests"
         $v = if ($k.Verify) { $k.Verify.Trim('`').Trim() } else { "" }
         Add-Check $c "task $($k.N): verify command comes from the repo guide" (@($cmds | Where-Object { $v.StartsWith($_) }).Count -ge 1) "Verify: $v"
     }

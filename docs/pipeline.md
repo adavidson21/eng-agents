@@ -76,7 +76,7 @@ Editing the line yourself still works; the next command reads whatever is on dis
 | Lane | Use when | Flow |
 |---|---|---|
 | Feature | New behavior, or more than 3 files of change | Full pipeline |
-| Quick | Small work: one repo (not shared), 1 or 2 tasks, no schema or API contract change, clear acceptance criteria | `/start <id> quick` → `/quick` → `/approve` → `/do-task` (repeat) → `/review` → `/pr`. See [Quick lane](#quick-lane). |
+| Quick | Small work: one repo (not shared), 1 to 3 tasks, no schema or API contract change, clear acceptance criteria | `/start <id> quick` → `/quick` → `/approve` → `/do-task` (repeat) → `/review` → `/pr`. See [Quick lane](#quick-lane). |
 | Bug | A defect with a reproducible symptom | `/start` → `/bug` → `/approve` → `/do-task` (repeat) → `/review` → `/pr` |
 | Scope | The work is an idea, not work items yet | `/scope` → `/approve` → `/slice` → `/approve` → `/backlog`. Then each story runs the feature lane. See [Scoping](#scoping-before-work-items). |
 | Spike | You do not know enough to write a spec, or someone asks "how hard would it be to...?" | `/spike` writes `findings.md` and a shareable `brief.html` with Business, Engineering and Leadership views (`--for <lens>` picks the one it opens on). No code changes. Good input to a later `/spec`. |
@@ -337,7 +337,7 @@ The repo map is what makes "what version of .NET is the portal on" work: keep ea
 `/start` never switches a busy repo (uncommitted changes, or on another item's `dev/` branch). It makes a git worktree for it instead, at `.worktrees/<work folder>/<repo>` in the workspace, with `New-Worktree.ps1`, and writes that in the repo's **Path** column in `repos.md`. `/resume` does the same for a paused item whose repo got busy. From then on every command runs git, builds, tests and edits for that repo in its Path, and reads the repo guide from the repo folder (core `guides/pipeline.md`, Where the work happens).
 
 - A worktree shares the repo's branches and commits: you can push, diff and review the branch from the repo folder too.
-- Two items on the same repo can now build at once (Workshop's autopilot runs up to 3, 2 by default).
+- Two items on the same repo can now build at once (Workshop's autopilot runs up to 5, 2 by default). Since Core 4.9.0 every build gets its own worktree by default (factory `worktrees: always`), so builds never share a folder.
 - Workshop's Loom removes an item's worktrees when you remove the item (`git worktree remove`, never forced; one with uncommitted changes is kept). By hand: `git -C <repo> worktree remove .worktrees/<folder>/<repo>` from the workspace root.
 - Dot folders are never listed as repos, so `.worktrees` does not show up in the repo list.
 
@@ -347,7 +347,18 @@ Agents log what they notice out of scope (a bug next door, debt, missing docs or
 
 ## Review by exception (quick lane)
 
-With Workshop's hands-off Quick changes on, autopilot builds a Quick change end to end: `/quick <id> auto`, then `/approve <id> quick auto`, which approves `quick.md` only when it is clean (unedited draft, no open questions, at most 3 assumptions, at most 2 tasks). A plan that is not clean stops for you like any other gate. The rest is the usual build, review and PR text; nothing is pushed, so you still read the diff before it ships.
+With Workshop's hands-off Quick changes on, autopilot builds a Quick change end to end: `/quick <id> auto`, then `/approve <id> quick auto`, which approves `quick.md` only when it is clean (unedited draft, no open questions, at most 3 assumptions, at most 3 tasks). A plan that is not clean stops for you like any other gate. The rest is the usual build, review and PR text; nothing is pushed, so you still read the diff before it ships.
+
+## The software factory (Core 4.9.0)
+
+With Workshop, you touch a work item twice: you **approve the plan** and you **publish the PR**. In between, autopilot runs the tasks, the review, any fix tasks, the UI checks and the PR text on its own.
+
+- **Factory settings** (`.work/factory.json`, written by Workshop's Settings, Factory) set the task size cap (6 files, tests not counted), the quick lane cap (3 tasks), the retry limit (3), which review findings become fix tasks (Blockers and Should fix), review rounds (2), UI checks and worktrees. Missing file: those defaults.
+- **Lighter checks.** `/do-task` runs only its verify command (plus a full check on the last task); `/review` runs the full build and tests once, and `/pr` once more after catching up with the base.
+- **Catch up with the base.** `/review` and `/pr` rebase each branch on its base. A conflict becomes a fix task at review, or a stop at `/pr`.
+- **UI checks.** Fill the repo guide's `## UI checks` table (start command, URL, pages, UI file patterns). `/start` screenshots the pages before the work, `/review` after it, with `Test-Ui.ps1` (Playwright, headless). Problems (load errors, console errors, failed requests, new accessibility problems) are Blockers; pages that changed are listed for you. No table, no Playwright or an app that cannot start locally: skipped, never a stop.
+- **Knowledge gaps.** An agent missing a fact logs it with `Add-Gap.ps1` and keeps going on a safe assumption. Workshop shows it as a Teach card; your answer runs `/teach G<n> <answer>`, which writes it to the product note, handbook or repo guide and closes the gap.
+- **Run retro.** `/pr` runs `Find-Repeats.ps1`: a review finding or a gap that comes back in 3 items becomes one suggestion in Folio's review list.
 
 ## End of day
 

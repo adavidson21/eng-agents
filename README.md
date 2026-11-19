@@ -34,6 +34,7 @@ Open opencode from your workspace root (for example `C:\src\work`). In Workshop,
 | Cloudflare (your own computer, with Workshop's Cloudflare connector on) | `/cloudflare <what you want>` proposes a change set (DNS, a Worker on a custom domain, Pages projects and variables, rollbacks) that you apply in Workshop; `/cloudflare why <worker or project>` reads a failed build's log; `/cloudflare cf-<name> check` confirms what was applied. Agents never hold the token and never apply anything. |
 | Switch to something urgent | `/pause <id> [reason]`, later `/resume <id>` |
 | New repo in the workspace | `/onboard-repo <folder>` |
+| New product, ready for its first build | `/onboard-product <product>` (repo guides, product note, gaps to answer, a trial run) |
 | Remember a rule | `/memory <rule>` (one repo) or `/memory -global <rule>` (every repo). `/memory -list` shows them. |
 | Remember a product fact | `/memory -product <product> <fact>` writes it to the product's note in Workshop's Notes app (`notes/products/<product>.md`), where you review it. Agents read the note when they work on that product and add facts they confirm. `/product-notes move` moves product facts out of repo guides; `/product-notes list` lists the notes. |
 | Work item in another ADO collection | `/start <id> <lane> <repo folder or connection>` |

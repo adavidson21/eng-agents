@@ -18,6 +18,7 @@ If the mode above is `auto`, nobody is watching (autopilot or an eval run). Ask 
 - Read `workitem.md`, `repos.md`, and `progress.md` in the work folder.
 - Read the repo guide (`<repo>/AGENTS.local.md` if it exists, otherwise `<repo>/AGENTS.md`) for every repo in `repos.md`.
 - If a `.work/scope-*/published.md` lists `$1` in its Id column, read that story's "Notes for the builder" in the same folder's `milestones.md` (older files call it "Work item"). They are hints from slicing, not decisions.
+- **A story from an approved breakdown** (`workitem.md` has `- Breakdown: approved`, Core 4.10.0): the engineer approved what it covers, its repos (`- Repos:`) and its areas (`- Areas:`). Keep the plan inside them: change files only under those areas (tests may go anywhere), add no dependency, migration, or auth or security code unless the story needs it. When it truly does, plan it anyway and say why under "Risks": `/approve $1 spec auto` then holds the plan for the engineer instead of approving it.
 - If `spec.md` exists and says `Status: APPROVED`, stop. Tell the engineer the spec is already approved and give the next command from `/status $1`.
 - If `spec.md` exists as a draft, read it, and `plan.md` and `tasks.md` if they exist. You are refining them, not starting over.
 

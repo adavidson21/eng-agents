@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Self-test for Add-Observation.ps1, Add-Gap.ps1, Close-Gap.ps1, Find-Repeats.ps1 and New-Worktree.ps1. Writes only to a temp folder. Needs git.
+  Self-test for Add-Observation.ps1, Add-Gap.ps1, Close-Gap.ps1, Find-Repeats.ps1, New-Worktree.ps1, Test-StoryDrift.ps1 and Set-Onboarding.ps1. Writes only to a temp folder. Needs git.
   Run: pwsh -NoProfile -File core/scripts/work/Test-WorkScripts.ps1   (also works in Windows PowerShell 5.1)
 #>
 $ErrorActionPreference = "Stop"
@@ -136,6 +136,48 @@ try {
 
     $r = Run "New-Worktree.ps1" @("-Workspace", $root, "-Repo", "api", "-Folder", "4-x", "-Branch", "dev/feature/2-thing", "-Base", "main")
     Check "worktree: git refusal reported" ($r.Code -ne 0 -and $r.Out -match "GIT:") $r.Out
+
+    # ---------------------------------------------------------------- story drift (Core 4.10.0)
+    $story = Join-Path $wr "L40-invite-members"
+    New-Item -ItemType Directory -Path $story -Force | Out-Null
+    $wiText = "# Work item L40: Invite members`n`n- Type: Feature`n- Epic: scope-ws`n- Story: 1.2`n- Depends on: none`n- Repos: api`n- Areas: api/src/Workspaces`n- Breakdown: approved 2026-11-19`n"
+    [IO.File]::WriteAllText((Join-Path $story "workitem.md"), $wiText)
+    function Write-Tasks([string[]]$Files, [string]$Repo = "api") {
+        $list = ($Files | ForEach-Object { "  - ``$_`` (changed)" }) -join "`n"
+        [IO.File]::WriteAllText((Join-Path $story "tasks.md"), "# Tasks: L40`n`n## [ ] Task 1: Invite`n`n- Repo: ``$Repo```n- Covers: AC-1`n- Files:`n$list`n- Verify: ``dotnet test```n`n## Coverage check`n")
+    }
+    Write-Tasks @("src/Workspaces/Invite.cs", "src/Workspaces/InviteHandler.cs", "tests/Workspaces/InviteTests.cs")
+    $r = Run "Test-StoryDrift.ps1" @("-Folder", $story)
+    Check "drift: a plan inside the breakdown is clean" ($r.Code -eq 0 -and $r.Last -eq "CLEAN") $r.Out
+    Write-Tasks @("src/Workspaces/Invite.cs", "src/Billing/Plan.cs")
+    $r = Run "Test-StoryDrift.ps1" @("-Folder", $story)
+    Check "drift: a file outside the areas" ($r.Code -eq 1 -and $r.Out -match "drift: outside the breakdown's areas: api/src/Billing/Plan.cs") $r.Out
+    Write-Tasks @("src/Workspaces/Invite.cs", "src/Workspaces/Api.csproj", "src/Workspaces/Migrations/AddInvites.cs", "src/Workspaces/InviteToken.cs")
+    $r = Run "Test-StoryDrift.ps1" @("-Folder", $story)
+    Check "drift: dependency, migration and security each named" ($r.Code -eq 1 -and $r.Out -match "a dependency may change: api/src/Workspaces/Api.csproj" -and $r.Out -match "a migration or schema change" -and $r.Out -match "auth or security code: api/src/Workspaces/InviteToken.cs") $r.Out
+    Write-Tasks @("src/Workspaces/A.cs", "src/Workspaces/B.cs", "src/Workspaces/C.cs")
+    $r = Run "Test-StoryDrift.ps1" @("-Folder", $story, "-TaskFileCap", "2")
+    Check "drift: over the task file cap" ($r.Code -eq 1 -and $r.Out -match "Task 1 changes 3 files \(the cap is 2") $r.Out
+    Write-Tasks @("src/Workspaces/A.cs") "web"
+    $r = Run "Test-StoryDrift.ps1" @("-Folder", $story)
+    Check "drift: a repo the breakdown does not name" ($r.Code -eq 1 -and $r.Out -match "Task 1 is in repo web") $r.Out
+    [IO.File]::WriteAllText((Join-Path $story "workitem.md"), "# Work item L40: Invite members`n`n- Type: Feature`n")
+    $r = Run "Test-StoryDrift.ps1" @("-Folder", $story)
+    Check "drift: not a story from a breakdown" ($r.Code -eq 2 -and $r.Last -eq "NOT-A-STORY") $r.Out
+
+    # ---------------------------------------------------------------- onboarding (Core 4.10.0)
+    $r = Run "Set-Onboarding.ps1" @("-WorkRoot", $wr, "-Product", "Sample Portal", "-Step", "scan", "-Value", "portal-api, portal-ui")
+    $ob = Join-Path $wr "_onboarding/sample-portal.md"
+    $obText = if (Test-Path $ob) { [IO.File]::ReadAllText($ob) } else { "" }
+    Check "onboarding: file per product, scan line" ($r.Code -eq 0 -and $obText -match '(?m)^# Onboarding: Sample Portal$' -and $obText -match '(?m)^- Product: Sample Portal$' -and $obText -match '(?m)^- Scan: done \d{4}-\d{2}-\d{2} \| portal-api, portal-ui$') "$($r.Out) $obText"
+    $r = Run "Set-Onboarding.ps1" @("-WorkRoot", $wr, "-Product", "Sample Portal", "-Step", "trial", "-Value", "L41")
+    $obText = [IO.File]::ReadAllText($ob)
+    Check "onboarding: trial line added, scan kept" ($obText -match '(?m)^- Trial: L41$' -and $obText -match '(?m)^- Scan: done') $obText
+    $r = Run "Set-Onboarding.ps1" @("-WorkRoot", $wr, "-Product", "Sample Portal", "-Step", "trial", "-Value", "L42")
+    $obText = [IO.File]::ReadAllText($ob)
+    Check "onboarding: a step is replaced, not repeated" (([regex]::Matches($obText, '(?m)^- Trial:')).Count -eq 1 -and $obText -match '(?m)^- Trial: L42$') $obText
+    $r = Run "Set-Onboarding.ps1" @("-WorkRoot", $wr, "-Product", "Sample Portal", "-Step", "nope", "-Value", "x")
+    Check "onboarding: bad step refused" ($r.Code -ne 0)
 }
 finally {
     Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue

@@ -1,5 +1,5 @@
 ---
-description: "Start a work item: fetch or describe it, create its .work folder, pick repos, create branches (and a brief with --brief). Usage: /start <id|owner/repo#n|new> [feature|bug|quick] [repo folder or ADO connection] [--brief] [--no-baseline]"
+description: "Start a work item: fetch or describe it, create its .work folder, pick repos, create branches (and a brief with --brief). Usage: /start <id|owner/repo#n|new> [feature|bug|quick] [repo folder or ADO connection] [--brief] [--no-baseline] [auto]"
 agent: planner
 ---
 
@@ -8,6 +8,12 @@ Start work item **$1** in lane **$2**. Optional third argument (where to fetch i
 All arguments: **$ARGUMENTS**
 
 Follow these steps in order. Do not skip any step, except the ones marked "only when" that do not apply.
+
+**Auto mode (Core 4.10.0).** If any argument is `auto`, Workshop's autopilot is running this for a local item that is already described (a story from an approved breakdown, or a product's trial run) and nobody is watching. `auto` is never the lane or the third argument. Ask nothing:
+- `$1` must be a local id (`L<n>`). If not, say `Needs you: /start runs on its own only for local items.` and stop.
+- Step 5: if `workitem.md` has a `- Repos:` line, those repos are the list (in that order, shared repos first); do not show the list or ask. Otherwise pick from the product and the repo map as usual and keep your best list. If you cannot settle on a repo, say `Needs you: pick the repos for $1.` and stop.
+- Step 7: when the base cannot be found, use `origin/main`, else `origin/master`, else say `Needs you: which branch should $1 start from?` and stop.
+- Anything else that would ask: take your recommended answer, write it under Notes in the `progress.md` entry, and keep going.
 
 ## Step 1: Check the arguments
 

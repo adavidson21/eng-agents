@@ -64,6 +64,24 @@ Never force anything, never push, never resolve a conflict outside a fix task.
 
 A work item is **linked** to an ADO work item when `workitem.md` has a `- ADO item: <number>` line, or when its id is a number and `workitem.md` has no `- ADO item: unlinked` line. Otherwise it is **local** (id `L<n>`, or a number that was unlinked). Only a linked item gets `AB#<number>` in commits and PR text (the number from the `ADO item:` line, else the id); a local item gets its id. Never post to, update or read ADO for a local item. Linking and unlinking happen in Workshop; never write the `ADO item:` line yourself.
 
+## Stories from an approved breakdown
+
+`/backlog scope-<name> local` makes one local item per story (Core 4.10.0). Its `workitem.md` says where it came from, so Workshop can build the epic hands-off, in order:
+
+| Line | Meaning |
+|---|---|
+| `- Epic: scope-<name>` | The scope folder (the epic) it came from |
+| `- Story: <n.m>` | Its number in `milestones.md` |
+| `- Depends on: <local ids, or none>` | Items it waits for: Workshop builds it after their PR text is ready |
+| `- Repos:`, `- Areas:` | The repos and folders the approved breakdown says it changes |
+| `- Breakdown: approved <date>` | The engineer approved the breakdown, so the story's plan needs them only when it drifts from it |
+
+Autopilot runs `/start <id> feature auto`, `/spec <id> auto`, then `/approve <id> spec auto`, which approves the plan only when `scripts/work/Test-StoryDrift.ps1` prints `CLEAN`: no task over the file cap, no new dependency, no migration, no auth or security code, nothing outside the story's areas and repos. Any drift holds the plan for the engineer. Every story still stops at Publish.
+
+## Onboarding a product
+
+`/onboard-product <product>` (Core 4.10.0) gets a product ready for its first build without asking anything: it drafts missing repo guides, drafts the product note, logs what it could not find as gaps (Teach), and creates a trial run, a local Quick change with `- Trial: <product>` that adds one test. It records each step in `.work/_onboarding/<product>.md` with `scripts/work/Set-Onboarding.ps1` (`- Scan:`, `- Trial:`, `- Live:`). Workshop's Loom shows the steps; the product is live when its trial run reaches Ready to publish.
+
 ## Conventions
 
 | Item | Value |

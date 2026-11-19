@@ -34,7 +34,21 @@ param(
     [string]$DescriptionFile,
 
     # Acceptance criteria as text. Leave out for "None provided". Export-Backlog.ps1 -Local passes the story's scenarios.
-    [string]$AcceptanceCriteria
+    [string]$AcceptanceCriteria,
+
+    # A story from an approved breakdown (Export-Backlog.ps1 -Local, Core 4.10.0): the scope folder it came from, its
+    # story number, the local ids it waits for, and the repos and areas the breakdown says it changes. With
+    # -BreakdownApproved, Workshop builds it hands-off and /approve <id> spec auto approves its plan when
+    # Test-StoryDrift.ps1 finds no drift from the breakdown.
+    [string]$Epic,
+    [string]$Story,
+    [string[]]$DependsOn,
+    [string]$Repos,
+    [string]$Areas,
+    [switch]$BreakdownApproved,
+
+    # A product's trial run (/onboard-product, Core 4.10.0): the product it proves.
+    [string]$Trial
 )
 
 $ErrorActionPreference = "Stop"
@@ -85,12 +99,26 @@ if (-not $criteria) { $criteria = "None provided" }
 $repro = $(if ($Type -eq "Bug") { "<steps to reproduce, or ""See the description"">" } else { "Not a bug" })
 $today = (Get-Date).ToString("yyyy-MM-dd")
 
+$clean = { param($v) ("$v" -replace "[\r\n|]+", " ").Trim() }
+$meta = ""
+if ($Epic) { $meta += "- Epic: $(& $clean $Epic)`n" }
+if ($Story) { $meta += "- Story: $(& $clean $Story)`n" }
+if ($Epic) {
+    $deps = @($DependsOn | ForEach-Object { & $clean $_ } | Where-Object { $_ })
+    $meta += "- Depends on: $(if ($deps.Count) { $deps -join ', ' } else { 'none' })`n"
+}
+if ($Repos) { $meta += "- Repos: $(& $clean $Repos)`n" }
+if ($Areas) { $meta += "- Areas: $(& $clean $Areas)`n" }
+if ($BreakdownApproved) { $meta += "- Breakdown: approved $today`n" }
+if ($Trial) { $meta += "- Trial: $(& $clean $Trial)`n" }
+
+$header = "- Type: $Type`n- Source: Local (no tracker item)`n- Created: $today"
+if ($meta) { $header += "`n" + $meta.TrimEnd("`n") }
+
 $md = @"
 # Work item ${id}: $Title
 
-- Type: $Type
-- Source: Local (no tracker item)
-- Created: $today
+$header
 
 ## Description
 

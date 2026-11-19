@@ -4,12 +4,22 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
-## Core 4.10.0 (2026-11-19)
+## Core 4.11.0 (2026-11-19)
 
 Cloudflare through Workshop (Workshop 1.11.0, its Cloudflare connector). Agents never hold a token: Workshop does, in this computer's secret store. Nothing breaks for items in progress.
 - `/cloudflare <what you want>`: reads your account through Workshop, writes `.work/cf-<name>/plan.md` and a change set (DNS records, a Worker on a custom domain, Pages projects, domains and variables, rollbacks, build retries), checks it, and proposes it. You apply it in Workshop (Settings, Cloudflare; Needs you links there). `/cloudflare why <worker or project>` reads the failed build's log and says the probable cause and the fix; `/cloudflare cf-<name> check` confirms what was applied. Runs as the investigator: it changes no code and applies nothing.
 - `scripts/workshop/Invoke-WorkshopTool.ps1`: runs one of Workshop's tools for agents (`/api/tools`, read actions a connector marks for agents) with Workshop's agent token, and prints JSON or a `NOWORKSHOP`, `NOTOOL`, `REFUSED` or `FAILED` line. `-Arg name=value,...` avoids JSON quoting in Windows PowerShell; `-ArgsFile` for change sets. `Test-WorkshopTool.ps1` checks it against a fake Workshop, in CI.
 - Guards: every agent asks before reading a secret store (`security`, `secret-tool`, `CredRead`, `Get-StoredCredential`) or Workshop's agent token and secret list, and is refused Workshop's per-install token. `opencode.json` asks before reading anything in `~/.workshop`. The hub and chat agents deny all of these.
+
+## Core 4.10.0 (2026-11-19)
+
+Epics hand off to builds, and products onboard themselves (Workshop project doc `claude/loom-floor-v1-plan.md`, Loom 6.5.0). Nothing breaks for items in progress.
+- Approve the breakdown once: `/backlog scope-<name> local` gives each story's `workitem.md` its epic, story number, the local ids it waits for (`- Depends on:`), its repos and areas, and `- Breakdown: approved`. `milestones.md`'s builder notes gain an `Areas:` line, which `/slice` fills.
+- Hold by exception: the new `scripts/work/Test-StoryDrift.ps1` checks a story's plan against its breakdown (task file cap, new dependency, migration, auth or security code, files outside its areas or repos). `/approve <id> spec auto` approves a story's spec and plan only when it prints `CLEAN` and the draft is unedited with no open questions; otherwise it holds the plan for the engineer with the reasons.
+- `/start <L id> [lane] auto`: for autopilot, asks nothing, takes the repos from `workitem.md`'s `- Repos:` line.
+- `/spec` keeps a story's plan inside its breakdown's areas and says why under Risks when it cannot.
+- The new `/onboard-product <product>`: drafts missing repo guides and the product note, logs what it cannot find as gaps (Teach) instead of asking, and creates a trial run (a local Quick change with `- Trial:` that adds one test). Each step is recorded in `.work/_onboarding/<product>.md` by the new `scripts/work/Set-Onboarding.ps1`, for Loom's onboarding view.
+- `New-LocalWorkItem.ps1` takes `-Epic`, `-Story`, `-DependsOn`, `-Repos`, `-Areas`, `-BreakdownApproved` and `-Trial`.
 
 ## Core 4.9.0 (2026-11-18)
 

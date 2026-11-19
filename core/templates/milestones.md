@@ -47,6 +47,7 @@ Scenario: <name>
 <!-- Local only: never published to ADO. Pointers, not decisions; the engineer may build it another way. -->
 
 - Repos: `<repo>`
+- Areas: `<repo>/path/to/folder` (<the folders or modules this story changes; a story built hands-off stays inside them>)
 - Where to look: `<repo>/path/to/File.cs` (<why>)
 - Similar existing code: `<repo>/path/to/Similar.cs`
 - Depends on: <Story n.m, or "none">

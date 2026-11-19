@@ -120,9 +120,9 @@ Scenario: Filter by month
     $wi1 = [IO.File]::ReadAllText((Join-Path $first.FullName "workitem.md"))
     $wi2 = [IO.File]::ReadAllText((Join-Path $second.FullName "workitem.md"))
     $id1 = $first.Name -replace '^(L\d+)-.*$', '$1'
-    Check "local story: names its scope and story, approved breakdown" ($r.Code -eq 0 -and $wi1 -match "(?m)^- Epic: scope-two$" -and $wi1 -match "(?m)^- Story: 1\.1$" -and $wi1 -match "(?m)^- Depends on: none$" -and $wi1 -match "(?m)^- Breakdown: approved \d{4}-\d{2}-\d{2}$") "$($r.Out) $wi1"
-    Check "local story: waits for the story it depends on, by local id" ($wi2 -match "(?m)^- Story: 1\.2$" -and $wi2 -match "(?m)^- Depends on: $id1$") $wi2
-    Check "local story: repos and areas from the builder notes, without backticks" ($wi2 -match "(?m)^- Repos: orders-api, orders-web$" -and $wi2 -match "(?m)^- Areas: orders-api/src/Orders, orders-web/src/app/orders$") $wi2
+    Check "local story: names its scope and story, approved breakdown" ($r.Code -eq 0 -and $wi1 -match "(?m)^- Epic: scope-two\r?$" -and $wi1 -match "(?m)^- Story: 1\.1\r?$" -and $wi1 -match "(?m)^- Depends on: none\r?$" -and $wi1 -match "(?m)^- Breakdown: approved \d{4}-\d{2}-\d{2}\r?$") "$($r.Out) $wi1"
+    Check "local story: waits for the story it depends on, by local id" ($wi2 -match "(?m)^- Story: 1\.2\r?$" -and $wi2 -match "(?m)^- Depends on: $id1\r?$") $wi2
+    Check "local story: repos and areas from the builder notes, without backticks" ($wi2 -match "(?m)^- Repos: orders-api, orders-web\r?$" -and $wi2 -match "(?m)^- Areas: orders-api/src/Orders, orders-web/src/app/orders$") $wi2
     Check "local story: no Repos or Areas line when the notes have none" ($wi1 -notmatch "(?m)^- (Repos|Areas):") $wi1
 
     Write-Text $milestones ($good -replace "(?s)#### Release note\s+You can now[^\n]*\n", "")

@@ -64,7 +64,7 @@ Wait for the answer. The engineer can choose differently per file.
 ## Step 6: Write the draft
 
 - Start from `{{ENG_HOME}}/templates/repo-agents.md`.
-- **UI checks:** if the repo serves pages (an Angular, React or similar app, or MVC views), fill the `## UI checks` table from what you found: the start script, its local URL and port (from its config, never a guess), two to five main routes, and the UI file patterns. Leave a value as the template placeholder when you cannot find it. Leave the whole section out for a repo with no UI.
+- **UI checks:** if the repo serves pages (an Angular, React or similar app, or MVC views), fill the `## UI checks` table from what you found: the start script, its local URL and port (from its config, never a guess), two to five main routes, and the UI file patterns. When the start script takes a port (`ng serve --port`, `vite --port`, `next dev -p`, a `PORT` variable), write `{port}` in Start and URL instead of the number, so builds side by side get their own port. Leave a value as the template placeholder when you cannot find it. Leave the whole section out for a repo with no UI.
 - Fill the `Stack:` line from Step 3 item 11. Every stack named there must have a file in `{{ENG_HOME}}/stacks/`.
 - Mark every item you inferred but did not confirm with `(inferred, verify)`.
 - Write `TODO(you)` for anything that should exist but you could not find.

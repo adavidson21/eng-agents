@@ -6,7 +6,11 @@
 //
 //   node check-ui.mjs --cwd <repo or worktree> --url http://localhost:4200 --pages /,/orders --out <work folder>/ui
 //                     --name after [--start "npm start"] [--ready /] [--seed "npm run seed"] [--compare before]
-//                     [--timeout 180]
+//                     [--timeout 180] [--widths 1280] [--aria]
+//
+// Core 4.15.0: an app that app.mjs keeps running for the build (ui/app.json) is used as it is and never stopped.
+// {port} in the URL and Start is a free port. --widths picks the widths (a per-task check uses one), and --aria
+// writes each page's accessibility snapshot as text (aria-<page>-<width>.txt) for the agent to read.
 //
 // The last line printed is always one of: "UI: PASS ...", "UI: FAIL ...", "UI: SKIPPED ...".
 // Exit code: 0 for PASS and SKIPPED, 1 for FAIL.
@@ -17,6 +21,7 @@ import path from "node:path";
 import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
 import { decodePng, diffImages, encodePng } from "./png.mjs";
+import { freePort, runningApp, withPort } from "./app.mjs";
 
 export const WIDTHS = [1280, 640];
 
@@ -28,7 +33,9 @@ export function parseArgs(argv) {
     if (!k.startsWith("--")) continue;
     const key = k.slice(2);
     i++;
+    if (key === "aria") { o.aria = true; i--; continue; }
     if (key === "pages") o.pages = String(v || "/").split(",").map((p) => p.trim()).filter(Boolean);
+    else if (key === "widths") o.widths = String(v || "").split(",").map((w) => parseInt(w, 10)).filter((w) => w >= 200 && w <= 4000);
     else if (key === "timeout") o.timeout = Math.max(10, Number(v) || 180);
     else o[key] = v;
   }
@@ -131,7 +138,27 @@ const A11Y_SCRIPT = () => {
   return { imagesNoAlt, controlsNoName, inputsNoLabel };
 };
 
+/** The page as text for the agent: Playwright's ARIA snapshot (1.49 and later), else its accessibility tree. */
+export async function ariaText(page) {
+  try {
+    if (typeof page.locator("body").ariaSnapshot === "function") return await page.locator("body").ariaSnapshot({ timeout: 10000 });
+  } catch {}
+  try {
+    if (page.accessibility && page.accessibility.snapshot) return treeText(await page.accessibility.snapshot());
+  } catch {}
+  return null;
+}
+
+/** An accessibility tree as indented lines: "- role "name"". */
+export function treeText(node, depth = 0) {
+  if (!node) return "";
+  const own = node.role && node.role !== "none" && node.role !== "generic" ? `${"  ".repeat(depth)}- ${node.role}${node.name ? ` "${String(node.name).replace(/"/g, '\\"').slice(0, 200)}"` : ""}${node.value ? `: ${String(node.value).slice(0, 100)}` : ""}\n` : "";
+  const next = own ? depth + 1 : depth;
+  return own + (node.children || []).map((c) => treeText(c, next)).join("");
+}
+
 export async function run(o, log = console.log) {
+  o = { ...o };
   const out = path.resolve(o.out);
   const shots = path.join(out, o.name);
   const result = { version: 1, name: o.name, at: new Date().toISOString(), url: o.url, verdict: "skipped", reason: null, pages: [], problems: [] };
@@ -149,6 +176,15 @@ export async function run(o, log = console.log) {
   const pw = loadPlaywright(o.cwd);
   if (!pw) return finish("skipped", "Playwright is not installed for this repo (npm i -D playwright, then npx playwright install chromium)");
 
+  // The build's warm app (app.mjs) when there is one; else {port} gets a free port for this run.
+  const warm = await runningApp(out, o.ready);
+  if (warm) o = { ...o, url: warm.url, start: null, seed: null };
+  else if (String(o.url).includes("{port}") || String(o.start || "").includes("{port}")) {
+    const port = await freePort();
+    o = { ...o, url: withPort(o.url, port), start: withPort(o.start, port), seed: withPort(o.seed, port) };
+  }
+  const widths = o.widths && o.widths.length ? o.widths : WIDTHS;
+  result.url = o.url;
   const base = o.url.replace(/\/+$/, "");
   const readyUrl = base + (o.ready ? (o.ready.startsWith("/") ? o.ready : "/" + o.ready) : "/");
   let app = null;
@@ -179,7 +215,7 @@ export async function run(o, log = console.log) {
       } catch {}
     }
     for (const p of o.pages) {
-      for (const width of WIDTHS) {
+      for (const width of widths) {
         const ctx = await browser.newContext({ viewport: { width, height: 900 } });
         const page = await ctx.newPage();
         const consoleErrors = [];
@@ -189,12 +225,20 @@ export async function run(o, log = console.log) {
         page.on("requestfailed", (r) => { if (sameOrigin(r.url(), base) && failedRequests.length < 10) failedRequests.push(`${r.url().slice(0, 150)} (${(r.failure() && r.failure().errorText) || "failed"})`); });
         page.on("response", (r) => { if (r.status() >= 500 && sameOrigin(r.url(), base) && failedRequests.length < 10) failedRequests.push(`${r.url().slice(0, 150)} (HTTP ${r.status()})`); });
         const file = `${slugOf(p)}-${width}.png`;
-        const row = { path: p, width, file: `${o.name}/${file}`, status: null, error: null, consoleErrors, failedRequests, a11y: null, a11yBefore: null, diff: null };
+        const row = { path: p, width, file: `${o.name}/${file}`, status: null, error: null, consoleErrors, failedRequests, a11y: null, a11yBefore: null, diff: null, aria: null };
         try {
           const resp = await page.goto(base + (p.startsWith("/") ? p : "/" + p), { waitUntil: "networkidle", timeout: 30000 });
           row.status = resp ? resp.status() : null;
           await page.screenshot({ path: path.join(shots, file), fullPage: true, animations: "disabled" });
           row.a11y = await page.evaluate(A11Y_SCRIPT);
+          if (o.aria) {
+            const text = await ariaText(page);
+            if (text) {
+              const name = `aria-${slugOf(p)}-${width}.txt`;
+              fs.writeFileSync(path.join(shots, name), text);
+              row.aria = `${o.name}/${name}`;
+            }
+          }
         } catch (e) {
           row.error = String(e.message || e).split(/\r?\n/)[0].slice(0, 200);
         }
@@ -228,7 +272,7 @@ export async function run(o, log = console.log) {
   result.problems = problemsOf(result.pages);
   const changed = result.pages.filter((p) => p.diff && (p.diff.sizeChanged || p.diff.changedPct > 0)).map((p) => `${p.path} at ${p.width}px`);
   result.changed = changed;
-  const summary = `${o.pages.length} page${o.pages.length === 1 ? "" : "s"} at ${WIDTHS.length} widths${o.compare && earlier ? `, ${changed.length} changed since ${o.compare}` : ""}`;
+  const summary = `${o.pages.length} page${o.pages.length === 1 ? "" : "s"} at ${widths.length === 1 ? `${widths[0]}px` : `${widths.length} widths`}${o.compare && earlier ? `, ${changed.length} changed since ${o.compare}` : ""}`;
   if (result.problems.length) return finish("fail", `${summary}; ${result.problems.length} problem${result.problems.length === 1 ? "" : "s"}: ${result.problems.slice(0, 3).join("; ")}`);
   return finish("pass", summary);
 }

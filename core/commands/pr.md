@@ -12,7 +12,7 @@ Draft the pull request text for work item **$1**.
 
 ## Step 1b: Catch up with the base
 
-Follow "Catch up with the base" in `{{ENG_HOME}}/guides/pipeline.md` for each repo. On a conflict, stop: write it in `progress.md` and tell the engineer (`auto` or not) `Needs you: <repo> conflicts with <base> in <files>.` Then, when the base had new commits (`rebase=clean`), run each repo's Build and All unit tests commands once more, and its regression suite with `Test-Suite.ps1 -Name after` (the command is in `/review` Step 3) when it has one; a failure is the same kind of stop. This is the item's last full check before the PR.
+Follow "Catch up with the base" in `{{ENG_HOME}}/guides/pipeline.md` for each repo. On a conflict, stop: write it in `progress.md` and tell the engineer (`auto` or not) `Needs you: <repo> conflicts with <base> in <files>.` Then, when the base had new commits (`rebase=clean` or `rebase=merged`), run each repo's Build and All unit tests commands once more, and its regression suite with `Test-Suite.ps1 -Name after` (the command is in `/review` Step 3) when it has one; a failure is the same kind of stop. This is the item's last full check before the PR.
 
 ## Step 2: Read
 
@@ -31,7 +31,7 @@ Follow "Catch up with the base" in `{{ENG_HOME}}/guides/pipeline.md` for each re
 
 ## Step 4: Hand off
 
-- Add a `progress.md` entry for `/pr` with a `- Stats: rebase=<clean, none, skipped or conflict>` line.
+- Add a `progress.md` entry for `/pr` with a `- Stats: rebase=<clean, merged, none, skipped or conflict>` line.
 - **Run retro.** Run exactly `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/work/Find-Repeats.ps1" -WorkRoot ".work" -Write`. It suggests fixes for what keeps coming back (in Folio's review list); name any new suggestion in one line. It never blocks.
 - In Workshop, the engineer publishes from Loom (Publish pushes every branch and opens the PRs); there is nothing else to run. Otherwise tell the engineer: "PR text is in `pr.md`. Push each branch with `git -C <repo> push -u origin <branch>` (or tell me to, or use Push in Loom), then open the PR on your git host (Azure DevOps, GitHub, or another) targeting `<target>`." Name each repo's target. If they ask you to push, run that command for each repo; each push asks for approval.
 - For a repo whose base has no `origin/` (no remote), say there is nothing to push: the work is on `<branch>`, ready to merge into `<base>` locally.

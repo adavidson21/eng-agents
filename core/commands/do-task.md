@@ -36,6 +36,12 @@ If the repo's row in `repos.md` has a **Path** (a worktree), every git, build, t
 
 ## Step 4: Do the work
 
+- Record the station for Workshop's Loom (Core 4.12.0). The step is `fix` when this task came from `review.md` (a `/review` added it after the tasks `/tasks` wrote), otherwise `build`:
+
+```
+{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/work/Set-Step.ps1" -Folder "<work folder>" -Step <build or fix>
+```
+
 - Read the "Pattern to follow" file and copy its style.
 - **A stack whose testing rules say strict TDD (Core: `dotnet`):**
   1. Write or update the test.
@@ -54,6 +60,7 @@ If the repo's row in `repos.md` has a **Path** (a worktree), every git, build, t
 
 The verify command only runs this task's tests. Run the whole-project check below only when this is the **last open task** in `tasks.md` for this repo, or the task's "Done when" line asks for it. Otherwise write `full=skipped` in Step 6 and go on: `/review` runs the full build and tests once for the whole item.
 
+- First record the station: run `Set-Step.ps1` (Step 4's command) with `-Step test`. If the script fails, go on without it.
 - From the repo guide's Commands table, run the **Build** command if there is one, then the **Pre-commit check** command if there is one, otherwise **All unit tests**. If the table has none of these, write `full=skipped` in Step 6 and go on.
 - If it passes, write `full=PASS` in Step 6.
 - If a test fails, read `baseline.md` in the work folder:

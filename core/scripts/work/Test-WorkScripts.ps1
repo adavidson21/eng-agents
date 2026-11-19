@@ -98,3 +98,4 @@ finally {
 
 if ($failed) { Write-Output "$failed failed"; exit 1 }
 Write-Output "All work script checks passed."
+exit 0

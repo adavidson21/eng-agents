@@ -31,6 +31,7 @@ Open opencode from your workspace root (for example `C:\src\work`). In Workshop,
 | Small change (one repo, 1 to 3 tasks) | `/start <id> quick` → `/quick <id>` → `/approve <id>` → `/do-task` → `/review` → `/pr`. One combined spec and plan, one approval. It steps up to the feature lane by itself when the work turns out bigger. |
 | Learn from an item | `/retro <id>` after review: what caused rework and up to 5 rules; tick the ones to save. `/retro --since <date>` finds mistakes that repeat across items. |
 | Standup update | `/standup [days back]` (default 1, or 3 on a Monday) |
+| Cloudflare (your own computer, with Workshop's Cloudflare connector on) | `/cloudflare <what you want>` proposes a change set (DNS, a Worker on a custom domain, Pages projects and variables, rollbacks) that you apply in Workshop; `/cloudflare why <worker or project>` reads a failed build's log; `/cloudflare cf-<name> check` confirms what was applied. Agents never hold the token and never apply anything. |
 | Switch to something urgent | `/pause <id> [reason]`, later `/resume <id>` |
 | New repo in the workspace | `/onboard-repo <folder>` |
 | Remember a rule | `/memory <rule>` (one repo) or `/memory -global <rule>` (every repo). `/memory -list` shows them. |
@@ -42,7 +43,7 @@ Open opencode from your workspace root (for example `C:\src\work`). In Workshop,
 - **Publish** a finished document with `/publish <folder>`, for example `/publish tsd-orders` (approves it and moves it to the product docs folder) or `/publish docs-run-gateway` (approves a doc where it lives). You commit it.
 - **New session** (`/new`) before every `/do-task`.
 - **Review findings** you accept become new tasks. Run `/do-task` for each, then `/review` again.
-- **You approve every push** and open the PR. No agent can merge or deploy.
+- **You approve every push** and open the PR. No agent can merge or deploy. Cloudflare changes are only ever proposed; you apply them in Workshop.
 - Every command ends with the next command to run. If lost, run `/dashboard` or `/status <id>`.
 - Loom in Workshop is the live UI; `/dashboard` opens it and says to start Workshop if it is not running. The static dashboard (`.work\dashboard.html`, `/dashboard static`) remains for terminal-only use.
 - **After a restart**, open `.work\dashboard.html` (bookmark it) to see where you were, or start Workshop and run `/dashboard` (see [Dashboard](docs/pipeline.md#dashboard)).

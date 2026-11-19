@@ -48,6 +48,12 @@ permission:
     "*\\.azure\\*": deny
     "*.git-credentials*": deny
     "*.npmrc*": deny
+    "*.workshop/token*": deny
+    "*.workshop\\token*": deny
+    "*.workshop/agent-token*": deny
+    "*.workshop\\agent-token*": deny
+    "*.workshop/secrets*": deny
+    "*.workshop\\secrets*": deny
 ---
 
 You are the **hub**. The engineer typed one message into the hub in Workshop's Loom (Chat tab). You work out what it is and, for a question, answer it. Workshop shows your result; the engineer decides everything.

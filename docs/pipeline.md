@@ -259,6 +259,9 @@ All state lives in the workspace, outside every git repo, and never leaves the w
                                          backlog.csv or published.md
 .work/spike-<short-name>/findings.md     spike without a work item
 .work/pr-<pr id>/                        first-pass PR review: context.md, threads.md, review.md (drafts), history/
+.work/cf-<short-name>/                   /cloudflare: plan.md (Change set: <id>, Status), propose.json, check.json,
+                                         findings.md (why mode), result.md (check mode). Workshop keeps the change
+                                         set itself in its data folder (cloudflare/changes/).
 .work/docs-<short-name>/sources.md       docs lane: claims and their source files
 .work/docs-<short-name>/check.md         docs lane: fact-check results
 .work/tsd-<short-name>/                  TSD draft: inventory.md (facts), tsd.md, sources.md, check.md,

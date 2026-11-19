@@ -95,6 +95,14 @@ $mustCatch = @(
     @{ Cmd = 'Get-Content .env.local'; Want = 'ask' }
     @{ Cmd = 'gc ~/.git-credentials'; Want = 'ask' }
     @{ Cmd = 'npm install -g some-tool'; Want = 'ask' }
+    @{ Cmd = 'security find-generic-password -s workshop -a cloudflare -w'; Want = 'ask' }
+    @{ Cmd = '/usr/bin/security find-generic-password -s workshop -w'; Want = 'ask' }
+    @{ Cmd = 'secret-tool lookup service workshop account cloudflare'; Want = 'ask' }
+    @{ Cmd = 'cat ~/.workshop/token'; Want = 'deny' }
+    @{ Cmd = 'Get-Content C:\Users\me\.workshop\token'; Want = 'deny' }
+    @{ Cmd = 'Get-Content $HOME/.workshop/token | Set-Clipboard'; Want = 'deny' }
+    @{ Cmd = 'cat ~/.workshop/agent-token'; Want = 'ask' }
+    @{ Cmd = 'Get-Content ~/.workshop/secrets.json'; Want = 'ask' }
 )
 
 # Everyday commands that must keep running without a prompt.
@@ -109,6 +117,8 @@ $mustAllow = @(
     'npx ng test --watch=false'
     'pwsh -NoProfile -ExecutionPolicy Bypass -File "C:/Users/me/.config/opencode/eng-agents/scripts/ado/Get-WorkItem.ps1" -Id 123 -WorkRoot ".work"'
     'powershell -NoProfile -ExecutionPolicy Bypass -File "C:/x/scripts/stats/Get-PipelineStats.ps1" -WorkRoot ".work"'
+    'pwsh -NoProfile -ExecutionPolicy Bypass -File "C:/Users/me/.config/opencode/eng-agents/scripts/workshop/Invoke-WorkshopTool.ps1" -Connector cloudflare -Action dns.list -Arg zone=example.org'
+    'powershell -NoProfile -ExecutionPolicy Bypass -File "C:/x/scripts/workshop/Invoke-WorkshopTool.ps1" -Connector cloudflare -Action changes.propose -ArgsFile ".work/cf-rally-domain/propose.json"'
 )
 
 try {

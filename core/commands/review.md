@@ -16,7 +16,7 @@ If the mode above is `auto`, autopilot is running this review and nobody is watc
 
 ## Step 1b: Catch up with the base
 
-- Read the Factory settings in `{{ENG_HOME}}/guides/pipeline.md` (`autoFix`, `uiChecks`, `taskFileCap`).
+- Read the Factory settings in `{{ENG_HOME}}/guides/pipeline.md` (`autoFix`, `uiChecks`, `regression`, `taskFileCap`).
 - Follow "Catch up with the base" in the pipeline guide for each repo. A conflict becomes a `Blocker` finding (category `conflict`) in Step 7.
 
 ## Step 2: Read the rules
@@ -31,7 +31,14 @@ This is the item's one full check before review (`/do-task` only runs each task'
 
 - For each repo, run its **Build** command if its `AGENTS.md` has one, then its "All unit tests" command.
 - A failing test listed as failing in `baseline.md` was failing before this work item: note it, it is not a finding. Any other failure is a `Blocker` (category `tests`).
-- **UI tests.** If the repo guide has a UI test command (Playwright or similar), run it whenever the work changed anything a person sees or clicks, not only when it touched the UI tests. If the repo has no UI test command, record `UI tests: none in this repo` (this is not a finding).
+- **Regression tests.** Only if `regression` is on (Factory settings, default on). For each repo whose guide has a `## Regression tests` table, run the whole suite exactly (in its Path when it has one), whatever the change touched:
+
+  ```
+  {{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/tests/Test-Suite.ps1" -WorkFolder "<work folder>" -Repo "<repo or its Path>" -Guide "<repo guide path>" -Name after -Base "<base>"
+  ```
+
+  Its last line is the result. `Tests: PASS ...`: record it. `Tests: FAIL ...`: read `tests/results-after.json`. Each entry in `failures` is a `Blocker`: category `regression` when its file is not in `newTests` (a test that passed before this change), else `tests`. Its fix task fixes the code, never the test, unless the spec changes that behavior on purpose. Entries in `preExisting` failed before this change: note them, not findings. Each entry in `flakyTests` is a `Nit` (category `flaky`). `Tests: SKIPPED <why>`: record the reason, not a finding.
+- **UI tests** in a repo with no Regression tests table: if the guide has a Playwright tests command, run it whenever the work changed anything a person sees or clicks. Otherwise record `UI tests: none in this repo` (not a finding).
 - Record each result.
 
 ## Step 3b: UI checks
@@ -62,7 +69,8 @@ For a repo with a **Path** in `repos.md` (a worktree), run its tests and git com
 
 - For each acceptance criterion, mark `Met`, `Partly met`, or `Not met`. Give the test and file that prove it.
 - List changes that no criterion or task asked for.
-- For each checked task, find its Manual Validation Checklist in `progress.md`: in its `/do-task` entry, or in a later entry for that task. A task whose "Human interface" line is `none, covered by <test command>` needs only the line `Covered by tests: <test command>`. If it is missing or vague (no exact URL, click, value, or command), add a `Blocker` finding for that task (category `checklist`).
+- For each checked task, find its Manual Validation Checklist in `progress.md`: in its `/do-task` entry, or in a later entry for that task. A task whose "Human interface" line is `none, covered by <test command>`, or whose criteria all have passing `[AC-<n>]` tests, needs only the line `Covered by tests: <test command>`. If it is missing or vague (no exact URL, click, value, or command), add a `Blocker` finding for that task (category `checklist`).
+- **Acceptance tests.** In a repo whose guide has a `## Regression tests` table, every criterion a person can see or click needs its `[AC-<n>]` in the suite's `acceptance` list (Step 3). A missing one is a `Should fix` finding (category `tests`), so autopilot writes it.
 - **TDD evidence.** For each checked task that changed .NET code, find its `Red run` and `Green run` output blocks in `progress.md` (or the failing and passing runs in entries older than Core 2.23.0). The Red run must show the named test failing on an assertion or the expected exception, not a compile error elsewhere. If the Red run is missing, or shows something other than the new test failing for the expected reason, add a `Should fix` finding (category `tdd`), unless a Personal or Company rule makes it a `Blocker`. Bug lane Task 1 (a test that must fail) counts as its own Red run.
 
 ## Step 6: Pass 2, code quality
@@ -78,12 +86,12 @@ Check every changed file against this list, the repo `AGENTS.md`, and the "Revie
 - **Docs:** when the change alters behavior, a setting, an API or a command that the repo's docs describe (its README, `docs/`, CHANGELOG, or the docs its repo guide names), those docs are updated in the same change. Missing docs are a `Blocker` (category `docs`), so the fix is a task before the PR.
 - **Overbuild:** no abstractions, interfaces, options or layers that nobody asked for and only one caller uses (core rule 8). `Should fix`.
 
-Give every finding a category: the bold word of the checklist item it falls under, in lower case (`architecture`, `consistency`, `correctness`, `security`, `tests`, `leftovers`, `docs`, `overbuild`, or the category a stack file's item names, such as `efcore`, `angular` or `playwright`), or `spec`, `scope`, `checklist` or `tdd` for Pass 1 findings. If none fits, use the closest one; do not invent new categories.
+Give every finding a category: the bold word of the checklist item it falls under, in lower case (`architecture`, `consistency`, `correctness`, `security`, `tests`, `leftovers`, `docs`, `overbuild`, or the category a stack file's item names, such as `efcore`, `angular` or `playwright`), or `spec`, `scope`, `checklist` or `tdd` for Pass 1 findings, or `regression` or `flaky` for the regression suite (Step 3). If none fits, use the closest one; do not invent new categories.
 
 ## Step 7: Write review.md
 
 - If `review.md` already exists (an earlier review round), first copy it unchanged to `history/review-<yyyy-mm-dd>-<n>.md` in the work folder (`<n>` = 1, 2, ... so nothing is overwritten). `/retro` reads every round.
-- Start from `{{ENG_HOME}}/templates/review.md`. Write it to the work folder as `review.md`. Fill `Reviewed at:` with each repo and `git -C <repo> rev-parse --short HEAD`, and the UI checks section with each repo's UI line.
+- Start from `{{ENG_HOME}}/templates/review.md`. Write it to the work folder as `review.md`. Fill `Reviewed at:` with each repo and `git -C <repo> rev-parse --short HEAD`, the UI checks section with each repo's UI line, and the Regression tests section with each repo's Tests line.
 - Put every finding, from both passes, in the findings table with its category.
 - Anything you are not sure is a problem goes under "Questions for you" as one line with its location, not in the findings table. Questions do not change the verdict.
 - Copy every task's Manual Validation Checklist into the "Manual validation" section, in task order, so the engineer has one list to walk through.

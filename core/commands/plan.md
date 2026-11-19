@@ -34,7 +34,7 @@ If the mode above is `auto`, nobody is watching. Ask nothing. If Step 4 finds a 
 - Start from `{{ENG_HOME}}/templates/plan.md`. Write it to the work folder as `plan.md`.
 - Keep `Status: DRAFT`. Never set it to APPROVED.
 - List repos in the same order as `repos.md`.
-- In the test plan, every acceptance criterion must have at least one test, of the kind the repo's stack files ask for.
+- In the test plan, every acceptance criterion must have at least one test, of the kind the repo's stack files ask for. In a repo whose guide has a `## Regression tests` table, a criterion a person can see or click also gets an end-to-end test titled with `[AC-<n>]` (playwright stack), so nobody tests it by hand.
 - Keep the plan short. If a section has nothing to say, write "None".
 
 ## Step 6: Log and hand off

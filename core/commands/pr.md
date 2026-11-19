@@ -12,7 +12,7 @@ Draft the pull request text for work item **$1**.
 
 ## Step 1b: Catch up with the base
 
-Follow "Catch up with the base" in `{{ENG_HOME}}/guides/pipeline.md` for each repo. On a conflict, stop: write it in `progress.md` and tell the engineer (`auto` or not) `Needs you: <repo> conflicts with <base> in <files>.` Then, when the base had new commits (`rebase=clean`), run each repo's Build and All unit tests commands once more; a failure is the same kind of stop. This is the item's last full check before the PR.
+Follow "Catch up with the base" in `{{ENG_HOME}}/guides/pipeline.md` for each repo. On a conflict, stop: write it in `progress.md` and tell the engineer (`auto` or not) `Needs you: <repo> conflicts with <base> in <files>.` Then, when the base had new commits (`rebase=clean`), run each repo's Build and All unit tests commands once more, and its regression suite with `Test-Suite.ps1 -Name after` (the command is in `/review` Step 3) when it has one; a failure is the same kind of stop. This is the item's last full check before the PR.
 
 ## Step 2: Read
 
@@ -27,7 +27,7 @@ Follow "Catch up with the base" in `{{ENG_HOME}}/guides/pipeline.md` for each re
 - Title: a short plain summary, under 70 characters.
 - Description: one or two sentences that lead with why, then what; then at most 4 bullets; then one testing line (how to test, then what was run). When the change touches UI files, add a `Screenshots:` line: `see the UI check` when `review.md` has a UI PASS for that repo (Workshop shows the before and after shots), else a placeholder. End with the work item link: `AB#<number>` for a linked ADO work item (pipeline guide, Who links to ADO), `Closes owner/repo#<n>` for a GitHub issue (from the `- GitHub:` line in `workitem.md`), and for a local item its id (`L12`).
 - **Keep it short.** No headings inside the description. No restating the spec. No list of every file.
-- **Checks.** Fill the `## Checks` block at the top of `pr.md` from `review.md` and `progress.md`: builds, unit tests (passed and new), UI tests (passed, or `none in this repo`), docs (what was updated, or `no doc change needed`), clean up (leftovers found and fixed, or `none`), and the review verdict. Copy numbers from the recorded runs; never write a check you did not see pass. Loom shows this block on the card at Ready.
+- **Checks.** Fill the `## Checks` block at the top of `pr.md` from `review.md` and `progress.md`: builds, unit tests (passed and new), regression tests (the Tests line: passed, new with the criteria they cover, flaky; or `none in this repo`), docs (what was updated, or `no doc change needed`), clean up (leftovers found and fixed, or `none`), and the review verdict. Copy numbers from the recorded runs; never write a check you did not see pass. Loom shows this block on the card at Ready.
 
 ## Step 4: Hand off
 

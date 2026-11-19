@@ -47,7 +47,7 @@ To step up:
 
 - Start from `{{ENG_HOME}}/templates/quick.md`. Write it to the work folder as `quick.md`.
 - Keep `Status: DRAFT`. Never set it to APPROVED.
-- Acceptance criteria: `AC-1`, `AC-2`, ... in Given / When / Then, each testable.
+- Acceptance criteria: `AC-1`, `AC-2`, ... in Given / When / Then, each testable. In a repo whose guide has a `## Regression tests` table, a criterion a person can see or click gets an end-to-end test titled with `[AC-<n>]` (playwright stack).
 - Files: real paths you have seen, and one "Pattern to follow" file. Follow core rule 8: values likely to change go in the repo's existing config or constants.
 - Fill "Why this fits the quick lane" honestly. If you cannot, go back to Step 3.
 

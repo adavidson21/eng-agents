@@ -143,6 +143,7 @@ For each repo in `repos.md`, in order:
 - Write one row per repo: the command, `PASS` or `FAIL`, and the names of the failing tests (at most 20; if more, write the count). Paste nothing else.
 - Run each command once. If it cannot run at all (for example a build error on the base branch), write `could not run` and the first error line.
 - This step never blocks `/start`. If it fails, say so in one line and go on.
+- **Regression baseline.** If `regression` is on (Factory settings) and a repo's guide has a `## Regression tests` table, run `Test-Suite.ps1` once for that repo with `-Name before` (the command is in `/review` Step 3), so the review never blames this item for a test that already failed. It never blocks `/start`.
 - **UI baseline.** If `uiChecks` is on (Factory settings) and a repo's guide has a `## UI checks` table, run `Test-Ui.ps1` once for that repo with `-Name before` (the command is in `/review` Step 3b), so the review can show before and after. It never blocks `/start`.
 
 ## Step 8: Start the log

@@ -28,6 +28,7 @@ jobs:
       - run: ./tests/Test-Guards.ps1
       - run: ./core/scripts/work/Test-WorkScripts.ps1
       - run: ./core/scripts/ui/Test-UiScript.ps1
+      - run: ./core/scripts/tests/Test-SuiteScript.ps1
   ui-checks:
     # The UI check's PNG diff, argument and problem helpers (node --test). The real browser run is skipped here
     # (no Playwright install in CI); it runs locally with UI_TEST_PLAYWRIGHT_DIR set.

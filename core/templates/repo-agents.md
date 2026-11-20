@@ -48,12 +48,12 @@ Run from the workspace root unless stated otherwise. One command per line.
 
 ## UI checks
 
-Only for a repo with pages people use. Workshop's factory starts the app with these, screenshots the pages at two widths and checks them on every build that changes a UI file (`Test-Ui.ps1`). Leave the section out for a repo with no UI. The app must start locally with no real database, key vault or shared service (a mock or seeded mode is fine).
+Only for a repo with pages people use. Workshop's factory starts the app with these, screenshots the pages at two widths and checks them on every build that changes a UI file (`Test-Ui.ps1`), and each task that changes a UI file checks its own pages (`Test-Ui.ps1 -Quick`, against the app `Start-UiApp.ps1` keeps running for the build). Leave the section out for a repo with no UI. The app must start locally with no real database, key vault or shared service (a mock or seeded mode is fine). When the start command takes a port, write `{port}` in Start and URL: each build then gets a free port, so builds running side by side never collide.
 
 | Field | Value |
 |---|---|
-| Start | `<command that starts the app, for example npm start>` |
-| URL | `<where it serves, for example http://localhost:4200>` |
+| Start | `<command that starts the app, for example npm start -- --port {port}>` |
+| URL | `<where it serves, for example http://localhost:{port}>` |
 | Ready | `<a path that loads once it is up, for example />` |
 | Pages | `<paths to check, comma separated, for example /, /orders>` |
 | UI files | `<patterns of files that change what people see, for example src/app/**, *.html, *.scss>` |

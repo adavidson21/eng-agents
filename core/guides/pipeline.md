@@ -25,7 +25,10 @@ Each work item has a folder `.work/<id>-<name>/`. Find it by listing `.work/` an
 | `findings.md` | Spike results, with `### For business`, `### For engineering` and `### For leadership` blocks. `brief.html` next to it is the shareable export (`Export-Brief.ps1`); never edit it, re-export instead. |
 | `paused.md` | Where a paused item stands and how to pick it up. Has a `Status:` line (`PAUSED` or `RESUMED`). |
 | `tests/` | Regression suite results, `results-<name>.json` (`before` at `/start`, `after` at `/review` and `/pr`), written only by `Test-Suite.ps1`. |
-| `ui/` | UI check screenshots and `results-<name>.json`, written only by `Test-Ui.ps1` (`before` at `/start`, `after` at `/review`). |
+| `ui/` | UI check screenshots and `results-<name>.json`, written only by `Test-Ui.ps1` (`before` at `/start`, `after` at `/review`, `task-<n>` at `/do-task`), and `app.json` while a build's app is running (`Start-UiApp.ps1`). |
+| `code-review/<repo>/` | The engineer's code review in Workshop: `state.json`, their comments per revision (`rev-<n>.json`) and the answers (`rev-<n>-response.json`, written by `/revise`). Workshop writes everything else in it; never edit `state.json`. |
+| `revise.md` | What `/revise` did with the engineer's comments: a fix task, an answer or declined, per comment, and `Status: READY` or `HOLD`. |
+| `ci/` | After Publish: Workshop writes `failure-<n>.md` (the failed checks, their log tails and links) or `conflict-<n>.md`; `/pr-fix` adds its `Result:` line. |
 
 Other `.work` folders are described by the commands that write them: `scope-<name>/` (`/scope`, `/slice`, `/backlog`), `pr-<id>/` (`/pr-review`), `triage-`, `shape-` and `refine-` folders, `_retro/` (`/retro --since`) and `runway.md` (`/shutdown`). `.work/observations.md` holds what agents noticed out of scope (core rule 5); only `Add-Observation.ps1` writes it. `.work/gaps.md` holds knowledge an agent was missing (core rule 3); only `Add-Gap.ps1` and `Close-Gap.ps1` write it. `.work/factory.json` holds the factory settings below; Workshop writes it, never edit it.
 
@@ -49,6 +52,8 @@ Workshop's Settings, Factory writes `.work/factory.json`. Read it once per comma
 | `autoFix` | `should-fix` | `/review auto` turns Blockers into fix tasks, and with `should-fix` also Should fix findings. `blockers`: Blockers only. Nits are never fix tasks. |
 | `reviewRounds` | 2 | How many reviews autopilot runs before a not-READY review waits for the engineer. Rounds after the first read only what changed since the last review. |
 | `uiChecks` | true | Run UI checks (`Test-Ui.ps1`) when a change touches UI files and the repo guide has a UI checks table. |
+| `uiCheckPerTask` | true | `/do-task` checks the pages of a task that changed UI files before it commits (`Test-Ui.ps1 -Quick`, against the app `Start-UiApp.ps1` keeps running for the build), and reads them as text to confirm the task's visible criteria. |
+| `modelSeesImages` | false | The model can read images: the per-task check also looks at the screenshot, not only the page as text. |
 | `regression` | true | Run the repo's whole regression suite (`Test-Suite.ps1`) at `/start` (before), `/review` and `/pr`, when the repo guide has a Regression tests table. |
 | `worktrees` | `always` | `/start` puts every repo of a build in its own worktree. `busy`: only when the repo folder is busy. |
 
@@ -57,10 +62,19 @@ Workshop's Settings, Factory writes `.work/factory.json`. Read it once per comma
 `/review` and `/pr` bring each repo's branch up to date first, so the PR merges cleanly. For each repo in `repos.md` (in its Path when it has one) whose Base starts with `origin/`:
 
 1. `git -C <repo> fetch origin <base without origin/>`. If it fails (offline, no access), write `rebase=skipped` and go on.
+   - **Already published.** If the branch is on the remote (`git -C <repo> rev-parse --verify --quiet origin/<branch>` prints a commit), never rebase it: a rebase rewrites what the team already sees, and nothing is ever force-pushed. Merge the base in instead, `git -C <repo> merge --no-edit <base>`, and on a conflict `git -C <repo> merge --abort` and go on as step 3 says. Write `rebase=merged` (or `none`, `conflict`).
 2. `git -C <repo> rebase <base>`. If it ends cleanly, go on (write `rebase=clean`, or `rebase=none` when nothing new was on the base).
 3. If it stops on a conflict: list the conflicting files with `git -C <repo> diff --name-only --diff-filter=U`, then `git -C <repo> rebase --abort` so the branch is as it was. Write `rebase=conflict`. `/review` turns it into a `Blocker` finding (category `conflict`, location the files); its fix task is "Rebase on `<base>` and resolve the conflicts in <files>", verify the repo's All unit tests command.
 
 Never force anything, never push, never resolve a conflict outside a fix task.
+
+## Send back (code review comments)
+
+At Publish the engineer may read the code in Workshop's code review, comment on lines and click **Send back** (Core 4.15.0). Workshop saves the comments in `code-review/<repo>/rev-<n>.json` and autopilot runs `/revise <id> auto`, which turns each comment into a fix task (with a `- From comment: <repo>/<id>` line), an answer or a declined note, saves the comments marked as rules, and moves `pr.md` to `history/`. Then the build carries on as usual: `/do-task` for the new tasks, `/review` (a later round, which checks each `From comment` task did what the comment asked), `/pr`, and back to Publish as the next revision. `revise.md` with `Status: HOLD` (a fix that needs a new dependency, a migration, auth code or another repo) stops autopilot for the engineer.
+
+## After Publish
+
+Workshop watches a published PR until it merges (Core 4.15.0). When CI fails it writes `ci/failure-<n>.md` and runs `/pr-fix <id> ci auto`; when the PR conflicts with its base, `ci/conflict-<n>.md` and `/pr-fix <id> conflict auto`. `/pr-fix` commits a fix on the branch (a merge of the base for a conflict) and never pushes, rebases or forces: Workshop shows **Push fix** and the engineer pushes it. Teammates' review comments show in Workshop's code review, where the engineer can send them back like their own. When the PR merges, Workshop runs `/retro <id>`.
 
 ## Who links to ADO
 

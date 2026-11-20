@@ -95,3 +95,28 @@ test("run: before, then after with a changed page and a console error", { skip: 
   assert.ok(fs.existsSync(path.join(dir, "ui", "diff", "orders-1280.png")));
   assert.equal(r.pages.find((p) => p.path === "/").diff.changedPct, 0);
 });
+
+test("run: a per-task check uses the build's warm app, one width, writes the page as text, and leaves the app running", { skip: !PW && "set UI_TEST_PLAYWRIGHT_DIR to a folder with playwright installed" }, async () => {
+  const { serve, stop, readApp, up } = await import("../app.mjs");
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "ui-warm-"));
+  fs.symlinkSync(path.join(PW, "node_modules"), path.join(dir, "node_modules"), "junction");
+  fs.writeFileSync(path.join(dir, "package.json"), "{}");
+  fs.writeFileSync(path.join(dir, "server.js"), `require("http").createServer((q, s) => { s.setHeader("content-type", "text/html"); s.end("<h1>Home</h1><button>Save</button>"); }).listen(Number(process.argv[2]), "127.0.0.1");`);
+  const out = path.join(dir, "ui");
+  try {
+    const lines = [];
+    await serve({ cwd: dir, url: "http://127.0.0.1:{port}", start: "node server.js {port}", out, timeout: 30 }, (l) => lines.push(l));
+    const app = readApp(out);
+    assert.ok(app && app.port);
+    assert.equal(await run({ cwd: dir, url: "http://127.0.0.1:{port}", start: "node server.js {port}", out, pages: ["/"], name: "task-1", widths: [1280], aria: true, timeout: 30 }, (l) => lines.push(l)), 0);
+    assert.equal(lines.at(-1), "UI: PASS 1 page at 1280px");
+    const r = JSON.parse(fs.readFileSync(path.join(out, "results-task-1.json"), "utf8"));
+    assert.equal(r.url, app.url, "used the warm app's address");
+    assert.equal(r.pages.length, 1);
+    assert.match(fs.readFileSync(path.join(out, r.pages[0].aria), "utf8"), /heading "Home"[\s\S]*button "Save"/);
+    assert.equal(await up(app.url + "/"), true, "the warm app is still running");
+  } finally {
+    await stop({ out }, () => {});
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

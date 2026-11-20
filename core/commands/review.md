@@ -43,7 +43,7 @@ This is the item's one full check before review (`/do-task` only runs each task'
 
 ## Step 3b: UI checks
 
-Only if `uiChecks` is on (Factory settings, default on). For each repo whose guide has a `## UI checks` table, run exactly (in its Path when it has one):
+Only if `uiChecks` is on (Factory settings, default on). First stop the app the build kept running for its per-task checks, so the full check starts it fresh: `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/ui/Stop-UiApp.ps1" -WorkFolder "<work folder>"` (it prints `APP: NONE` when there is none). Then, for each repo whose guide has a `## UI checks` table, run exactly (in its Path when it has one):
 
 ```
 {{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/ui/Test-Ui.ps1" -WorkFolder "<work folder>" -Repo "<repo or its Path>" -Guide "<repo guide path>" -Name after -Base "<base>"
@@ -69,6 +69,7 @@ For a repo with a **Path** in `repos.md` (a worktree), run its tests and git com
 
 - For each acceptance criterion, mark `Met`, `Partly met`, or `Not met`. Give the test and file that prove it.
 - List changes that no criterion or task asked for.
+- **The engineer's comments.** For each task with a `- From comment: <repo>/<id>` line (written by `/revise` after a Send back), read that comment in `code-review/<repo>/rev-<n>.json` (the newest `rev-<n>.json` that has the id) and check the diff does what it asked. If it does not, add a `Blocker` finding (category `spec`, location the comment's file and line) that quotes the comment.
 - For each checked task, find its Manual Validation Checklist in `progress.md`: in its `/do-task` entry, or in a later entry for that task. A task whose "Human interface" line is `none, covered by <test command>`, or whose criteria all have passing `[AC-<n>]` tests, needs only the line `Covered by tests: <test command>`. If it is missing or vague (no exact URL, click, value, or command), add a `Blocker` finding for that task (category `checklist`).
 - **Acceptance tests.** In a repo whose guide has a `## Regression tests` table, every criterion a person can see or click needs its `[AC-<n>]` in the suite's `acceptance` list (Step 3). A missing one is a `Should fix` finding (category `tests`), so autopilot writes it.
 - **TDD evidence.** For each checked task that changed .NET code, find its `Red run` and `Green run` output blocks in `progress.md` (or the failing and passing runs in entries older than Core 2.23.0). The Red run must show the named test failing on an assertion or the expected exception, not a compile error elsewhere. If the Red run is missing, or shows something other than the new test failing for the expected reason, add a `Should fix` finding (category `tdd`), unless a Personal or Company rule makes it a `Blocker`. Bug lane Task 1 (a test that must fail) counts as its own Red run.

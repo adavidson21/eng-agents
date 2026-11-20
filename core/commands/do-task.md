@@ -70,14 +70,38 @@ The verify command only runs this task's tests. Run the whole-project check belo
   - If there is no `baseline.md` (an item started before Core 2.22.0, or with `--no-baseline`), ask the engineer whether the failure was there before. Wait.
 - If it still fails after `retries` attempts, write `full=FAIL`, log the task as blocked in Step 6, and do not commit.
 
+## Step 5c: Check the UI
+
+Only when `uiCheckPerTask` is on (Factory settings, default on), the task's repo guide has a `## UI checks` table, and this task changed something a person sees. Skip it otherwise and write `ui=skipped` in Step 6.
+
+1. Record the station: `Set-Step.ps1` (Step 4's command) with `-Step ui`. If the script fails, go on without it.
+2. Make sure the build's app is running (it starts once and stays up for the whole build; you never start it yourself), in the repo's Path when it has one:
+
+```
+{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/ui/Start-UiApp.ps1" -WorkFolder "<work folder>" -Repo "<repo or its Path>" -Guide "<repo guide path>"
+```
+
+   `APP: SKIPPED <why>`: write `ui=skipped` and go on to Step 6. Not a failure.
+3. Check this task's pages. `<pages>` is the path or paths in the task's "Human interface" line (for example `/orders/12`), comma separated, or leave `-Pages` out to check the table's Pages:
+
+```
+{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/ui/Test-Ui.ps1" -WorkFolder "<work folder>" -Repo "<repo or its Path>" -Guide "<repo guide path>" -Name task-$2 -Quick -Pages "<pages>" -Uncommitted
+```
+
+4. Read the result (its last line):
+   - `UI: SKIPPED <why>`: write `ui=skipped`. Not a failure.
+   - `UI: FAIL ...`: each line in `ui/results-task-$2.json`'s `problems` (a console error, a failed request, a page that does not load, more accessibility problems than before) is a failed verify. Fix it in the task's files and run steps 3 and 4 again. This counts toward the retry limit (Step 4).
+   - `UI: PASS ...`: read the page as text, `ui/task-$2/aria-<page>-1280.txt` for each page (the page's headings, buttons, fields, links and text, as a person or screen reader meets them). For each acceptance criterion this task covers that a person can see, check the page shows it, and write `found` or `not found` with the line that proves it under Notes in Step 6. A `not found` is a failed verify: fix it and check again (retry limit as above). When `modelSeesImages` is on (Factory settings), also look at the screenshot, `ui/task-$2/<page>-1280.png`.
+5. Write `ui=PASS` or `ui=FAIL` in Step 6.
+
 ## Step 6: Record
 
 - In `tasks.md`, change `## [ ] Task $2` to `## [x] Task $2`. Only if it passed.
-- Add a `progress.md` entry using the template format. Paste the real last lines of the verify output. For .NET, paste the failing run under `Red run` and the passing run under `Green run`, and add `red=<name of the test that failed first>` to the Stats line. If it passed, include the Manual Validation Checklist (see your agent instructions), built from the task's "Human interface" line. If blocked, write what you tried and what failed, and skip the checklist. Add a `- Stats: verify=<PASS or FAIL> full=<PASS, FAIL or skipped> attempts=<runs of the verify command>` line.
+- Add a `progress.md` entry using the template format. Paste the real last lines of the verify output. For .NET, paste the failing run under `Red run` and the passing run under `Green run`, and add `red=<name of the test that failed first>` to the Stats line. If it passed, include the Manual Validation Checklist (see your agent instructions), built from the task's "Human interface" line. If blocked, write what you tried and what failed, and skip the checklist. Add a `- Stats: verify=<PASS or FAIL> full=<PASS, FAIL or skipped> ui=<PASS, FAIL or skipped> attempts=<runs of the verify command>` line.
 
 ## Step 7: Commit
 
-- Only if the verify command and Step 5b passed.
+- Only if the verify command, Step 5b and Step 5c passed.
 - Stage only the files you changed: `git -C <repo> add <file> <file>`.
 - Commit with a short plain summary: `git -C <repo> commit -m "<short summary>"`, following the commit message convention in `{{ENG_HOME}}/guides/pipeline.md` unless a Personal or Company rule in `AGENTS.md` says otherwise (for example `AB#<id>`). A rule that adds `AB#<id>` applies only to a linked item (pipeline guide, Who links to ADO); for a local item use its id instead.
 

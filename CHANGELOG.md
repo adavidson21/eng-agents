@@ -4,6 +4,13 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 4.15.0 (2026-11-19)
+
+Code review at Publish, after Publish, and self-checks while building (Workshop project docs `claude/publish-review-v1-plan.md`, `claude/after-publish-v1-plan.md`, `claude/build-self-check-v1-plan.md`). Nothing breaks for items in progress.
+- Send back: the new `/revise <id> [auto]` turns the engineer's code review comments (Workshop's `code-review/<repo>/rev-<n>.json`) into fix tasks with a `- From comment:` line, answers, or declined notes, writes `rev-<n>-response.json` and `revise.md` (`Status: HOLD` when a fix needs a new dependency, a migration, auth code or another repo), saves comments marked as rules in the repo guide's `## Remembered`, and moves `pr.md` to `history/` so `/pr` runs again. `/review` checks each `From comment` task did what the comment asked.
+- After Publish: the new `/pr-fix <id> ci|conflict [auto]` fixes a published PR whose CI failed (from Workshop's `ci/failure-<n>.md`, with the log tails) or merges the base in when it conflicts (`ci/conflict-<n>.md`), commits on the branch and never pushes, rebases or forces. Catch up with the base merges instead of rebasing once the branch is on the remote (`rebase=merged`).
+- Per-task UI checks: `/do-task` Step 5c checks the pages of a task that changed UI files before it commits, against an app the new `scripts/ui/Start-UiApp.ps1` keeps running for the build (`ui/app.json`, `Stop-UiApp.ps1`; `/review` stops it before its full check). `Test-Ui.ps1` gains `-Quick` (one width, the page as text for the agent: `aria-<page>-1280.txt`), `-Pages` and `-Uncommitted`. Problems and visible criteria not on the page count as a failed verify. `{port}` in the UI checks table's Start and URL gives each build a free port. Factory settings `uiCheckPerTask` (default on) and `modelSeesImages` (default off). The table's helpers moved to `scripts/ui/UiCommon.ps1`.
+
 ## Core 4.14.0 (2026-11-19)
 
 Automated regression and new feature testing (Workshop project doc `claude/test-suite-v1-plan.md`). Nothing breaks for items in progress; a repo without the new table behaves as before.

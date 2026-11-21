@@ -232,6 +232,64 @@ function Get-RunUsage {
     return $u
 }
 
+<#
+  Answers (Core 4.16.0): what a run's JSON events say about the conversation, so the runner can answer a command
+  that stops to ask. Get-RunSession is the session id the events name (to continue it with --session);
+  Get-RunLastText is the agent's last text; Test-RunAsks says whether the run ended asking the engineer something:
+  it used the question tool, or the last paragraph of its last text has a question mark, or a line starts with
+  "Needs you:" or "Questions for you".
+#>
+function Get-RunSession {
+    param([string]$Stdout)
+    foreach ($line in ("$Stdout" -split "\r?\n")) {
+        $t = $line.Trim()
+        if (-not $t.StartsWith("{")) { continue }
+        try { $e = $t | ConvertFrom-Json } catch { continue }
+        if ($e.sessionID) { return "$($e.sessionID)" }
+        if ($e.part -and $e.part.sessionID) { return "$($e.part.sessionID)" }
+    }
+    return $null
+}
+function Get-RunLastText {
+    param([string]$Stdout)
+    $last = ""
+    foreach ($line in ("$Stdout" -split "\r?\n")) {
+        $t = $line.Trim()
+        if (-not $t.StartsWith("{")) { continue }
+        try { $e = $t | ConvertFrom-Json } catch { continue }
+        if ($e.type -eq "text" -and $e.part -and $e.part.text) { $last = "$($e.part.text)" }
+    }
+    return $last
+}
+function Test-RunAsks {
+    param($Usage, [string]$LastText)
+    if ($Usage -and $Usage.questions -gt 0) { return $true }
+    $t = "$LastText".Trim()
+    if (-not $t) { return $false }
+    if ($t -match '(?mi)^\W*(Needs you:|Questions for you)') { return $true }
+    # The last paragraph asks something ("What is the work? Give a short title..." counts).
+    $para = @($t -split '\r?\n\s*\r?\n' | Where-Object { $_.Trim() })[-1]
+    return ($para -match '\?(\s|\*|$)')
+}
+<#
+  A step's scripted answers, in order: the step's `answers`, else (a case with one command) the case's. Each is a
+  string, or {text, when}: `when` is a regex the agent's last text must match for that answer to be sent; without
+  it the answer goes only when the run ended asking (Test-RunAsks).
+#>
+function Get-StepAnswers {
+    param($Step, $Case)
+    $list = if ($Step.answers) { @($Step.answers) } elseif (-not $Case.steps -and $Case.answers) { @($Case.answers) } else { @() }
+    return @($list | ForEach-Object {
+        if ($_ -is [string]) { [pscustomobject]@{ text = $_; when = $null } }
+        else { [pscustomobject]@{ text = "$($_.text)"; when = $(if ($_.when) { "$($_.when)" } else { $null }) } }
+    } | Where-Object { $_.text })
+}
+function Test-AnswerDue {
+    param($Answer, $Usage, [string]$LastText)
+    if ($Answer.when) { return [regex]::IsMatch("$LastText", $Answer.when) }
+    return (Test-RunAsks -Usage $Usage -LastText $LastText)
+}
+
 # Failed verifies in the run's .work progress logs (do-task's "Verify: ... -> FAIL" or a verify=FAIL Stats value).
 function Get-VerifyFails($Ws) {
     $work = Join-Path $Ws.Root ".work"

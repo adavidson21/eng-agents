@@ -26,6 +26,12 @@
     Nothing here touches your real workspace or ADO. The fixtures are made up, so the results hold no
     company data and can be committed (commit the baseline you compare against).
 
+    Answers (Core 4.16.0): a case (or a step) can carry `answers`, so commands that stop to ask the engineer can be
+    tested too. When a command ends asking (the question tool, a "?" in its last paragraph, or a "Needs you:" line),
+    the next answer goes into the same session with `opencode run --session <id>`, in order, until it stops asking
+    or the answers run out. An answer can be {text, when}: then it goes only when the agent's last text matches
+    the regex `when`. Each step records how many answers it sent and whether it still ended asking.
+
     Permissions: opencode asks before some commands (git push, deletes, web requests). With nobody to
     answer, a run that needs one stalls until -TimeoutMinutes. -AutoApprove passes `--auto`, which approves
     anything not denied. The workspace is a throwaway temp folder with no remote, but read the guards first.
@@ -148,6 +154,7 @@ if ($SetupOnly) {
             foreach ($st in (Get-TandemSteps $c)) {
                 if ($st.approve) { Write-Output "  then: set Status: APPROVED in .work/$($c.workItem)/$($st.approve)" }
                 else { Write-Output "  then, from that folder: $Opencode run --command $($st.command) `"$($st.arguments)`"$(if ($st.eachTask) { '  (once per task, {n} = task number)' })" }
+                foreach ($ans in (Get-StepAnswers $st $c)) { Write-Output "  when it asks$(if ($ans.when) { " (matching $($ans.when))" }), answer in the same session: $Opencode run --continue `"$($ans.text)`"" }
             }
         }
     }
@@ -230,7 +237,9 @@ function Start-Opencode([string]$WorkDir, [string[]]$OcArgs, [string]$Log, [hash
     if (-not $done) { try { $p.Kill() } catch { } ; $p.WaitForExit(10000) | Out-Null }
     $prior = if (Test-Path -LiteralPath $Log) { [IO.File]::ReadAllText($Log) + "`n" } else { "" }
     [IO.File]::WriteAllText($Log, $prior + "=== opencode $quoted`nexit: $(if ($done) { $p.ExitCode } else { 'timeout' })`n--- stdout`n$($outTask.Result)`n--- stderr`n$($errTask.Result)", $script:Utf8)
-    return [pscustomobject]@{ TimedOut = (-not $done); ExitCode = $(if ($done) { $p.ExitCode } else { $null }); Usage = (Get-RunUsage $outTask.Result) }
+    $usage = Get-RunUsage $outTask.Result
+    return [pscustomobject]@{ TimedOut = (-not $done); ExitCode = $(if ($done) { $p.ExitCode } else { $null }); Usage = $usage
+        Session = (Get-RunSession $outTask.Result); LastText = (Get-RunLastText $outTask.Result); Asks = (Test-RunAsks -Usage $usage -LastText (Get-RunLastText $outTask.Result)) }
 }
 
 function Invoke-Step($step, $c, $ws, [string]$Log) {
@@ -249,6 +258,9 @@ function Invoke-Step($step, $c, $ws, [string]$Log) {
     $timedOut = $false
     $exit = 0
     $usage = New-Usage
+    $answers = @(Get-StepAnswers $step $c)
+    $answered = 0
+    $stillAsking = $false
     foreach ($a in $argsList) {
         $ocArgs = @("run", "--command", $step.command)
         if ($Model) { $ocArgs += @("--model", $Model) }
@@ -258,8 +270,29 @@ function Invoke-Step($step, $c, $ws, [string]$Log) {
         $usage = Add-Usage $usage $proc.Usage
         if ($proc.TimedOut) { $timedOut = $true; break }
         if ($proc.ExitCode) { $exit = $proc.ExitCode }
+        # Answers (Core 4.16.0): the command stopped to ask, so the next scripted answer goes in the same session.
+        $last = $proc
+        foreach ($ans in $answers) {
+            if (-not (Test-AnswerDue $ans $last.Usage $last.LastText)) { break }
+            $more = @("run")
+            $more += $(if ($last.Session) { @("--session", $last.Session) } else { @("--continue") })
+            if ($Model) { $more += @("--model", $Model) }
+            if ($AutoApprove) { $more += "--auto" }
+            $more += $ans.text
+            $sid = $last.Session
+            $last = Start-Opencode $ws.Root $more $Log $tandemEnv
+            if (-not $last.Session) { $last | Add-Member -NotePropertyName Session -NotePropertyValue $sid -Force }
+            $usage = Add-Usage $usage $last.Usage
+            $answered++
+            if ($last.TimedOut) { $timedOut = $true; break }
+            if ($last.ExitCode) { $exit = $last.ExitCode }
+        }
+        if ($timedOut) { break }
+        if ($answers.Count -and $last.Asks) { $stillAsking = $true }
     }
-    return [ordered]@{ step = $label; ok = (-not $timedOut -and $exit -eq 0); seconds = [int]((Get-Date) - $t0).TotalSeconds; timedOut = $timedOut; runs = $argsList.Count; usage = $usage }
+    $r = [ordered]@{ step = $label; ok = (-not $timedOut -and $exit -eq 0); seconds = [int]((Get-Date) - $t0).TotalSeconds; timedOut = $timedOut; runs = $argsList.Count; usage = $usage }
+    if ($answers.Count) { $r.answered = $answered; $r.stillAsking = $stillAsking }
+    return $r
 }
 
 # ------------------------------------------------------------------ run
@@ -326,6 +359,7 @@ foreach ($cf in $caseFiles) {
                 run = $i; pass = $pass; seconds = $secs; timedOut = $timedOut
                 tokens = (Get-UsageTokens $runUsage); cost = $runUsage.cost; toolCalls = $runUsage.toolCalls; questions = $runUsage.questions
                 usageKnown = $runUsage.known; verifyFails = $verifyFails
+                answered = [int](($steps | ForEach-Object { if ($_.answered) { [int]$_.answered } else { 0 } } | Measure-Object -Sum).Sum)
                 steps = @($steps | ForEach-Object { $u = $_.usage; $o = [ordered]@{}; foreach ($k in $_.Keys) { if ($k -ne 'usage') { $o[$k] = $_[$k] } }; if ($u) { $o.tokens = $u.input + $u.output + $u.reasoning; $o.cost = $u.cost }; $o })
                 failed = @($failedChecks | ForEach-Object { [ordered]@{ check = $_.Check; detail = $_.Detail } }); checks = $checks.Count
                 log = $log; workspace = $(if ($KeepWorkspaces) { $root } else { $null })

@@ -117,7 +117,25 @@ Runs are unattended. A command that hits an `ask` rule waits for an answer nobod
 | `small-lane` | `/quick L3 auto` | a one-task change stays quick: quick.md with Given/When/Then ACs and a real pattern file, 1 to 3 tasks with verify commands from the repo guide |
 | `small-lane-escalate` | `/quick L4 auto` | a schema plus API change steps up: `Lane: feature`, no quick.md or tasks.md, `escalated=1` logged |
 | `feature-outcome` | the whole feature lane (`/spec`, `/plan`, `/tasks`, `/do-task` per task), or one plain prompt (`-Arm baseline`) | outcome only: hidden outcome tests pass, `LegacyRound` kept, settings in `PricingOptions`, changes only under `src/` and `tests/` (committed or not) |
+| `start-new` | `/start new feature --no-baseline`, with 2 answers | the local item has the engineer's description (no placeholder), `repos.md` names `sample-api` and a `dev/feature/L<n>-` branch, the code is unchanged |
 | `retro-repeat` | `/retro --since 2026-01-01` | spots the same repo and category in two items and proposes a rule (or flags the existing one as broken) without writing memory |
+
+## Commands that ask
+
+Some commands always ask the engineer something (`/start new` asks what the work is, then whether the repo list is right). A case can script the answers, so the runner can carry on:
+
+```json
+"answers": [
+  {"text": "Bulk order discount. Orders with 10 or more items get 5% off.", "when": "(?i)what is the work"},
+  "Yes, that list is right."
+]
+```
+
+- After the command ends, if it ended asking (the question tool, a `?` in its last paragraph, or a line starting `Needs you:` or `Questions for you`), the next answer goes into the same session with `opencode run --session <id> "<answer>"`. It repeats until the command stops asking or the answers run out.
+- `{text, when}`: sent only when the agent's last text matches the regex `when`. Use it when the question's wording is known, so a wrong question is not answered by accident.
+- In a case with `steps`, each step carries its own `answers`. Otherwise the case's `answers` go with its one command.
+- Each step in the results records `answered` (answers sent) and `stillAsking` (it ended asking when the answers ran out); each run records `answered`. A run that still asks usually fails its grader, which is the point.
+- Answers count toward the run's tokens, cost and time.
 
 ## How it fits together
 

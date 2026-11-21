@@ -1,0 +1,38 @@
+{
+  "description": "/start new asks what the work is and confirms the repo list. With scripted answers it makes the local item with the engineer's description (nothing added), repos.md and the branch, and leaves the code alone.",
+  "command": "start",
+  "arguments": "new feature --no-baseline",
+  "answers": [
+    {
+      "text": "Bulk order discount. Orders with 10 or more items in total get 5% off the subtotal. Smaller orders are priced as today. Sales will change the threshold and the rate later.",
+      "when": "(?i)what is the work|describe (it|the work)|short title"
+    },
+    {
+      "text": "Yes, that list is right.",
+      "when": "(?i)right list|list (is )?right|these repos|repo list"
+    }
+  ],
+  "expect": {
+    "files": [
+      {
+        "path": ".work/L*/workitem.md",
+        "matches": [
+          "(?i)10 or more items",
+          "5%"
+        ],
+        "notMatches": [
+          "<describe the work here>"
+        ]
+      },
+      {
+        "path": ".work/L*/repos.md",
+        "matches": [
+          "sample-api",
+          "dev/feature/L\\d+-"
+        ]
+      }
+    ],
+    "repo": "unchanged"
+  },
+  "grader": "Test-Expect"
+}

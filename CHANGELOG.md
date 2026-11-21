@@ -4,6 +4,13 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 4.16.0 (2026-11-21)
+
+Evals can test commands that stop to ask (Bench v2's next step, `claude/bench-v2-plan.md`). Nothing changes for Tandem's commands themselves.
+- Answers: a case (or a step) can carry `answers`. When a command ends asking (the question tool, a `?` in its last paragraph, or a `Needs you:` line), `Invoke-Evals.ps1` sends the next answer into the same session with `opencode run --session <id>`, in order, until it stops asking or the answers run out. An answer can be `{text, when}`, sent only when the agent's last text matches the regex `when`. Steps record `answered` and `stillAsking`; runs record `answered`. `-SetupOnly` prints the answers.
+- New case `start-new`: `/start new` with a scripted description and repo list confirmation makes the local item with the engineer's words (nothing added), `repos.md` and the branch, and leaves the code alone.
+- `Test-Harness.ps1` covers the answers flow with the fake opencode.
+
 ## Core 4.15.0 (2026-11-19)
 
 Code review at Publish, after Publish, and self-checks while building (Workshop project docs `claude/publish-review-v1-plan.md`, `claude/after-publish-v1-plan.md`, `claude/build-self-check-v1-plan.md`). Nothing breaks for items in progress.

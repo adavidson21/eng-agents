@@ -5,9 +5,10 @@
 # Every call is logged to $FAKE_LOG with its arguments and XDG_CONFIG_HOME.
 set -u
 echo "args= $* | xdg=${XDG_CONFIG_HOME:-}" >> "$FAKE_LOG"
-cmd=""; prev=""
+cmd=""; prev=""; session=""
 for a in "$@"; do
   if [ "$prev" = "--command" ]; then cmd="$a"; fi
+  if [ "$prev" = "--session" ] || [ "$a" = "--continue" ]; then session="${a}"; fi
   prev="$a"
 done
 work=".work/L1-bulk-discount"
@@ -29,7 +30,21 @@ if [ -z "$cmd" ] && printf '%s' "$last" | grep -q 'You improve prompts'; then
   ans=$(python3 -c 'import json,sys; print(json.dumps({"find":sys.argv[1],"replace":sys.argv[1]+" (clearer)","reason":"fake suggestion"}))' "$h")
   text "$ans"; finish 80 40 0; exit 0
 fi
+# Answers: /start new asks what the work is, then whether the repo list is right; each answer continues the session.
+if [ -z "$cmd" ] && [ -n "$session" ]; then
+  if [ ! -f .work/.asked-list ]; then
+    mkdir -p .work/L1-bulk-order-discount
+    printf '# L1: Bulk order discount\n\n- Type: Feature\n\n## Description\n\n%s\n' "$last" > .work/L1-bulk-order-discount/workitem.md
+    touch .work/.asked-list
+    text "sample-api: orders and pricing live here. Is this the right list?"; finish 40 20 0; exit 0
+  fi
+  printf '# Repos\n\n- Lane: feature\n\n| Repo | Branch | Base |\n|---|---|---|\n| sample-api | dev/feature/L1-bulk-order-discount | main |\n' > .work/L1-bulk-order-discount/repos.md
+  rm -f .work/.asked-list
+  text "Started L1. Next: /spec L1."; finish 40 20 0; exit 0
+fi
 case "$cmd" in
+  start)
+    text "What is the work? Give a short title, then describe it."; finish 60 10 0 ;;
   spec)
     # One gate: /spec drafts spec, plan and tasks together.
     printf 'Status: DRAFT\n\n# Spec\n' > "$work/spec.md"

@@ -36,6 +36,18 @@ try {
     Check "Get-RunUsage adds tokens, cost, tool calls and questions" ($u.known -and (Get-UsageTokens $u) -eq 10 -and $u.cacheRead -eq 1 -and $u.cost -eq 0.5 -and $u.toolCalls -eq 2 -and $u.questions -eq 1)
     Check "Get-RunUsage on plain text knows nothing" (-not (Get-RunUsage "hello").known)
 
+    # Answers (Core 4.16.0): the session id, the last text, and whether the run ended asking.
+    $ev = ('{"type":"text","sessionID":"ses_9","part":{"type":"text","text":"Reading the repo."}}' + "`n" + '{"type":"text","sessionID":"ses_9","part":{"type":"text","text":"What is the work? Give a short title."}}')
+    Check "Get-RunSession reads the session id" ((Get-RunSession $ev) -eq "ses_9")
+    Check "Get-RunLastText is the last text" ((Get-RunLastText $ev) -eq "What is the work? Give a short title.")
+    Check "Test-RunAsks: a ? in the last paragraph asks" (Test-RunAsks -Usage (New-Usage) -LastText "Done reading.`n`nIs this the right list?")
+    Check "Test-RunAsks: a question earlier on, then a plain last paragraph, does not" (-not (Test-RunAsks -Usage (New-Usage) -LastText "Why? Because.`n`nStarted L1."))
+    Check "Test-RunAsks: Needs you and the question tool ask" ((Test-RunAsks -Usage (New-Usage) -LastText "Needs you: pick the repos.") -and (Test-RunAsks -Usage ([ordered]@{ questions = 1 }) -LastText "done."))
+    $sa = @(Get-StepAnswers ([pscustomobject]@{ command = "start" }) ([pscustomobject]@{ answers = @("plain", [pscustomobject]@{ text = "only if"; when = "(?i)list" }) }))
+    Check "Get-StepAnswers: strings and {text, when}, from the case for a one-command case" ($sa.Count -eq 2 -and $sa[0].text -eq "plain" -and -not $sa[0].when -and $sa[1].when -eq "(?i)list")
+    Check "Get-StepAnswers: a case with steps uses only each step's own" (@(Get-StepAnswers ([pscustomobject]@{ command = "spec" }) ([pscustomobject]@{ steps = @(1); answers = @("x") })).Count -eq 0)
+    Check "Test-AnswerDue: when must match; without it, only when asked" ((Test-AnswerDue $sa[1] (New-Usage) "Is this the right list?") -and -not (Test-AnswerDue $sa[1] (New-Usage) "Which lane?") -and -not (Test-AnswerDue $sa[0] (New-Usage) "Started."))
+
     $sizes = @(Get-PromptSizes)
     $cmdCount = @(Get-ChildItem -LiteralPath (Join-Path $script:RepoRoot "core/commands") -Filter *.md).Count
     $plan = @($sizes | Where-Object { $_.command -eq "plan" })[0]
@@ -114,6 +126,19 @@ else {
         $null = & $inv -Case feature-outcome -Runs 1 -Gate -Opencode $fake -NoExec -OutDir $out -Model "p/one" -WarningAction SilentlyContinue 2>&1 | Out-String
         Check "-Gate exits 1 when a Tandem case dropped" ($LASTEXITCODE -eq 1)
         Remove-Item Env:FAKE_BREAK -ErrorAction SilentlyContinue
+
+        # Answers: /start new asks twice; each scripted answer continues the same session, then it stops asking.
+        Start-Sleep -Milliseconds 1100
+        $before = @(Get-Content -LiteralPath $env:FAKE_LOG).Count
+        $st = & $inv -Case start-new -Runs 1 -Opencode $fake -NoExec -OutDir $out -WarningAction SilentlyContinue 2>&1 | Out-String
+        $sf = @(Get-ChildItem -LiteralPath $out -Filter *.json | Sort-Object LastWriteTime)[-1]
+        $sj = Get-Content -Raw $sf.FullName | ConvertFrom-Json
+        $sc = @($sj.cases | Where-Object { $_.case -eq "start-new" })[0]
+        $newCalls = @(Get-Content -LiteralPath $env:FAKE_LOG | Select-Object -Skip $before)
+        Check "start-new passes with its two answers" ($sc.passes -eq 1) (($sc.runs[0].failed | ForEach-Object { "$($_.check): $($_.detail)" }) -join "; ") 
+        Check "each answer went to the same session, in order" ($newCalls.Count -eq 3 -and $newCalls[1] -match '--session ses_x' -and $newCalls[1] -match 'Bulk order discount' -and $newCalls[2] -match 'that list is right') ($newCalls -join " || ")
+        Check "the step records 2 answers sent and that it stopped asking" ($sc.runs[0].steps[0].answered -eq 2 -and $sc.runs[0].steps[0].stillAsking -eq $false -and $sc.runs[0].answered -eq 2)
+        Check "answers' tokens count toward the run" ($sc.runs[0].tokens -eq 190) "tokens=$($sc.runs[0].tokens)"
 
         # -Overlay: the tandem arm runs a scratch install; your real config is not used
         Start-Sleep -Milliseconds 1100

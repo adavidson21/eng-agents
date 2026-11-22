@@ -70,11 +70,11 @@ Never force anything, never push, never resolve a conflict outside a fix task.
 
 ## Send back (code review comments)
 
-At Publish the engineer may read the code in Workshop's code review, comment on lines and click **Send back** (Core 4.15.0). Workshop saves the comments in `code-review/<repo>/rev-<n>.json` and autopilot runs `/revise <id> auto`, which turns each comment into a fix task (with a `- From comment: <repo>/<id>` line), an answer or a declined note, saves the comments marked as rules, and moves `pr.md` to `history/`. Then the build carries on as usual: `/do-task` for the new tasks, `/review` (a later round, which checks each `From comment` task did what the comment asked), `/pr`, and back to Publish as the next revision. `revise.md` with `Status: HOLD` (a fix that needs a new dependency, a migration, auth code or another repo) stops autopilot for the engineer.
+At Publish the engineer may read the code in Workshop's code review, comment on lines and click **Send back**. Workshop saves the comments in `code-review/<repo>/rev-<n>.json` and autopilot runs `/revise <id> auto`, which turns each comment into a fix task (with a `- From comment: <repo>/<id>` line), an answer or a declined note, saves the comments marked as rules, and moves `pr.md` to `history/`. Then the build carries on as usual: `/do-task` for the new tasks, `/review` (a later round, which checks each `From comment` task did what the comment asked), `/pr`, and back to Publish as the next revision. `revise.md` with `Status: HOLD` (a fix that needs a new dependency, a migration, auth code or another repo) stops autopilot for the engineer.
 
 ## After Publish
 
-Workshop watches a published PR until it merges (Core 4.15.0). When CI fails it writes `ci/failure-<n>.md` and runs `/pr-fix <id> ci auto`; when the PR conflicts with its base, `ci/conflict-<n>.md` and `/pr-fix <id> conflict auto`. `/pr-fix` commits a fix on the branch (a merge of the base for a conflict) and never pushes, rebases or forces: Workshop shows **Push fix** and the engineer pushes it. Teammates' review comments show in Workshop's code review, where the engineer can send them back like their own. When the PR merges, Workshop runs `/retro <id>`.
+Workshop watches a published PR until it merges. When CI fails it writes `ci/failure-<n>.md` and runs `/pr-fix <id> ci auto`; when the PR conflicts with its base, `ci/conflict-<n>.md` and `/pr-fix <id> conflict auto`. `/pr-fix` commits a fix on the branch (a merge of the base for a conflict) and never pushes, rebases or forces: Workshop shows **Push fix** and the engineer pushes it. Teammates' review comments show in Workshop's code review, where the engineer can send them back like their own. When the PR merges, Workshop runs `/retro <id>`.
 
 ## Who links to ADO
 
@@ -82,7 +82,7 @@ A work item is **linked** to an ADO work item when `workitem.md` has a `- ADO it
 
 ## Stories from an approved breakdown
 
-`/backlog scope-<name> local` makes one local item per story (Core 4.10.0). Its `workitem.md` says where it came from, so Workshop can build the epic hands-off, in order:
+`/backlog scope-<name> local` makes one local item per story. Its `workitem.md` says where it came from, so Workshop can build the epic hands-off, in order:
 
 | Line | Meaning |
 |---|---|
@@ -96,15 +96,15 @@ Autopilot runs `/start <id> feature auto`, `/spec <id> auto`, then `/approve <id
 
 ## Where a build is (step.md)
 
-`/do-task` and `/review` record the station a build is at in `step.md` with `scripts/work/Set-Step.ps1` (Core 4.12.0): one line, `- Step: <build | test | ui | review | fix> | <ISO time>`, replaced each time. Workshop's Loom puts the item at that station on its floor. Never write it by hand; nothing else reads it.
+`/do-task` and `/review` record the station a build is at in `step.md` with `scripts/work/Set-Step.ps1`: one line, `- Step: <build | test | ui | review | fix> | <ISO time>`, replaced each time. Workshop's Loom puts the item at that station on its floor. Never write it by hand; nothing else reads it.
 
 ## Onboarding a product
 
-`/onboard-product <product>` (Core 4.10.0) gets a product ready for its first build without asking anything: it drafts missing repo guides, drafts the product note, logs what it could not find as gaps (Teach), and creates a trial run, a local Quick change with `- Trial: <product>` that adds one test. It records each step in `.work/_onboarding/<product>.md` with `scripts/work/Set-Onboarding.ps1` (`- Scan:`, `- Trial:`, `- Live:`). Workshop's Loom shows the steps; the product is live when its trial run reaches Ready to publish.
+`/onboard-product <product>` gets a product ready for its first build without asking anything: it drafts missing repo guides, drafts the product note, logs what it could not find as gaps (Teach), and creates a trial run, a local Quick change with `- Trial: <product>` that adds one test. It records each step in `.work/_onboarding/<product>.md` with `scripts/work/Set-Onboarding.ps1` (`- Scan:`, `- Trial:`, `- Live:`). Workshop's Loom shows the steps; the product is live when its trial run reaches Ready to publish.
 
 ## Backfilled regression tests
 
-`/cover <product> [-- <area>]` (Core 4.14.0) makes one local Quick change per UI repo, with `- Coverage: <product>` in `workitem.md`, that adds end-to-end tests for what pages do today and changes no product code. Workshop builds it hands-off like a trial run; you publish its PR. From then on every build runs those tests (`Test-Suite.ps1`).
+`/cover <product> [-- <area>]` makes one local Quick change per UI repo, with `- Coverage: <product>` in `workitem.md`, that adds end-to-end tests for what pages do today and changes no product code. Workshop builds it hands-off like a trial run; you publish its PR. From then on every build runs those tests (`Test-Suite.ps1`).
 
 ## Conventions
 

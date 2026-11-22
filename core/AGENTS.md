@@ -35,17 +35,9 @@ You are working with an engineer who uses a step-by-step pipeline. Each step is 
 
 ## Memory
 
-The engineer saves rules with `/memory`. Follow them like any other rule.
+The engineer saves rules with `/memory`. Follow them like any other rule. One repo's rules are in the `## Remembered` section of its repo guide; rules for every repo are in `{{ENG_CONFIG}}/memory.md` (loaded in every session); product and team facts are in Folio (see Product notes). A repo's `## Remembered` rule wins over a global one.
 
-| Scope | Where it lives | Loaded |
-|---|---|---|
-| One repo | The `## Remembered` section of that repo's guide | When you read the repo guide |
-| Every repo | `{{ENG_CONFIG}}/memory.md` | Automatically, in every session |
-| One product | Its product note in Workshop's Folio app (see Product notes) | When you work on that product |
-| The team | The team handbook in Folio (see Product notes) | With `Get-Knowledge.ps1` |
-
-- A repo's `## Remembered` rule wins over a global memory rule.
-- If the engineer says "remember this", "from now on", or "always do X here", suggest `/memory <rule>` (one repo), `/memory -global <rule>` (every repo) or `/memory -product <product> <fact>` (a product fact; the split rule under Product notes decides which). Do not write memory files yourself unless running `/memory` (or `/retro` saving the rules the engineer ticked).
+If the engineer says "remember this", "from now on", or "always do X here", suggest `/memory <rule>` (one repo), `/memory -global <rule>` (every repo) or `/memory -product <product> <fact>` (a product fact; the split rule under Product notes decides which). Do not write memory files yourself unless running `/memory` (or `/retro` saving the rules the engineer ticked).
 
 ## Product notes
 

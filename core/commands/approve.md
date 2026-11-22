@@ -24,7 +24,7 @@ If the mode above is `auto`, Workshop's autopilot is running this and nobody is 
 3. **Clean:** change `Status: DRAFT` to `Status: APPROVED` in `quick.md` (nothing else), read it back to confirm, add a `progress.md` entry for `/approve` with `- Stats: gate=auto file=quick`, and say `Approved automatically: quick.md is clean.` Write no product notes (Step 5b): assumptions are not the engineer's answers.
 4. **Not clean:** change nothing in `quick.md`. Add a `progress.md` entry for `/approve` that names every check that failed, with `- Stats: gate=held file=quick`, and end your reply with one line: `Needs you: <the failed checks, in a few words>.` The engineer reviews it and runs `/approve $1` themselves.
 
-### Story auto approval (`/approve <id> spec auto`, Core 4.10.0)
+### Story auto approval (`/approve <id> spec auto`)
 
 The engineer approved the epic's breakdown (`milestones.md`), so a story's plan needs them only when it drifts from what they approved.
 

@@ -4,6 +4,14 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 4.17.0 (2026-11-22)
+
+Local and self-hosted models (Workshop's `docs/local-models.md`, opencode connector 1.33.0). Nothing changes in what any command does.
+- Prompt budget: `Get-PromptSize.ps1 -Check` (CI) also fails when a command loads more than 8000 tokens up front (`-MaxTokens`) or `core/AGENTS.md` is more than 3000 (`-MaxBaseTokens`). Today the biggest is `/start` at about 7.5K. Workshop reads `evals/commands.json` to refuse a run that cannot fit the model's context window, so the numbers there now matter at run time too.
+- Version notes such as "(Core 4.12.0)" are gone from commands, guides and templates: they cost tokens on every run and told the model nothing. The history stays here.
+- `core/AGENTS.md`: the Memory table is two short paragraphs with the same rules.
+- README: a pointer to Workshop's guide for running Tandem on Ollama or a company model server.
+
 ## Core 4.16.0 (2026-11-21)
 
 Evals can test commands that stop to ask (Bench v2's next step, `claude/bench-v2-plan.md`). Nothing changes for Tandem's commands themselves.

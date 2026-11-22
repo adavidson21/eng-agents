@@ -7,7 +7,7 @@ Fix type: <Configuration | Data | Infrastructure | Code>
 Confidence: <High | Medium | Low>
 
 <!--
-Written by /spike in log mode (Core 4.3.0) from log.md in this folder. Loom reads the "# Spike findings:" title,
+Written by /spike in log mode from log.md in this folder. Loom reads the "# Spike findings:" title,
 the Fix type line, and the Short answer, Recommendation and Next step sections, so keep their shapes.
 Never copy a secret, token, password, connection string or personal data from the log into this file: name it
 ("the connection string in appsettings.Production.json") instead.

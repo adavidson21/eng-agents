@@ -5,7 +5,7 @@ agent: writer
 
 Turn the code review comments on work item **$1** into fix tasks and answers. Mode: **$2**
 
-Workshop runs this when the engineer clicks **Send back** in Loom's code review (Core 4.15.0). If the mode above is `auto`, autopilot runs it and nobody is watching: ask nothing. Do not change any code: the fix tasks you write here are built next by `/do-task`, then `/review` and `/pr` run again.
+Workshop runs this when the engineer clicks **Send back** in Loom's code review. If the mode above is `auto`, autopilot runs it and nobody is watching: ask nothing. Do not change any code: the fix tasks you write here are built next by `/do-task`, then `/review` and `/pr` run again.
 
 ## Step 1: Find the comments
 

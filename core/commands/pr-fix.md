@@ -5,7 +5,7 @@ agent: implementer
 
 Fix the published pull request of work item **$1**. Kind: **$2**. Mode: **$3**
 
-Workshop runs this after Publish, when its watcher sees a failed CI run (`ci`) or a merge conflict with the base (`conflict`) on the item's PR (Core 4.15.0). If the mode above is `auto`, nobody is watching: never ask and never wait; where a step says to stop, write the result and end.
+Workshop runs this after Publish, when its watcher sees a failed CI run (`ci`) or a merge conflict with the base (`conflict`) on the item's PR. If the mode above is `auto`, nobody is watching: never ask and never wait; where a step says to stop, write the result and end.
 
 This is the one implementer job with no task in `tasks.md`: the files you may change are the ones the failure points at, at most `taskFileCap` (Factory settings in `{{ENG_HOME}}/guides/pipeline.md`, test files do not count).
 

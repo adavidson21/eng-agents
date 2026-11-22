@@ -57,6 +57,9 @@ Something went wrong? See [Recovering from problems](docs/pipeline.md#recovering
 
 ## Setup
 
+Running on a model you host (Ollama, LM Studio, llama.cpp, vLLM or your company's own server)? Read Workshop's [Local and self-hosted models](https://github.com/adavidson21/workshop/blob/main/docs/local-models.md) first. The model's context window must be at least 32K tokens, set on the server itself: each command loads about 3.5K to 7.5K tokens (`./evals/Get-PromptSize.ps1`) on top of opencode's own prompt and the repo map.
+
+
 1. [Personal onboarding](docs/onboarding-personal.md): create your fork and fill in `personal/`.
 2. [Company onboarding](docs/onboarding-company.md): set up the work PC, install, and smoke test.
 3. Later: `.\update.ps1` pulls and reinstalls. You install once; updates never need a fresh setup. What changed is in [CHANGELOG.md](CHANGELOG.md).

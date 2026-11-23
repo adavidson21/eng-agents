@@ -45,14 +45,14 @@ try {
     Check "missing note: refused" ($r.Code -eq 1 -and $r.Out -match "-Create") $r.Out
 
     $r = Run $set @("-Product", "Wiki Edge", "-Create", "-Repos", "wiki-edge-api,wiki-edge-web", "-AlsoCalled", "wiki")
-    $file = Join-Path $data "folio/products/wiki-edge.md"
+    $file = Join-Path $data "notes/products/wiki-edge.md"
     $text = if (Test-Path $file) { [IO.File]::ReadAllText($file) } else { "" }
     Check "create from the built-in template" ($r.Code -eq 0 -and $text -match "(?m)^title: Wiki Edge$" -and $text -match "product/wiki-edge" -and $text -match "(?m)^repos: \[wiki-edge-api, wiki-edge-web\]$" -and $text -match "(?m)^tandem-changed: \d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$") "$($r.Out) $text"
 
     $r = Run $set @("-Product", "wiki-edge", "-Line", "Exports are capped at 5k rows.", "-Source", "PR 4812")
     $text = [IO.File]::ReadAllText($file)
     Check "add a line to Remembered" ($r.Code -eq 0 -and $text -match "## Remembered\r?\n\r?\n- Exports are capped at 5k rows\. \(\d{4}-\d\d-\d\d, PR 4812\)") "$($r.Out) $text"
-    $hist = Join-Path $data "folio/history/products-wiki-edge-11izt4n"
+    $hist = Join-Path $data "notes/history/products-wiki-edge-11izt4n"
     Check "snapshot in Notes' history format" ((Test-Path $hist) -and @(Get-ChildItem $hist -File | Where-Object { $_.Name -match '^\d{8}t\d{9}z\.md$' }).Count -eq 1)
 
     $r = Run $set @("-Product", "wiki-edge", "-Line", "- exports are capped at 5k rows.", "-Source", "PR 9")
@@ -85,14 +85,14 @@ try {
     # Snapshots are trimmed to the newest 20 (older ones go to the trash).
     for ($i = 0; $i -lt 22; $i++) { Run $set @("-Product", "wiki-edge", "-Line", "Fact $i.", "-Source", "PR $i") | Out-Null; Start-Sleep -Milliseconds 5 }
     Check "history trimmed to 20" (@(Get-ChildItem $hist -File).Count -eq 20) "$(@(Get-ChildItem $hist -File).Count)"
-    Check "older versions in the trash" (Test-Path (Join-Path $data ".trash/folio/history/products-wiki-edge-11izt4n"))
-    Check "no temp files left" (@(Get-ChildItem (Join-Path $data "folio/products") -Force -File | Where-Object { $_.Name -like ".tandem-*" }).Count -eq 0)
+    Check "older versions in the trash" (Test-Path (Join-Path $data ".trash/notes/history/products-wiki-edge-11izt4n"))
+    Check "no temp files left" (@(Get-ChildItem (Join-Path $data "notes/products") -Force -File | Where-Object { $_.Name -like ".tandem-*" }).Count -eq 0)
 
     # A template in Notes wins over the built-in one.
-    New-Item -ItemType Directory -Path (Join-Path $data "folio/templates") -Force | Out-Null
-    [IO.File]::WriteAllText((Join-Path $data "folio/templates/product.md"), "---`ntitle: {{title}}`ntags: [product, product/{{slug}}]`n---`n# {{title}}`n`n## Mine`n")
+    New-Item -ItemType Directory -Path (Join-Path $data "notes/templates") -Force | Out-Null
+    [IO.File]::WriteAllText((Join-Path $data "notes/templates/product.md"), "---`ntitle: {{title}}`ntags: [product, product/{{slug}}]`n---`n# {{title}}`n`n## Mine`n")
     $r = Run $set @("-Product", "Stencil", "-Create")
-    $text = [IO.File]::ReadAllText((Join-Path $data "folio/products/stencil.md"))
+    $text = [IO.File]::ReadAllText((Join-Path $data "notes/products/stencil.md"))
     Check "create from templates/product.md" ($text -match "## Mine" -and $text -match "product/stencil") $text
 
     $r = Run $get @("-List")
@@ -113,7 +113,7 @@ try {
 
     # The team handbook and the change log: made from the built-in templates on the first line.
     $r = Run $set @("-Note", "team/handbook.md", "-Section", "Pull requests", "-Line", "Two approvals before merge.", "-Source", "the engineer")
-    $hb = Join-Path $data "folio/team/handbook.md"
+    $hb = Join-Path $data "notes/team/handbook.md"
     $text = if (Test-Path $hb) { [IO.File]::ReadAllText($hb) } else { "" }
     Check "handbook made and written" ($r.Code -eq 0 -and $text -match "(?m)^title: Team handbook$" -and $text -match "## Pull requests\r?\n\r?\n- Two approvals before merge\." -and $text -match "(?m)^tandem-changed: ") "$($r.Out) $text"
     $r = Run $set @("-Note", "../secrets.md", "-Line", "x", "-Source", "y")
@@ -121,7 +121,7 @@ try {
     $r = Run $set @("-Note", "team/handbook.md", "-Create")
     Check "-Create is for product notes" ($r.Code -eq 1) $r.Out
     for ($i = 0; $i -lt 103; $i++) { Run $set @("-Note", "changes", "-Line", "api repo guide, Remembered: rule $i.", "-Source", "/memory") | Out-Null }
-    $log = [IO.File]::ReadAllText((Join-Path $data "folio/tandem/changes.md"))
+    $log = [IO.File]::ReadAllText((Join-Path $data "notes/tandem/changes.md"))
     $bul = @($log -split "\r?\n" | Where-Object { $_ -match '^- ' })
     Check "the change log keeps the newest 100" ($bul.Count -eq 100 -and $bul[0] -match "rule 3\." -and $bul[-1] -match "rule 102\." -and $log -match "## Changes") "$($bul.Count) $($bul[0])"
 
@@ -145,23 +145,23 @@ try {
     Check "knowledge: owners from People, archived left out" ($o -match "- Person One, Senior Engineer \(owns wiki-edge-api\)" -and $o -notmatch "Gone Person") $o
     Check "knowledge: the product's words, then any product's (a word whose product is gone counts as any)" ($o -match "- Page = ``Article`` \(src/Article\.cs\)" -and $o -match "- Plan year = ``CoverageYear``" -and $o -match "- Route = ``GatewayRoute``") $o
     Check "knowledge: the note without its frontmatter, and the handbook" ($o -match "10k rows" -and $o -notmatch "(?m)^tandem-changed:" -and $o -match "Two approvals before merge") $o
-    Check "knowledge: ends with its sources" ($o -match "Sources: settings/products\.json, settings/people\.json, settings/glossary\.json, folio/products/wiki-edge\.md, folio/team/handbook\.md") $o
+    Check "knowledge: ends with its sources" ($o -match "Sources: settings/products\.json, settings/people\.json, settings/glossary\.json, notes/products/wiki-edge\.md, notes/team/handbook\.md") $o
     $r = Run $know @("-Product", "Old")
     Check "knowledge: an archived product is not found, the note is still read" ($r.Code -eq 0 -and $r.Out -match "Not a product in Workshop Settings") $r.Out
     $r = Run $know @("-Product", "Wiki Edge", "-MaxLines", "40")
     Check "knowledge: the handbook is cut first when it is long" ($r.Out -match "Handbook cut here") $r.Out
     $r = Run $know @("-Handbook")
-    Check "knowledge: the handbook alone" ($r.Code -eq 0 -and $r.Out -match "Team handbook: folio/team/handbook\.md" -and $r.Out -match "Two approvals") $r.Out
+    Check "knowledge: the handbook alone" ($r.Code -eq 0 -and $r.Out -match "Team handbook: notes/team/handbook\.md" -and $r.Out -match "Two approvals") $r.Out
     [IO.File]::WriteAllText((Join-Path $settings "products.json"), (& $env1 "products" 2 @()))
     $r = Run $know @("-Product", "Wiki Edge")
     Check "knowledge: products from a newer Workshop are skipped, not an error" ($r.Code -eq 0 -and $r.Out -match "Not a product" -and $r.Out -match "10k rows") $r.Out
 
-    # A Workshop that has not renamed notes/ to folio/ yet: the old folder is used while it is the only one.
+    # A Workshop that has not renamed folio/ to notes/ yet: the old folder is used while it is the only one.
     $old = Join-Path $root "old"
-    New-Item -ItemType Directory -Path (Join-Path $old "notes/products") -Force | Out-Null
+    New-Item -ItemType Directory -Path (Join-Path $old "folio/products") -Force | Out-Null
     [IO.File]::WriteAllText((Join-Path $wsHome "config.json"), (@{ dataDir = $old } | ConvertTo-Json))
     $r = Run $set @("-Product", "Lighthouse", "-Create")
-    Check "an old notes/ folder is used while there is no folio/" ($r.Code -eq 0 -and (Test-Path (Join-Path $old "notes/products/lighthouse.md")) -and -not (Test-Path (Join-Path $old "folio"))) $r.Out
+    Check "an old folio/ folder is used while there is no notes/" ($r.Code -eq 0 -and (Test-Path (Join-Path $old "folio/products/lighthouse.md")) -and -not (Test-Path (Join-Path $old "notes"))) $r.Out
 } finally {
     Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue
     Remove-Item Env:WORKSHOP_HOME -ErrorAction SilentlyContinue

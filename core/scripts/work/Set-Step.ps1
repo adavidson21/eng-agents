@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Records which station a work item's build is at right now (Core 4.12.0), for Workshop's Loom floor.
+    Records which station a work item's build is at right now (Core 4.12.0), for Workshop's Builds floor.
 
 .DESCRIPTION
     Writes <work folder>\step.md with one line:
@@ -8,7 +8,7 @@
       - Step: <build | test | ui | review | fix> | <ISO time>
 
     /do-task and /review call it as they move between building, running tests, UI checks, reviewing and fixing
-    review findings, so Loom shows the item at the right station instead of guessing from the session's text.
+    review findings, so Builds shows the item at the right station instead of guessing from the session's text.
     The file is replaced each time; it holds no history. Prints the step.
 
 .EXAMPLE

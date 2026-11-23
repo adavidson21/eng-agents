@@ -63,7 +63,7 @@ Tell the engineer:
 
 ## Docs (a `docs-` folder)
 
-A doc from `/docs` already lives in its repo, so publishing it approves it there. Loom calls this **Save in the repo**.
+A doc from `/docs` already lives in its repo, so publishing it approves it there. Builds calls this **Save in the repo**.
 
 1. Read the `Doc: <path>` line at the top of `sources.md`. If there is none, ask the engineer for the doc's path and add the line. If the file is not there, say so and stop.
 2. Check it is ready, as in Step 2 (`check.md`, and the doc's own open questions).

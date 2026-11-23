@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
     The automatic run retro: finds what keeps coming back across work items and suggests a fix once, in
-    Folio's review list, for the engineer to accept or dismiss. Run by /pr at the end of every build.
+    Notes' review list, for the engineer to accept or dismiss. Run by /pr at the end of every build.
 
 .DESCRIPTION
     Two kinds of repeat, each suggested once (the keys already suggested are kept in <WorkRoot>\.repeats):
@@ -10,8 +10,8 @@
       - The same knowledge gap kind and product in 3 or more gaps (gaps.md). Suggests filling that part of
         the product note or the handbook up front.
 
-    With -Write, each new suggestion is added to Folio's tandem/changes.md with Set-ProductNote.ps1
-    (so it shows in Folio's review list) and its key is saved. Without -Write it only prints them.
+    With -Write, each new suggestion is added to Notes' tandem/changes.md with Set-ProductNote.ps1
+    (so it shows in Notes' review list) and its key is saved. Without -Write it only prints them.
     It never blocks: when product notes are not available it prints the suggestions and saves nothing.
 
     The LAST line of output is "REPEATS: <n> new" (n may be 0).

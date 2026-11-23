@@ -4,6 +4,15 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 4.21.0 (2026-11-23)
+
+Names follow Workshop's rename of November 2026: Docket is Tasks, Loom is Builds, Rapport is People, Folio is Notes and Runway is Roadmaps, and each app's id and data folder is that name (`tasks`, `builds`, `people`, `notes`, `roadmaps`). Nothing breaks with a Workshop that has not renamed yet.
+- Product notes, the team handbook and Tandem's change log are in `<dataDir>/notes/`. `ProductNotes.ps1` uses `folio/` while it is the only one there (a Workshop that has not started since the rename), and the chat and hub agents say the same.
+- `/hub` writes the new app ids (`tasks`, `builds`, `people`, `roadmaps`) in captures and `go`, and reads the request's `Tasks lists` (or `Docket lists` from an older Workshop). Workshop still takes the old ids.
+- `/standup` reads `<dataDir>/tasks/tasks.json`, falling back to `docket/` or `prioritizer/`.
+- `/one-on-one` reads the packet's `Tasks` section (`Docket tasks` from an older Workshop).
+- Every command, agent, guide, template and script names the apps the new way. `evals/commands.json` is regenerated.
+
 ## Core 4.20.0 (2026-11-23)
 
 Fewer moving parts: two commands, one agent and the static dashboard are gone, with nothing lost. Needs Workshop opencode connector 1.40.0 or later, which suggests and runs the new command names.

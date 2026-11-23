@@ -132,7 +132,7 @@ Override an agent by copying its file from `core/agents/` into your layer. Keep 
 | `pr-reviewer` | `/pr-review` | `.work/` only | Cannot check out, switch, fetch, stash, `git add`, commit, or push; no web requests. It reads the PR only through `git show` and `git diff` at the PR's commit. |
 | `people-prep` | `/one-on-one` | Only `draft.md` next to the packet it was given | No shell commands except listing the packet's folder; no web requests. No `guards`, like `product-manager`. |
 | `hub` | `/hub` | Only `route.json` and `answer.md` next to the request it was given | Only read-only commands: `git log`, `git show`, `git grep`, `git ls-files`, `rg`, listing and reading files; no web requests. No `guards`. |
-| `chat` | Workshop's Loom: hub follow-ups and the Chat tab (no command) | Nothing | Same read-only commands as `hub`; no web requests. No `guards`. |
+| `chat` | Workshop's Builds: hub follow-ups and the Chat tab (no command) | Nothing | Same read-only commands as `hub`; no web requests. No `guards`. |
 | `quick` | Workshop's Chat: Quick answers (no command) | Nothing | No tools at all (`"*": deny`): Workshop looks up the notes and sends them with the question, and the agent answers in one reply. Its short prompt replaces opencode's long one, so a small local model reads about 1,000 characters instead of 12,000. |
 | `investigator` | `/bug`, `/spike`, `/triage`, `/onboard-repo`, `/onboard-product`, `/cover`, `/cloudflare` | `.work/`. A repo guide and `.git/info/exclude` ask. | Cannot `git add` or `git commit` |
 | `product-manager` | `/scope`, `/refine`, `/shape`, `/slice`, `/backlog` | `.work/scope-*/`, `.work/refine-*/` and `.work/shape-*/` only | Only `git log` and `Export-Backlog.ps1` (pushing to ADO asks) |
@@ -250,7 +250,7 @@ Open a pull request to eng-agents. Before merging:
 - [ ] It would help **anyone**. No company names, no personal preferences.
 - [ ] Shell permission changes for everyone go in `core/permissions/`. Changes for one agent go in that agent file, after its `{{BASH:guards}}` line.
 - [ ] `Status: DRAFT` lines in the `spec`, `plan`, `bug`, and `tsd` templates, `Status: PAUSED` in `paused`, and `## [ ] Task N:` headings in `tasks` are unchanged.
-- [ ] If you changed the next-command rules in `core/commands/status.md`, Workshop's `.work` parser (`connectors/opencode/lib/workparser.mjs`) gets the same change, so Loom suggests the same next step.
+- [ ] If you changed the next-command rules in `core/commands/status.md`, Workshop's `.work` parser (`connectors/opencode/lib/workparser.mjs`) gets the same change, so Builds suggests the same next step.
 - [ ] Docs that describe the behavior are updated.
 - [ ] The version is bumped in `core/VERSION` (major for breaking changes, minor for features, patch for fixes), with a `## Core <version> (<date>)` entry at the top of `CHANGELOG.md`. `update.ps1` shows these entries.
 - [ ] `pwsh ./install.ps1 -DryRun` runs cleanly.

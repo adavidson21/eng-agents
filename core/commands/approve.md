@@ -130,4 +130,4 @@ The engineer's answers while drafting are facts worth keeping. Only for `spec.md
 | `quick.md` | Start a new session, then `/do-task $1 1` |
 | `stories.md` | `/slice $1` |
 | `milestones.md` | `/backlog $1` (import file), `/backlog $1 ado`, or `/backlog $1 local` |
-| `refine.md` | Publish it to ADO from Loom (Workshop), or paste its Description and Acceptance criteria into a new work item. Then `/start <id> feature` or `/handoff <id> <name>`. |
+| `refine.md` | Publish it to ADO from Builds (Workshop), or paste its Description and Acceptance criteria into a new work item. Then `/start <id> feature` or `/handoff <id> <name>`. |

@@ -3,7 +3,7 @@
 Status: ASKING
 Round: <n>
 
-<!-- Written by /shape. Workshop's Loom reads this file: keep the Status and Round lines, and each question as "## Q<n>: <question>" followed by "- A) <option>" lines, "Recommended: <letter>" and "Why: <one line>". Status is ASKING while there are questions, READY once brief.md is written (then there are no questions). Answers go in answers.md, never here. -->
+<!-- Written by /shape. Workshop's Builds reads this file: keep the Status and Round lines, and each question as "## Q<n>: <question>" followed by "- A) <option>" lines, "Recommended: <letter>" and "Why: <one line>". Status is ASKING while there are questions, READY once brief.md is written (then there are no questions). Answers go in answers.md, never here. -->
 
 ## Q1: <question>
 

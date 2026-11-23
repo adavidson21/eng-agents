@@ -1,21 +1,21 @@
 <#
 .SYNOPSIS
-  Makes one small edit to a product note, the team handbook or Tandem's change log in Workshop's Folio app: adds a
+  Makes one small edit to a product note, the team handbook or Tandem's change log in Workshop's Notes app: adds a
   line, replaces a line, flags a line, or creates the note.
 
 .DESCRIPTION
-  The only way agents write these notes. It follows Folio's contract (Workshop apps/notes/README.md, "Tandem and
+  The only way agents write these notes. It follows Notes' contract (Workshop apps/notes/README.md, "Tandem and
   product notes"):
-    - writes only <Workshop data folder>/folio/products/<slug>.md, folio/team/handbook.md, folio/tandem/changes.md
-      and their snapshots in folio/history/ (notes/ instead of folio/ with a Workshop that has not renamed the folder);
-    - keeps the current text as a snapshot (Folio's History panel can restore it) before every change;
+    - writes only <Workshop data folder>/notes/products/<slug>.md, notes/team/handbook.md, notes/tandem/changes.md
+      and their snapshots in notes/history/ (folio/ instead of notes/ with a Workshop that has not renamed the folder);
+    - keeps the current text as a snapshot (Notes' History panel can restore it) before every change;
     - writes atomically and starts again if the note changed while it worked;
-    - sets tandem-changed in the frontmatter, so Folio shows "Changed by Tandem" until you mark it reviewed.
+    - sets tandem-changed in the frontmatter, so Notes shows "Changed by Tandem" until you mark it reviewed.
 
   One line per call. A line Tandem writes ends with its date and source: "- Exports are capped at 10k rows.
   (2026-11-05, PR 4812)". A line that says the same thing already is left alone. Checklist lines ("- [ ] ...")
-  are refused: Folio would offer them to Docket. -Flag marks a line the code contradicts when the right value is
-  not confirmed: "(check: <reason>, <date>, <source>)" goes at its end and Folio shows the note as stale.
+  are refused: Notes would offer them to Tasks. -Flag marks a line the code contradicts when the right value is
+  not confirmed: "(check: <reason>, <date>, <source>)" goes at its end and Notes shows the note as stale.
   The team handbook and the change log are made from built-in templates the first time a line goes in.
 
 .EXAMPLE
@@ -100,10 +100,10 @@ if ($Flag) {
         Write-Output "Flagged in $rel."
         Write-Output "Before: $old"
         Write-Output "After:  $($n.Lines[$hits[0]])"
-        if ($snap) { Write-Output "Earlier version kept: $($where.Folder)/$snap (Folio, History)." }
+        if ($snap) { Write-Output "Earlier version kept: $($where.Folder)/$snap (Notes, History)." }
         exit 0
     }
-    Fail "$rel kept changing while I worked (open in Folio with unsaved edits?). Try again later."
+    Fail "$rel kept changing while I worked (open in Notes with unsaved edits?). Try again later."
 }
 
 # ---------------------------------------------------------------- create
@@ -202,7 +202,7 @@ for ($attempt = 1; $attempt -le 3; $attempt++) {
     Write-Output "Changed $rel ($where_)."
     if ($old) { Write-Output "Before: $old" }
     Write-Output "After:  $newLine"
-    if ($snap) { Write-Output "Earlier version kept: $($where.Folder)/$snap (Folio, History)." }
+    if ($snap) { Write-Output "Earlier version kept: $($where.Folder)/$snap (Notes, History)." }
     if ($dropped) { Write-Output "Dropped the $dropped oldest change lines (the log keeps $($script:ChangesKeep))." }
     $count = ($after -split "\r?\n").Count
     if ($rel -ne $script:ChangesPath -and $count -gt 150) { Write-Output "This note is $count lines (budget about 150). Propose a tidy to the engineer instead of adding more." }

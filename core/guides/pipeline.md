@@ -21,7 +21,7 @@ Each work item has a folder `.work/<id>-<name>/`. Find it by listing `.work/` an
 | `pr.md` | PR title and description. |
 | `bug.md` | Bug lane analysis. Has a `Status:` line. |
 | `quick.md` | Quick lane: one combined spec and plan for small work (tasks stay in `tasks.md`). Has a `Status:` line. |
-| `first-look.md` | A spike's fast first answer (question mode) or first read of a log (log mode), written before the deep work. Loom shows it on the card. |
+| `first-look.md` | A spike's fast first answer (question mode) or first read of a log (log mode), written before the deep work. Builds shows it on the card. |
 | `findings.md` | Spike results, with `### For business`, `### For engineering` and `### For leadership` blocks. `brief.html` next to it is the shareable export (`Export-Brief.ps1`); never edit it, re-export instead. |
 | `paused.md` | Where a paused item stands and how to pick it up. Has a `Status:` line (`PAUSED` or `RESUMED`). |
 | `tests/` | Regression suite results, `results-<name>.json` (`before` at `/start`, `after` at `/review` and `/pr`), written only by `Test-Suite.ps1`. |
@@ -32,7 +32,7 @@ Each work item has a folder `.work/<id>-<name>/`. Find it by listing `.work/` an
 
 Other `.work` folders are described by the commands that write them: `scope-<name>/` (`/scope`, `/slice`, `/backlog`), `pr-<id>/` (`/pr-review`), `triage-`, `shape-` and `refine-` folders, `_retro/` (`/retro --since`) and `runway.md` (`/shutdown`). `.work/observations.md` holds what agents noticed out of scope (core rule 5); only `Add-Observation.ps1` writes it. `.work/gaps.md` holds knowledge an agent was missing (core rule 3); only `Add-Gap.ps1` and `Close-Gap.ps1` write it. `.work/factory.json` holds the factory settings below; Workshop writes it, never edit it.
 
-**Where the work happens.** A repo row in `repos.md` may have a **Path** (a git worktree, `.worktrees/<work folder>/<repo>`), made by `/start` when the repo folder was busy. When it has one, every git, build, test and file command for that repo runs in its Path, not in the repo folder: wherever a command says `git -C <repo>` or a file in `<repo>`, use the Path. Read the repo guide from the repo folder (`AGENTS.local.md` is not committed, so the worktree may not have it). A worktree shares the repo's branches, so the branch exists in both. A shared repo that other repos use by relative path is still read from its main folder. Empty or no Path column: the repo folder. `.work/_dashboard/` belongs to Loom: never edit it and never read it for pipeline state.
+**Where the work happens.** A repo row in `repos.md` may have a **Path** (a git worktree, `.worktrees/<work folder>/<repo>`), made by `/start` when the repo folder was busy. When it has one, every git, build, test and file command for that repo runs in its Path, not in the repo folder: wherever a command says `git -C <repo>` or a file in `<repo>`, use the Path. Read the repo guide from the repo folder (`AGENTS.local.md` is not committed, so the worktree may not have it). A worktree shares the repo's branches, so the branch exists in both. A shared repo that other repos use by relative path is still read from its main folder. Empty or no Path column: the repo folder. `.work/_dashboard/` belongs to Builds: never edit it and never read it for pipeline state.
 
 **Gates.** A file with `Status: APPROVED` was approved by the engineer. The feature lane has one gate: `/spec` drafts `spec.md`, `plan.md` and `tasks.md`, and one `/approve` approves `spec.md` and `plan.md` together. The engineer approves by running `/approve <id>` (specs, plans, bug analyses, quick plans), `/approve scope-<name>` (stories, milestones) or `/publish <folder>` (finished documents such as a TSD), or by editing the line. Only those two commands may change a Status line to `APPROVED`, and only when the engineer runs them. In every other command, you never do. The one exception is review by exception for the quick lane: `/approve <id> quick auto`, which Workshop's autopilot runs only when its Quick change hands-off setting is on, approves `quick.md` only when it is clean and otherwise leaves it for the engineer. After the plan gate, a build runs on its own up to the PR text (tasks, review, fix tasks, UI checks, `pr.md`); the engineer's second and last gate is publishing the PR from Workshop. A gate file also has a `Draft-hash:` line under `Status:`, written by `Set-DraftHash.ps1` when a command finishes the draft; never write or change that line yourself.
 
@@ -96,11 +96,11 @@ Autopilot runs `/start <id> feature auto`, `/spec <id> auto`, then `/approve <id
 
 ## Where a build is (step.md)
 
-`/do-task` and `/review` record the station a build is at in `step.md` with `scripts/work/Set-Step.ps1`: one line, `- Step: <build | test | ui | review | fix> | <ISO time>`, replaced each time. Workshop's Loom puts the item at that station on its floor. Never write it by hand; nothing else reads it.
+`/do-task` and `/review` record the station a build is at in `step.md` with `scripts/work/Set-Step.ps1`: one line, `- Step: <build | test | ui | review | fix> | <ISO time>`, replaced each time. Workshop's Builds puts the item at that station on its floor. Never write it by hand; nothing else reads it.
 
 ## Onboarding a product
 
-`/onboard-product <product>` gets a product ready for its first build without asking anything: it drafts missing repo guides, drafts the product note, logs what it could not find as gaps (Teach), and creates a trial run, a local Quick change with `- Trial: <product>` that adds one test. It records each step in `.work/_onboarding/<product>.md` with `scripts/work/Set-Onboarding.ps1` (`- Scan:`, `- Trial:`, `- Live:`). Workshop's Loom shows the steps; the product is live when its trial run reaches Ready to publish.
+`/onboard-product <product>` gets a product ready for its first build without asking anything: it drafts missing repo guides, drafts the product note, logs what it could not find as gaps (Teach), and creates a trial run, a local Quick change with `- Trial: <product>` that adds one test. It records each step in `.work/_onboarding/<product>.md` with `scripts/work/Set-Onboarding.ps1` (`- Scan:`, `- Trial:`, `- Live:`). Workshop's Builds shows the steps; the product is live when its trial run reaches Ready to publish.
 
 ## Backfilled regression tests
 

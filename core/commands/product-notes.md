@@ -22,7 +22,7 @@ The product is the word after `add` (quote it if it has spaces); the fact is eve
    - A fact about one codebase (a command, a pattern, a file): not a note fact. Suggest `/memory <repo> <rule>` and stop.
 3. Write the fact as one short line in the engineer's words. Replace "this" or "that" with the concrete thing. Never save secrets, tokens, passwords, connection strings or personal data: if the fact holds any, stop and say why. Pick the section: `Business rules`, `Gotchas`, `Who to ask`, `Decisions`, or `Remembered` when unsure (handbook: its section for the subject). If a line in the note already says the same thing, say so and stop. If one covers the subject differently, show it and ask: "Replace this line, keep both, or cancel?" Wait. Skip asking when `/retro` sent the fact: the engineer already picked and worded it.
 4. Run `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/notes/Set-ProductNote.ps1" -Product "<product>" -Section <section> -Line "<fact>" -Source "the engineer"`, with `-Replace "<text of the old line>"` if they chose to replace it.
-5. Reply with what the script printed, and: "It shows as Changed by Tandem in Folio until you mark it reviewed. To undo, restore the earlier version from History in Folio." Stop.
+5. Reply with what the script printed, and: "It shows as Changed by Tandem in Notes until you mark it reviewed. To undo, restore the earlier version from History in Notes." Stop.
 
 ## List
 
@@ -69,7 +69,7 @@ Reply with:
 - Each product note changed, with the lines added.
 - Each repo guide changed, with the lines removed.
 - Any line not moved and why.
-- "The notes show as Changed by Tandem in Folio until you mark them reviewed. History in Folio has every earlier version."
+- "The notes show as Changed by Tandem in Notes until you mark them reviewed. History in Notes has every earlier version."
 
 ## Draft
 
@@ -79,4 +79,4 @@ Started from Workshop (Settings, Knowledge, Products, **Draft from sources**) or
 2. Read only these, for the repos it lists: each repo's `README.md`, its `docs/` folder (Markdown files, at most 10), files with `architecture`, `adr` or `decision` in the name, and the product docs folder if it names one. Do not read code beyond what a doc points to.
 3. Collect facts the note does not have yet, by its sections: `Summary` (at most 2 lines: what the product is and who uses it), `Business rules`, `Gotchas`, `Decisions` (with the ADR or doc that says why), `Links` (doc paths). Only facts a doc states; never guesses, plans or to-dos; never owners or people. Skip anything already in the note, and anything about one codebase (that belongs in the repo guide).
 4. Write at most 15 lines, each with `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/notes/Set-ProductNote.ps1" -Product "<product>" -Section <section> -Line "<fact>" -Source "<doc path>"` (add `-Create` to the first call if there is no note yet). If a doc contradicts a line in the note, flag that line (`-Flag`, see `{{ENG_HOME}}/guides/product-notes.md`) instead of replacing it.
-5. Reply with each line added (section, line, source), each line flagged, and: "Review them in Folio: the note shows as Changed by Tandem, with the new lines highlighted."
+5. Reply with each line added (section, line, source), each line flagged, and: "Review them in Notes: the note shows as Changed by Tandem, with the new lines highlighted."

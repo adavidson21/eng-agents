@@ -3,7 +3,7 @@ description: "Get a product ready for its first build: scan its repos, draft its
 agent: investigator
 ---
 
-Onboard the product **$ARGUMENTS** so Tandem can build for it. Workshop's Loom shows each step as the product's new line lights up: Add, Scan, Fill the gaps, Trial run, Live.
+Onboard the product **$ARGUMENTS** so Tandem can build for it. Workshop's Builds shows each step as the product's new line lights up: Add, Scan, Fill the gaps, Trial run, Live.
 
 Ask nothing in this command. What you cannot find out becomes a gap (core rule 3), answered once in Workshop's Teach cards.
 
@@ -56,7 +56,7 @@ The trial run proves that build, tests and worktrees work for this product befor
 {{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/work/Set-Onboarding.ps1" -WorkRoot ".work" -Product "$ARGUMENTS" -Step trial -Value "<local id>"
 ```
 
-Workshop builds the trial run as a hands-off Quick change. When it reaches Ready to publish, the product is live on Loom's floor.
+Workshop builds the trial run as a hands-off Quick change. When it reaches Ready to publish, the product is live on Builds' floor.
 
 ## Step 5: Report
 

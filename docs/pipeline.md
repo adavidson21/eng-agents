@@ -23,17 +23,17 @@ The main flows are in the [README](../README.md#daily-use). Everything else:
 
 | Work | Run |
 |---|---|
-| Shape an idea with you first | `/shape <idea>` (or `/shape triage-<name>` after a triage): rounds of up to 5 questions in `.work/shape-<name>/questions.md`, a running `understanding.md`, then `brief.md`. Answer in Slate (or `answers.md`) and run `/shape shape-<name>` again; `/shape shape-<name> brief` writes the brief now. Then `/scope shape-<name>` or `/refine shape-<name>`. |
-| Triage a request before work starts | `/triage <ADO id> [note]` or `/triage <the request in words>`: writes `.work/triage-<id>/triage.md` with a summary, what it touches, questions for the requester, a size, a suggested route (delegate or do it yourself) and a suggested path (interview, brief or decline). Never posts. Then `/shape triage-<name>` (interview) or `/shape triage-<name> brief` (skip to the brief). Loom in Workshop runs it from a button. |
-| Define one story or bug | `/refine <title>` → `/approve refine-<name>`. Writes `refine.md` with a description and Gherkin acceptance criteria, ready to publish (Slate publishes it to ADO). For anything epic-sized, use `/scope`. |
+| Shape an idea with you first | `/shape <idea>` (or `/shape triage-<name>` after a triage): rounds of up to 5 questions in `.work/shape-<name>/questions.md`, a running `understanding.md`, then `brief.md`. Answer in Builds (or `answers.md`) and run `/shape shape-<name>` again; `/shape shape-<name> brief` writes the brief now. Then `/scope shape-<name>` or `/refine shape-<name>`. |
+| Triage a request before work starts | `/triage <ADO id> [note]` or `/triage <the request in words>`: writes `.work/triage-<id>/triage.md` with a summary, what it touches, questions for the requester, a size, a suggested route (delegate or do it yourself) and a suggested path (interview, brief or decline). Never posts. Then `/shape triage-<name>` (interview) or `/shape triage-<name> brief` (skip to the brief). Builds in Workshop runs it from a button. |
+| Define one story or bug | `/refine <title>` → `/approve refine-<name>`. Writes `refine.md` with a description and Gherkin acceptance criteria, ready to publish (Builds publishes it to ADO). For anything epic-sized, use `/scope`. |
 | Hand work to a teammate | `/handoff <ADO id> <name>`: a brief with context, acceptance criteria, where to start and what to watch. Posts nothing. |
-| An error log: probable root cause, why, and a fix | Paste it on Fix a bug in Loom (**Error log**), or put it in `.work/spike-log-<name>/log.md` and run `/spike spike-log-<name> --log`. It checks the configuration before the code and prefers a fix that changes no code. Changes nothing. |
-| First pass on a teammate's PR | `/pr-review <PR link>` (or **PR reviews** in Loom). Drafts comments in `.work/pr-<id>/review.md`; you post the ones you agree with. Never checks out the PR or posts anything. |
-| Ask or capture from Workshop | Type in the hub in Workshop's Loom (Chat tab). It runs `/hub <request>`: captures become proposals you accept, questions are answered from your repo map, repo guides and code, with sources. It writes nothing but its own two files and never changes ADO or git. |
+| An error log: probable root cause, why, and a fix | Paste it on Fix a bug in Builds (**Error log**), or put it in `.work/spike-log-<name>/log.md` and run `/spike spike-log-<name> --log`. It checks the configuration before the code and prefers a fix that changes no code. Changes nothing. |
+| First pass on a teammate's PR | `/pr-review <PR link>` (or **PR reviews** in Builds). Drafts comments in `.work/pr-<id>/review.md`; you post the ones you agree with. Never checks out the PR or posts anything. |
+| Ask or capture from Workshop | Type in the hub in Workshop's Builds (Chat tab). It runs `/hub <request>`: captures become proposals you accept, questions are answered from your repo map, repo guides and code, with sources. It writes nothing but its own two files and never changes ADO or git. |
 | Prep a 1:1 | **Draft talking points** in Workshop's 1:1s app runs `/one-on-one <packet>`. It drafts wins, follow-ups, blockers, growth topics and 3 questions from the app's packet; it never rates or judges anyone. |
 | Technical spec with diagrams | `/tsd <product or repo> [repo ...]` → new session → `/check-docs .work/tsd-<name>/tsd.md` → revise → `/publish tsd-<name>` |
-| Drive it from the browser | Loom in [Workshop](https://github.com/adavidson21/workshop): it runs each step in opencode (see [Dashboard](#dashboard)) |
-| Hands-off build after the plan | Loom: **Approve and build**. It runs tasks, review, and PR text, each step in a new session, and stops only when it needs you (see [Autopilot](#autopilot)) |
+| Drive it from the browser | Builds in [Workshop](https://github.com/adavidson21/workshop): it runs each step in opencode (see [Dashboard](#dashboard)) |
+| Hands-off build after the plan | Builds: **Approve and build**. It runs tasks, review, and PR text, each step in a new session, and stops only when it needs you (see [Autopilot](#autopilot)) |
 | Is the pipeline helping? | `/stats [--since yyyy-MM-dd]`: days to PR, review rounds, rework, and which gates you approve as written (see [Measuring the pipeline](#measuring-the-pipeline)) |
 | Learn from an item | `/retro <id>` after review: what caused rework and up to 5 rules; tick the ones to save. `/retro --since <date>` finds mistakes that repeat across items. |
 | Standup update | `/standup [days back]` (default 1, or 3 on a Monday) |
@@ -123,20 +123,20 @@ Bug lane rules:
 
 ## Flow cards
 
-Workshop's Loom starts and finishes work from **flow cards** (Loom 4.10.0). Each card is one of the flows below, and each step is a command here. A step marked *you* stops for you; a *fork* ends with path cards to pick from. Loom shows every stop in its Inbox.
+Workshop's Builds starts and finishes work from **flow cards** (Builds 4.10.0). Each card is one of the flows below, and each step is a command here. A step marked *you* stops for you; a *fork* ends with path cards to pick from. Builds shows every stop in its Inbox.
 
 | Card | Steps | Commands |
 |---|---|---|
 | Handle a request | Triage (you, fork: interview, skip to the brief, decline), Interview (you), Brief (you, fork: build it, fix it, investigate, hand to a person, decline) | `/triage` (its `Path:` line suggests the fork), `/shape triage-<name>` or `/shape triage-<name> brief`, then `/refine` or `/scope` from the brief |
 | Build a feature | Spec and plan (you), Build, Review (you only on blockers), Ship (you) | `/start`, `/spec`, `/approve`, `/do-task`, `/review`, `/pr`; you push, open the PR and resolve the item. **Small change** is the quick lane. |
 | Fix a bug | Root cause (you, with a repro), Fix, Review (you only on blockers), Ship (you) | `/start <id> bug`, `/bug` (reproduces it first; High confidence needs a repro), then as above |
-| Fix a bug, from an error log | Diagnose, Diagnosis (you, fork: apply the change, fix it in code, investigate more, save as note, close) | `/spike spike-log-<name> --log` (Loom writes `log.md`, secrets masked): probable root cause, why, and a solution, configuration first (`Fix type:` Configuration, Data, Infrastructure or Code). Changes nothing. |
+| Fix a bug, from an error log | Diagnose, Diagnosis (you, fork: apply the change, fix it in code, investigate more, save as note, close) | `/spike spike-log-<name> --log` (Builds writes `log.md`, secrets masked): probable root cause, why, and a solution, configuration first (`Fix type:` Configuration, Data, Infrastructure or Code). Changes nothing. |
 | Investigate | Investigate, Findings (you, fork: build it, fix it, write it up, save as note, close) | `/spike <question> [--timebox 1h\|2h\|4h\|1d]` |
 | Plan an epic | Scope, Stories (you), Slice, Milestones (you), Create in ADO (you) | `/scope`, `/approve`, `/slice`, `/approve <folder> milestones`, `/backlog <folder> ado` |
-| Hand to a person | Define (you), Assign (you), With them, Resolve (you) | `/refine`, `/approve`, `/handoff`; Loom assigns in ADO and nudges you after 3 working days with no movement |
-| Write docs | Draft, Read draft (you), Fact-check, Final read (you), Save (you, fork: the repo or Folio) | `/docs` (its `sources.md` starts with `Doc: <path>`), `/check-docs`, `/publish docs-<name>`. Type **Technical spec**: `/tsd`, `/check-docs`, `/publish tsd-<name>` |
+| Hand to a person | Define (you), Assign (you), With them, Resolve (you) | `/refine`, `/approve`, `/handoff`; Builds assigns in ADO and nudges you after 3 working days with no movement |
+| Write docs | Draft, Read draft (you), Fact-check, Final read (you), Save (you, fork: the repo or Notes) | `/docs` (its `sources.md` starts with `Doc: <path>`), `/check-docs`, `/publish docs-<name>`. Type **Technical spec**: `/tsd`, `/check-docs`, `/publish tsd-<name>` |
 
-Review stops for you only when it finds blockers it cannot turn into fix tasks (autopilot's rule, [Autopilot](#autopilot)). Loom marks a spike closed with `closed.md` and a doc saved to Folio with `saved.md`; Workshop's docs/work-format.md has the rules.
+Review stops for you only when it finds blockers it cannot turn into fix tasks (autopilot's rule, [Autopilot](#autopilot)). Builds marks a spike closed with `closed.md` and a doc saved to Notes with `saved.md`; Workshop's docs/work-format.md has the rules.
 
 ## Quick lane
 
@@ -338,9 +338,9 @@ The PAT needs **Code (Read)** and **Work Items (Read)**. The repo must be cloned
 
 ## Prepping a 1:1
 
-`/one-on-one <path to packet.md>` (agent: **people-prep**) drafts talking points for a 1:1 with someone on your team. You normally run it from the 1:1s tab in Workshop's Rapport (**Draft talking points**), which writes the packet and reads the draft back.
+`/one-on-one <path to packet.md>` (agent: **people-prep**) drafts talking points for a 1:1 with someone on your team. You normally run it from the 1:1s tab in Workshop's People (**Draft talking points**), which writes the packet and reads the draft back.
 
-1. Rapport gathers what Docket, its own receipts and notes, and Slate (work delegated to the person) know about the person since your last 1:1 and saves it as `packet.md` in Workshop's working folder (`<dataDir>/.scratch/opencode/oneonones/<person>-<date>/`, removed 7 days after it last changed; `~/.workshop/data/_connectors/opencode/oneonones/` before Workshop's opencode connector 1.18.0). It leaves out the person's name, and concerns from receipts unless you ask for them on that run. Nothing goes in the workspace or `.work`.
+1. People gathers what Tasks, its own receipts and notes, and Builds (work delegated to the person) know about the person since your last 1:1 and saves it as `packet.md` in Workshop's working folder (`<dataDir>/.scratch/opencode/oneonones/<person>-<date>/`, removed 7 days after it last changed; `~/.workshop/data/_connectors/opencode/oneonones/` before Workshop's opencode connector 1.18.0). It leaves out the person's name, and concerns from receipts unless you ask for them on that run. Nothing goes in the workspace or `.work`.
 2. The agent reads only that file and writes `draft.md` next to it from `templates/one-on-one.md`: wins to recognize, follow-ups from last time, blockers to ask about, growth topics, and 3 questions to ask.
 
 **It drafts only.** It never rates, ranks or judges the person, and it never adds facts that are not in the packet. It can edit nothing but that `draft.md`, runs no shell commands except listing the packet's folder, and makes no web requests.
@@ -349,8 +349,8 @@ The PAT needs **Code (Read)** and **Work Items (Read)**. The repo must be cloned
 
 `/hub <path to request.md>` (agent: **hub**) handles one message typed into the hub on Workshop's Dispatch page. You normally never type it: Dispatch writes the request and reads the result.
 
-1. Dispatch saves your message, with today's date, your people directory (people and groups, with ids and @handles) and your Docket list names and your team's ADO area paths (the `Team areas` section), as `request.md` in Workshop's working folder (`<dataDir>/.scratch/opencode/hub/<id>/`, removed 7 days after it last changed; `~/.workshop/data/_connectors/opencode/hub/` before connector 1.18.0). Nothing goes in the workspace or `.work`.
-2. The agent writes `route.json` next to it: captures (Docket tasks, receipts, notes) that you accept in Dispatch, with people and groups named by their directory ids, a question, an app to open, a suggested action, or a clarifying question such as which product you mean.
+1. Dispatch saves your message, with today's date, your people directory (people and groups, with ids and @handles) and your Tasks list names and your team's ADO area paths (the `Team areas` section), as `request.md` in Workshop's working folder (`<dataDir>/.scratch/opencode/hub/<id>/`, removed 7 days after it last changed; `~/.workshop/data/_connectors/opencode/hub/` before connector 1.18.0). Nothing goes in the workspace or `.work`.
+2. The agent writes `route.json` next to it: captures (tasks in Tasks, receipts, notes) that you accept in Dispatch, with people and groups named by their directory ids, a question, an app to open, a suggested action, or a clarifying question such as which product you mean.
 3. For a question it goes on to answer. It finds the product in the repo map (Products, "Also called", Glossary), reads that repo's guide, confirms in the code, and writes `answer.md`: the answer first, then Confirmed lines with file and line, Suspected lines, and a confidence. "Where was I" questions read `.work/runway.md` and the item's files.
 
 **It changes nothing.** It can write only those two files, runs only read-only commands, makes no web requests, and never assigns, creates or changes anything in Azure DevOps or git. A suggested action (for example a spike) is a button you click in Dispatch, with its own confirm. The session shows in Dispatch, so you can follow it or reply.
@@ -371,12 +371,12 @@ The repo map is what makes "what version of .NET is the portal on" work: keep ea
 
 - A worktree shares the repo's branches and commits: you can push, diff and review the branch from the repo folder too.
 - Two items on the same repo can now build at once (Workshop's autopilot runs up to 5, 2 by default). Since Core 4.9.0 every build gets its own worktree by default (factory `worktrees: always`), so builds never share a folder.
-- Workshop's Loom removes an item's worktrees when you remove the item (`git worktree remove`, never forced; one with uncommitted changes is kept). By hand: `git -C <repo> worktree remove .worktrees/<folder>/<repo>` from the workspace root.
+- Workshop's Builds removes an item's worktrees when you remove the item (`git worktree remove`, never forced; one with uncommitted changes is kept). By hand: `git -C <repo> worktree remove .worktrees/<folder>/<repo>` from the workspace root.
 - Dot folders are never listed as repos, so `.worktrees` does not show up in the repo list.
 
 ## Observations
 
-Agents log what they notice out of scope (a bug next door, debt, missing docs or tests, an idea) with `Add-Observation.ps1` into `.work/observations.md`, at most 3 per command, and keep going without asking (core rule 5). Workshop's Loom shows them in its Inbox under **Noticed**: start one as a Quick change, send it to Docket, or dismiss it.
+Agents log what they notice out of scope (a bug next door, debt, missing docs or tests, an idea) with `Add-Observation.ps1` into `.work/observations.md`, at most 3 per command, and keep going without asking (core rule 5). Workshop's Builds shows them in its Inbox under **Noticed**: start one as a Quick change, send it to Tasks, or dismiss it.
 
 ## Review by exception (quick lane)
 
@@ -391,7 +391,7 @@ With Workshop, you touch a work item twice: you **approve the plan** and you **p
 - **Catch up with the base.** `/review` and `/pr` rebase each branch on its base. A conflict becomes a fix task at review, or a stop at `/pr`.
 - **UI checks.** Fill the repo guide's `## UI checks` table (start command, URL, pages, UI file patterns). `/start` screenshots the pages before the work, `/review` after it, with `Test-Ui.ps1` (Playwright, headless). Problems (load errors, console errors, failed requests, new accessibility problems) are Blockers; pages that changed are listed for you. No table, no Playwright or an app that cannot start locally: skipped, never a stop.
 - **Knowledge gaps.** An agent missing a fact logs it with `Add-Gap.ps1` and keeps going on a safe assumption. Workshop shows it as a Teach card; your answer runs `/teach G<n> <answer>`, which writes it to the product note, handbook or repo guide and closes the gap.
-- **Run retro.** `/pr` runs `Find-Repeats.ps1`: a review finding or a gap that comes back in 3 items becomes one suggestion in Folio's review list.
+- **Run retro.** `/pr` runs `Find-Repeats.ps1`: a review finding or a gap that comes back in 3 items becomes one suggestion in Notes' review list.
 
 ## End of day
 
@@ -479,9 +479,9 @@ Agents learn a repo from three places, read in this order:
 
 Plus **global memory** in `%USERPROFILE%\.config\eng-agents\memory.md` (`/memory -global <rule>`), loaded in every session. The repo guide wins over a team guide, and repo memory wins over global memory.
 
-**Knowledge** (Core 4.7.0, Workshop `docs/knowledge.md`): Workshop keeps products, the glossary and owners in Settings, product notes and the team handbook in Folio, and writes the repo map from them. Agents read all of it for one product with `scripts/notes/Get-Knowledge.ps1 -Product <name>`.
+**Knowledge** (Core 4.7.0, Workshop `docs/knowledge.md`): Workshop keeps products, the glossary and owners in Settings, product notes and the team handbook in Notes, and writes the repo map from them. Agents read all of it for one product with `scripts/notes/Get-Knowledge.ps1 -Product <name>`.
 
-**Product notes** hold what the code cannot tell agents about a product (business rules, gotchas, who to ask, decisions): one note per product in Workshop's Folio app, `<Workshop data folder>/folio/products/<product>.md` (`notes/products/` before Workshop renamed the folder). Agents read the note of each product the work touches (`scripts/notes/Get-ProductNote.ps1`) and add facts they confirm (`scripts/notes/Set-ProductNote.ps1`: one line at a time, with its date and source, keeping the earlier version in Notes' History). Notes marks a note **Changed by Tandem** until you click **Mark reviewed**. A fact that would still be true if the code were rewritten goes in the product note; a fact about one codebase stays in that repo guide. `/product-notes add <product> <fact>` saves one yourself, `/onboard-repo` starts a missing note, and `/product-notes move` moves product facts out of repo guides. Without Workshop, or with Notes switched off, agents skip product notes.
+**Product notes** hold what the code cannot tell agents about a product (business rules, gotchas, who to ask, decisions): one note per product in Workshop's Notes app, `<Workshop data folder>/notes/products/<product>.md` (`folio/products/` before Workshop renamed the folder). Agents read the note of each product the work touches (`scripts/notes/Get-ProductNote.ps1`) and add facts they confirm (`scripts/notes/Set-ProductNote.ps1`: one line at a time, with its date and source, keeping the earlier version in Notes' History). Notes marks a note **Changed by Tandem** until you click **Mark reviewed**. A fact that would still be true if the code were rewritten goes in the product note; a fact about one codebase stays in that repo guide. `/product-notes add <product> <fact>` saves one yourself, `/onboard-repo` starts a missing note, and `/product-notes move` moves product facts out of repo guides. Without Workshop, or with Notes switched off, agents skip product notes.
 
 - `/memory <rule>` uses the repo you are working in, or asks. `/memory <repo> <rule>` names it. `/memory -list` shows everything saved.
 - It checks for a duplicate or contradicting line first, and offers to fix a wrong command or path in the repo guide instead of adding a memory line.
@@ -508,7 +508,7 @@ Plus **global memory** in `%USERPROFILE%\.config\eng-agents\memory.md` (`/memory
 
 It reads the `- Stats:` lines commands add to `progress.md` (Core 2.22.0+), the `Status:` and verdict lines, and `tasks.md`. Older items still show, with `n/a` where the data was never written. `-AsJson` prints the same data for Workshop's Dispatch.
 
-Workshop shows the same numbers in Loom's **Health > Tandem**, with repeating review findings, your latest eval results and setup checks (Workshop's `docs/tandem-health.md`). Workshop computes them with its own port of these scripts; `Test-HealthFormat.ps1` (in CI) checks both read Workshop's example workspace the same way.
+Workshop shows the same numbers in Builds' **Health > Tandem**, with repeating review findings, your latest eval results and setup checks (Workshop's `docs/tandem-health.md`). Workshop computes them with its own port of these scripts; `Test-HealthFormat.ps1` (in CI) checks both read Workshop's example workspace the same way.
 
 Read it after about 10 items. A gate approved as written almost every time, with no rise in review problems, is a candidate for the small lane or for merging. A rising second-review rate means problems are found late.
 

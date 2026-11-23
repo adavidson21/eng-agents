@@ -5,7 +5,7 @@ agent: writer
 
 Turn the code review comments on work item **$1** into fix tasks and answers. Mode: **$2**
 
-Workshop runs this when the engineer clicks **Send back** in Loom's code review. If the mode above is `auto`, autopilot runs it and nobody is watching: ask nothing. Do not change any code: the fix tasks you write here are built next by `/do-task`, then `/review` and `/pr` run again.
+Workshop runs this when the engineer clicks **Send back** in Builds' code review. If the mode above is `auto`, autopilot runs it and nobody is watching: ask nothing. Do not change any code: the fix tasks you write here are built next by `/do-task`, then `/review` and `/pr` run again.
 
 ## Step 1: Find the comments
 
@@ -79,7 +79,7 @@ For each comment with `rule: true`, the engineer wants it remembered for this re
 1. Write it as one short instruction in the engineer's words (for example `Return 404, not 400, when an order is missing.`). Never save secrets or personal data.
 2. The repo guide is `<repo>/AGENTS.local.md` if it exists. Otherwise `<repo>/AGENTS.md`, but only when `git -C <repo> ls-files AGENTS.md` prints nothing; if it prints `AGENTS.md`, the file is committed and belongs to the team: do not write it, and note `Not saved: <repo>/AGENTS.md is committed` under "Rules".
 3. Skip it if a line in the guide's `## Remembered` section already says the same thing. Otherwise add `- <rule> (<yyyy-mm-dd>)` as the last line of that section (add the section at the end of the file if there is none). Change nothing else.
-4. Log it for review in Folio: `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/notes/Set-ProductNote.ps1" -Note tandem/changes.md -Line "<repo> repo guide, Remembered: <rule>" -Source "/revise"`. If it says notes are not available, skip it.
+4. Log it for review in Notes: `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/notes/Set-ProductNote.ps1" -Note tandem/changes.md -Line "<repo> repo guide, Remembered: <rule>" -Source "/revise"`. If it says notes are not available, skip it.
 
 List each rule and where it went under "Rules".
 

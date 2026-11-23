@@ -3,7 +3,7 @@
     Records a step of a product's onboarding (/onboard-product, Core 4.10.0) in .work/_onboarding/<product>.md.
 
 .DESCRIPTION
-    One small file per product. Workshop's Loom reads it to light up the steps of the product's new line:
+    One small file per product. Workshop's Builds reads it to light up the steps of the product's new line:
     Add (Workshop), Scan, Fill the gaps (open gaps for the product in .work/gaps.md), Trial run, Live.
     Lines, each replaced (never repeated) when the step runs again:
 

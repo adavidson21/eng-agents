@@ -73,7 +73,7 @@ Read the whole memory file.
 - Change nothing else in the file, except a line the engineer told you to replace in Step 4.
 - If `## Remembered` now has more than 20 lines, tell the engineer and suggest merging or deleting old ones.
 
-Then log the change for review in Folio (see `{{ENG_HOME}}/guides/product-notes.md`, last part): `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/notes/Set-ProductNote.ps1" -Note tandem/changes.md -Line "<repo> repo guide, Remembered: <rule>" -Source "/memory"` (global: `global rules: <rule>`). If it says notes are not available, skip it.
+Then log the change for review in Notes (see `{{ENG_HOME}}/guides/product-notes.md`, last part): `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/notes/Set-ProductNote.ps1" -Note tandem/changes.md -Line "<repo> repo guide, Remembered: <rule>" -Source "/memory"` (global: `global rules: <rule>`). If it says notes are not available, skip it.
 
 ## Step 6: Confirm
 

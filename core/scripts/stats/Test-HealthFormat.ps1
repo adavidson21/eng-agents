@@ -3,7 +3,7 @@
     Checks Get-PipelineStats.ps1 and Get-ReviewFindings.ps1 against Workshop's Tandem health contract.
 
 .DESCRIPTION
-    Workshop's Loom shows Tandem health (Health > Tandem) from its own port of these two scripts
+    Workshop's Builds shows Tandem health (Health > Tandem) from its own port of these two scripts
     (connectors/opencode/lib/tandem-health.mjs). The two meet at Workshop's docs/tandem-health.md, with the
     synthetic example workspace docs/examples/work/ and what both must read from it, expected-health.json.
     This script copies that example into a temp folder (every file with the same modification time),
@@ -24,7 +24,7 @@ $ErrorActionPreference = 'Stop'
 
 $example = Join-Path $Workshop 'docs/examples/work'
 $expectedFile = Join-Path $example 'expected-health.json'
-if (-not (Test-Path -LiteralPath $expectedFile)) { throw "No $expectedFile. Is $Workshop a Workshop checkout with Tandem health (Loom 4.4.0)?" }
+if (-not (Test-Path -LiteralPath $expectedFile)) { throw "No $expectedFile. Is $Workshop a Workshop checkout with Tandem health (Builds 4.4.0)?" }
 
 # Same JSON text for the same data whatever the key order: sort object keys, keep array order.
 function ConvertTo-Canonical($Value) {

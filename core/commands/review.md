@@ -21,7 +21,7 @@ If the mode above is `auto`, autopilot is running this review and nobody is watc
 
 ## Step 2: Read the rules
 
-Record each station for Workshop's Loom as you reach it: `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/work/Set-Step.ps1" -Folder "<work folder>" -Step <step>`, with `test` at Step 3, `ui` at Step 3b (only when it runs) and `review` at Step 4. If the script fails, go on without it.
+Record each station for Workshop's Builds as you reach it: `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/work/Set-Step.ps1" -Folder "<work folder>" -Step <step>`, with `test` at Step 3, `ui` at Step 3b (only when it runs) and `review` at Step 4. If the script fails, go on without it.
 
 - Read the repo guide (`<repo>/AGENTS.local.md` if it exists, otherwise `<repo>/AGENTS.md`) for every repo in `repos.md`, and the stack files its `Stack:` line names.
 

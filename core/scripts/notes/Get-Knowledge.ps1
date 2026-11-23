@@ -5,7 +5,7 @@
 
 .DESCRIPTION
   Workshop keeps each fact in one place (Workshop docs/knowledge.md): products, the glossary and people in Settings'
-  folder (<Workshop data folder>/settings/*.json), product notes and the team handbook in Folio's folder. This reads
+  folder (<Workshop data folder>/settings/*.json), product notes and the team handbook in Notes' folder. This reads
   them all, read-only, so an agent makes one call instead of reading the repo map block, then the note, then People.
 
   A product is found by name, another name or slug, case ignored. Missing parts are skipped with one line saying so;

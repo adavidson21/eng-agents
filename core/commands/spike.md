@@ -8,16 +8,16 @@ Run a spike on: **$ARGUMENTS**
 ## Step 1: Pick the folder and the lens
 
 - If `--for <lens>` is in the arguments, take it out and remember it as the **default lens** (`business`, `engineering` or `leadership`). Otherwise the default lens is `leadership`.
-- If `--timebox <t>` is in the arguments, take it out and remember it (`1h`, `2h`, `4h` or `1d`; Loom sends it from the Investigate card). It sets how far you dig in Step 3.
-- If `--log` is in the arguments, take it out: this is **log mode**. `$1` is a `spike-` folder that already has `log.md` (Loom writes it when you paste a log on Fix a bug). If the folder or its `log.md` is missing, say so in one line and stop. Follow "Log mode" at the end instead of Steps 2 to 5.
+- If `--timebox <t>` is in the arguments, take it out and remember it (`1h`, `2h`, `4h` or `1d`; Builds sends it from the Investigate card). It sets how far you dig in Step 3.
+- If `--log` is in the arguments, take it out: this is **log mode**. `$1` is a `spike-` folder that already has `log.md` (Builds writes it when you paste a log on Fix a bug). If the folder or its `log.md` is missing, say so in one line and stop. Follow "Log mode" at the end instead of Steps 2 to 5.
 - If `$1` is a work item id (a number, or a local id like `L12`) and a folder in `.work/` starts with `$1-`, use that folder.
-- If `--name <short-name>` is in the arguments (Loom sends it), take it out and remember it.
+- If `--name <short-name>` is in the arguments (Builds sends it), take it out and remember it.
 - Otherwise create a new folder `.work/spike-<short-name>/`, where `<short-name>` is the `--name` value, or else 3 to 5 lowercase words from the topic joined with hyphens.
 
 ## Step 2: First look, then gather, then aim
 
 - Keep the ask in the asker's own words. Vague asks ("how hard would it be to add X?") are normal: write what you understood it to mean and the decision it supports.
-- **First look (fast).** Read the repo map and at most 5 files or docs that the ask points to most directly. Then write `first-look.md` in the folder from `{{ENG_HOME}}/templates/first-look.md` (question mode): a quick answer, a confidence (Low or Medium) and what you will dig into. Do this before anything else in Step 3; Loom shows it on the card right away.
+- **First look (fast).** Read the repo map and at most 5 files or docs that the ask points to most directly. Then write `first-look.md` in the folder from `{{ENG_HOME}}/templates/first-look.md` (question mode): a quick answer, a confidence (Low or Medium) and what you will dig into. Do this before anything else in Step 3; Builds shows it on the card right away.
 - **Gather.** Collect the sources the ask needs (code, git history, docs, work items, product notes) into your list of facts and sources, without writing the answer yet.
 - **Aim.** If the ask is broad (it could be answered for different readers, scopes or depths, and the answer would differ), ask the engineer ONE focus question with 2 to 4 options, your recommendation first, using what you gathered to make the options concrete. Otherwise write your reading as an assumption and go on. Wait if you asked. This is the only question the spike asks.
 
@@ -59,7 +59,7 @@ The engineer pasted an error log and wants three things: the probable root cause
 
 ### L0: First look (fast)
 
-- Read `log.md`. Within the first few minutes, before L2, write `first-look.md` in the folder from `{{ENG_HOME}}/templates/first-look.md` (log mode): product, environment, error, first guess and a confidence (Low or Medium). Match the product from namespaces, hosts and file names against the repo map. Same secrets rule as L1: name things, never copy values. Loom shows it on the card right away.
+- Read `log.md`. Within the first few minutes, before L2, write `first-look.md` in the folder from `{{ENG_HOME}}/templates/first-look.md` (log mode): product, environment, error, first guess and a confidence (Low or Medium). Match the product from namespaces, hosts and file names against the repo map. Same secrets rule as L1: name things, never copy values. Builds shows it on the card right away.
 - Ask the engineer ONE question only when the log cannot tell you something that changes where you look (most often the environment, or what changed just before). Otherwise go on.
 
 ### L1: Read the log
@@ -96,5 +96,5 @@ The engineer pasted an error log and wants three things: the probable root cause
 ### L6: Hand off
 
 - Add a `progress.md` entry for `/spike` (copy `{{ENG_HOME}}/templates/progress.md` first if the folder has none) with a `- Stats: mode=log fix_type=<type> confidence=<level>` line.
-- Reply in 3 lines or fewer: the probable root cause, the fix type and the change, and the next step. For Configuration, Data or Infrastructure: who applies it and where, then close the spike in Loom. For Code: Fix it in Loom (or `/start new bug` with these findings).
+- Reply in 3 lines or fewer: the probable root cause, the fix type and the change, and the next step. For Configuration, Data or Infrastructure: who applies it and where, then close the spike in Builds. For Code: Fix it in Builds (or `/start new bug` with these findings).
 

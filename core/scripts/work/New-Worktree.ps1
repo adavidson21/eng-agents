@@ -14,7 +14,7 @@
 
     The worktree shares the repo's branches and commits, so pushing and diffs work from the
     repo's own folder too. Dot folders are never listed as repos, so .worktrees does not show
-    up as one. Workshop's Loom removes an item's worktrees when you remove the item.
+    up as one. Workshop's Builds removes an item's worktrees when you remove the item.
 
     The LAST line of output is the worktree path relative to the workspace (forward slashes),
     for the Path column of repos.md.

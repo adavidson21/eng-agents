@@ -6,7 +6,7 @@ Format: one `## Core <version> (<date>)` heading per release, newest first, with
 
 ## Core 4.20.0 (2026-11-23)
 
-Fewer moving parts: two commands, one agent and the static dashboard are gone, with nothing lost. Needs Workshop opencode connector 1.39.0 or later, which suggests and runs the new command names.
+Fewer moving parts: two commands, one agent and the static dashboard are gone, with nothing lost. Needs Workshop opencode connector 1.40.0 or later, which suggests and runs the new command names.
 - `/plan` and `/tasks` are folded into `/spec`. `/spec <id>` still drafts spec, plan and tasks for one approval; `/spec <id> plan` and `/spec <id> tasks` redo one part (older items, or after big edits). `progress.md` keeps its `/plan` and `/tasks` entries, so `/stats` reads old and new items the same.
 - The static dashboard is retired: `/dashboard static`, `New-Dashboard.ps1`, its HTML template and `Test-WorkFormat.ps1` are deleted (about 1,900 lines). `/dashboard` opens Loom in Workshop; without Workshop, `/status` shows every item and its next command. `install.ps1` removes the old files from your install.
 - `milestone-architect` is merged into `product-manager`, which now runs `/slice` and `/backlog` too (and may run `Export-Backlog.ps1`; pushing to ADO still asks).

@@ -39,7 +39,7 @@ Open opencode from your workspace root (for example `C:\src\work`). In Workshop,
 | Your code review comments (Send back in Workshop) | `/revise <id>`: each comment becomes a fix task, an answer or a declined note; comments marked as rules are remembered. Workshop runs it, then the build comes back to Publish as the next revision. |
 | A published PR's CI failed, or it conflicts with its base | `/pr-fix <id> ci` or `/pr-fix <id> conflict`: fixes it on the branch (a merge of the base for a conflict) and never pushes. Workshop runs it after Publish and shows **Push fix**. |
 | Remember a rule | `/memory <rule>` (one repo) or `/memory -global <rule>` (every repo). `/memory -list` shows them. |
-| Remember a product fact | `/memory -product <product> <fact>` writes it to the product's note in Workshop's Notes app (`notes/products/<product>.md`), where you review it. Agents read the note when they work on that product and add facts they confirm. `/product-notes move` moves product facts out of repo guides; `/product-notes list` lists the notes. |
+| Remember a product fact | `/product-notes add <product> <fact>` writes it to the product's note in Workshop's Notes app (`notes/products/<product>.md`), where you review it. Agents read the note when they work on that product and add facts they confirm. `/product-notes move` moves product facts out of repo guides; `/product-notes list` lists the notes. |
 | Work item in another ADO collection | `/start <id> <lane> <repo folder or connection>` |
 | Update eng-agents | `.\update.ps1` in your clone (see [Updating](docs/onboarding-company.md#updating)) |
 

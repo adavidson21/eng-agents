@@ -37,7 +37,7 @@ You are working with an engineer who uses a step-by-step pipeline. Each step is 
 
 The engineer saves rules with `/memory`. Follow them like any other rule. One repo's rules are in the `## Remembered` section of its repo guide; rules for every repo are in `{{ENG_CONFIG}}/memory.md` (loaded in every session); product and team facts are in Folio (see Product notes). A repo's `## Remembered` rule wins over a global one.
 
-If the engineer says "remember this", "from now on", or "always do X here", suggest `/memory <rule>` (one repo), `/memory -global <rule>` (every repo) or `/memory -product <product> <fact>` (a product fact; the split rule under Product notes decides which). Do not write memory files yourself unless running `/memory` (or `/retro` saving the rules the engineer ticked).
+If the engineer says "remember this", "from now on", or "always do X here", suggest `/memory <rule>` (one repo), `/memory -global <rule>` (every repo) or `/product-notes add <product> <fact>` (a product fact; the split rule under Product notes decides which). Do not write memory files yourself unless running `/memory` (or `/retro` saving the rules the engineer ticked).
 
 ## Product notes
 

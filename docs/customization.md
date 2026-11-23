@@ -130,7 +130,7 @@ Override an agent by copying its file from `core/agents/` into your layer. Keep 
 | `implementer` | `/do-task`, `/pr-fix` | Code and tests. Repo guides, `CLAUDE.md`, and opencode config ask. | Can commit |
 | `reviewer` | `/review`, `/check-docs` | `.work/` only | Cannot `git add` or `git commit` |
 | `pr-reviewer` | `/pr-review` | `.work/` only | Cannot check out, switch, fetch, stash, `git add`, commit, or push; no web requests. It reads the PR only through `git show` and `git diff` at the PR's commit. |
-| `people-prep` | `/one-on-one` | Only `draft.md` next to the packet it was given | No shell commands except listing the packet's folder; no web requests. No `guards`, like the scoping agents. |
+| `people-prep` | `/one-on-one` | Only `draft.md` next to the packet it was given | No shell commands except listing the packet's folder; no web requests. No `guards`, like `product-manager`. |
 | `hub` | `/hub` | Only `route.json` and `answer.md` next to the request it was given | Only read-only commands: `git log`, `git show`, `git grep`, `git ls-files`, `rg`, listing and reading files; no web requests. No `guards`. |
 | `chat` | Workshop's Loom: hub follow-ups and the Chat tab (no command) | Nothing | Same read-only commands as `hub`; no web requests. No `guards`. |
 | `investigator` | `/bug`, `/spike`, `/triage`, `/onboard-repo`, `/onboard-product`, `/cover`, `/cloudflare` | `.work/`. A repo guide and `.git/info/exclude` ask. | Cannot `git add` or `git commit` |

@@ -1,6 +1,6 @@
 ---
 description: "Slice approved stories into sequenced, code-mapped features and stories (milestones.md). Usage: /slice scope-<name>"
-agent: milestone-architect
+agent: product-manager
 ---
 
 Slice the stories in **.work/$1/** (the `.work/` part is optional). Do not change any code.

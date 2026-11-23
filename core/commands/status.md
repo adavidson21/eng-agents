@@ -50,7 +50,7 @@ Check in this order. The first match wins.
 | `bug.md` is DRAFT | Engineer reviews `bug.md`, then `/approve <id>` |
 | Lane quick, no `quick.md` | `/quick <id>` |
 | `quick.md` is DRAFT | Engineer reviews `quick.md` and `tasks.md`, then `/approve <id>` |
-| No `tasks.md` | `/spec <id> tasks` (bug lane: `/bug <id>`) |
+| No `tasks.md` | `/spec <id> tasks` (bug lane: `/bug <id>`, quick lane: `/quick <id>`) |
 | Unchecked task exists | `/do-task <id> <first unchecked number>` (new session) |
 | No `review.md`, or tasks were added after it | `/review <id>` |
 | Review is CHANGES NEEDED | Accept findings, then `/do-task` the fix tasks |

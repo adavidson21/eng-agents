@@ -37,12 +37,9 @@
     "product-manager": [
       { "kind": "edit", "target": "sample-api/src/Orders/OrderTotals.cs", "expect": "deny" },
       { "kind": "edit", "target": ".work/scope-loyalty/stories.md", "expect": "allow" },
-      { "kind": "edit", "target": ".work/L1-bulk-discount/spec.md", "expect": "deny" }
-    ],
-    "milestone-architect": [
-      { "kind": "edit", "target": "sample-api/src/Orders/OrderTotals.cs", "expect": "deny" },
+      { "kind": "edit", "target": ".work/L1-bulk-discount/spec.md", "expect": "deny" },
       { "kind": "edit", "target": ".work/scope-loyalty/milestones.md", "expect": "allow" },
-      { "kind": "edit", "target": ".work/scope-loyalty/stories.md", "expect": "deny" }
+      { "kind": "bash", "target": "pwsh -File Export-Backlog.ps1 -Push", "expect": "ask" }
     ],
     "people-prep": [
       { "kind": "edit", "target": "sample-api/src/Orders/OrderTotals.cs", "expect": "deny" },

@@ -4,6 +4,11 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 4.18.1 (2026-11-23)
+
+- Removed `scripts/dashboard/New-Dashboard.ps1.orig`, a leftover merge backup that `install.ps1` copied into every install.
+- `docs/customization.md`: the Agents table now lists every command each agent runs (it was missing `/quick`, `/dashboard`, `/stats`, `/pr-fix`, `/onboard-product`, `/cover`, `/cloudflare`, `/revise`, `/teach` and `/product-notes`).
+
 ## Core 4.18.0 (2026-11-23)
 
 Fewer ways for a small local model to trip in Loom's board flows (Workshop opencode connector 1.36.0). Nothing breaks for items in progress, and each change still works with an older Workshop.

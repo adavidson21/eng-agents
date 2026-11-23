@@ -126,17 +126,17 @@ Override an agent by copying its file from `core/agents/` into your layer. Keep 
 
 | Agent | Runs | Can edit | Shell, beyond `guards` |
 |---|---|---|---|
-| `planner` | `/start`, `/spec`, `/plan`, `/tasks`, `/approve`, `/status`, `/standup`, `/pause`, `/resume`, `/shutdown` | `.work/` only | Can commit (WIP commits from `/pause`) |
-| `implementer` | `/do-task` | Code and tests. Repo guides, `CLAUDE.md`, and opencode config ask. | Can commit |
+| `planner` | `/start`, `/spec`, `/quick`, `/plan`, `/tasks`, `/approve`, `/status`, `/dashboard`, `/stats`, `/standup`, `/pause`, `/resume`, `/shutdown` | `.work/` only | Can commit (WIP commits from `/pause`) |
+| `implementer` | `/do-task`, `/pr-fix` | Code and tests. Repo guides, `CLAUDE.md`, and opencode config ask. | Can commit |
 | `reviewer` | `/review`, `/check-docs` | `.work/` only | Cannot `git add` or `git commit` |
 | `pr-reviewer` | `/pr-review` | `.work/` only | Cannot check out, switch, fetch, stash, `git add`, commit, or push; no web requests. It reads the PR only through `git show` and `git diff` at the PR's commit. |
 | `people-prep` | `/one-on-one` | Only `draft.md` next to the packet it was given | No shell commands except listing the packet's folder; no web requests. No `guards`, like the scoping agents. |
 | `hub` | `/hub` | Only `route.json` and `answer.md` next to the request it was given | Only read-only commands: `git log`, `git show`, `git grep`, `git ls-files`, `rg`, listing and reading files; no web requests. No `guards`. |
 | `chat` | Workshop's Loom: hub follow-ups and the Chat tab (no command) | Nothing | Same read-only commands as `hub`; no web requests. No `guards`. |
-| `investigator` | `/bug`, `/spike`, `/triage`, `/onboard-repo` | `.work/`. A repo guide and `.git/info/exclude` ask. | Cannot `git add` or `git commit` |
+| `investigator` | `/bug`, `/spike`, `/triage`, `/onboard-repo`, `/onboard-product`, `/cover`, `/cloudflare` | `.work/`. A repo guide and `.git/info/exclude` ask. | Cannot `git add` or `git commit` |
 | `product-manager` | `/scope`, `/refine`, `/shape` | `.work/scope-*/`, `.work/refine-*/` and `.work/shape-*/` only | Only `git log` |
 | `milestone-architect` | `/slice`, `/backlog` | `milestones.md` and `progress.md` in `.work/scope-*/` | Only `git log` and `Export-Backlog.ps1` (pushing to ADO asks) |
-| `writer` | `/pr`, `/docs`, `/tsd`, `/publish`, `/memory`, `/retro`, `/handoff` | Any `*.md` file, `docs/`, `.work/`, the global memory file. opencode config asks. | Cannot `git add` or `git commit` |
+| `writer` | `/pr`, `/docs`, `/tsd`, `/publish`, `/memory`, `/retro`, `/handoff`, `/revise`, `/teach`, `/product-notes` | Any `*.md` file, `docs/`, `.work/`, the global memory file. opencode config asks. | Cannot `git add` or `git commit` |
 
 Lanes are kept by what each agent can **edit** and **commit**, not by which shell commands it may run. The two scoping agents, `people-prep`, `hub` and `chat` are the exception: they deny every shell command except the few they need, so they do not include `guards`.
 

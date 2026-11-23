@@ -36,7 +36,7 @@ If the repo's row in `repos.md` has a **Path** (a worktree), every git, build, t
 
 ## Step 4: Do the work
 
-- Record the station for Workshop's Loom. The step is `fix` when this task came from `review.md` (a `/review` added it after the tasks `/tasks` wrote), otherwise `build`:
+- Record the station for Workshop's Loom. The step is `fix` when this task came from `review.md` (a `/review` added it after the tasks `/spec` wrote), otherwise `build`:
 
 ```
 {{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/work/Set-Step.ps1" -Folder "<work folder>" -Step <build or fix>

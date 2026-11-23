@@ -1,5 +1,5 @@
 ---
-description: "Move product facts from repo guides' Remembered sections into product notes, list the product notes, or draft one product's note from its docs. Usage: /product-notes [move | list | draft <product>]"
+description: "Save a product fact, list the product notes, move product facts out of repo guides, or draft one product's note from its docs. Usage: /product-notes [add <product> <fact> | list | move | draft <product>]"
 agent: writer
 ---
 
@@ -7,11 +7,26 @@ Product notes: **$ARGUMENTS**
 
 Product notes are explained in the core rules (Product notes) and in `{{ENG_HOME}}/guides/product-notes.md`. This command writes product notes only through `Set-ProductNote.ps1`, and changes repo guides only by removing lines the engineer agreed to move. It changes no code.
 
-If the first word is `list` or there are no arguments, go to "List". If it is `move`, go to "Move". If it is `draft`, go to "Draft". Anything else: reply `Usage: /product-notes [move | list | draft <product>]` and stop.
+If the first word is `add`, go to "Add". If it is `list` or there are no arguments, go to "List". If it is `move`, go to "Move". If it is `draft`, go to "Draft". Anything else: reply `Usage: /product-notes [add <product> <fact> | list | move | draft <product>]` and stop.
+
+## Add
+
+The product is the word after `add` (quote it if it has spaces); the fact is everything after it.
+
+1. Match the product to one in the repo map (Products, "Also called"). If none matches, ask which product. Use its `Note:` line if it has one.
+2. Read what is known: `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/notes/Get-Knowledge.ps1" -Product "<product>"`.
+   - Not available: reply with the reason it printed and stop.
+   - "No product note yet": add `-Create` to the call in step 4.
+   - A fact about how the team works (sprints, PRs, releases, done): it goes in the handbook. Use `-Note team/handbook.md` instead of `-Product` in step 4.
+   - Who owns the product: not a note fact. Reply: "Owners live in Workshop: Settings, People, Owns." Stop.
+   - A fact about one codebase (a command, a pattern, a file): not a note fact. Suggest `/memory <repo> <rule>` and stop.
+3. Write the fact as one short line in the engineer's words. Replace "this" or "that" with the concrete thing. Never save secrets, tokens, passwords, connection strings or personal data: if the fact holds any, stop and say why. Pick the section: `Business rules`, `Gotchas`, `Who to ask`, `Decisions`, or `Remembered` when unsure (handbook: its section for the subject). If a line in the note already says the same thing, say so and stop. If one covers the subject differently, show it and ask: "Replace this line, keep both, or cancel?" Wait. Skip asking when `/retro` sent the fact: the engineer already picked and worded it.
+4. Run `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/notes/Set-ProductNote.ps1" -Product "<product>" -Section <section> -Line "<fact>" -Source "the engineer"`, with `-Replace "<text of the old line>"` if they chose to replace it.
+5. Reply with what the script printed, and: "It shows as Changed by Tandem in Folio until you mark it reviewed. To undo, restore the earlier version from History in Folio." Stop.
 
 ## List
 
-Run `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/notes/Get-ProductNote.ps1" -List` and show what it prints. Then list the products in the repo map that have no note yet, and say: "Run `/onboard-repo <repo>` or `/memory -product <product> <fact>` to start one." Stop.
+Run `{{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/notes/Get-ProductNote.ps1" -List` and show what it prints. Then list the products in the repo map that have no note yet, and say: "Run `/product-notes add <product> <fact>` or `/product-notes draft <product>` to start one." Stop.
 
 ## Move
 

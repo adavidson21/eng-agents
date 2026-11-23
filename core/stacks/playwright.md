@@ -1,6 +1,6 @@
 # Stack: playwright
 
-Read by `/plan`, `/tasks`, `/do-task` and `/review` when a repo guide's `Stack:` line names `playwright`. The repo guide wins where it says more.
+Read by `/spec`, `/quick`, `/do-task` and `/review` when a repo guide's `Stack:` line names `playwright`. The repo guide wins where it says more.
 
 ## Testing
 

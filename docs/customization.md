@@ -126,20 +126,19 @@ Override an agent by copying its file from `core/agents/` into your layer. Keep 
 
 | Agent | Runs | Can edit | Shell, beyond `guards` |
 |---|---|---|---|
-| `planner` | `/start`, `/spec`, `/plan`, `/tasks`, `/approve`, `/status`, `/standup`, `/pause`, `/resume`, `/shutdown` | `.work/` only | Can commit (WIP commits from `/pause`) |
-| `implementer` | `/do-task` | Code and tests. Repo guides, `CLAUDE.md`, and opencode config ask. | Can commit |
+| `planner` | `/start`, `/spec`, `/quick`, `/approve`, `/status`, `/dashboard`, `/stats`, `/standup`, `/pause`, `/resume`, `/shutdown` | `.work/` only | Can commit (WIP commits from `/pause`) |
+| `implementer` | `/do-task`, `/pr-fix` | Code and tests. Repo guides, `CLAUDE.md`, and opencode config ask. | Can commit |
 | `reviewer` | `/review`, `/check-docs` | `.work/` only | Cannot `git add` or `git commit` |
 | `pr-reviewer` | `/pr-review` | `.work/` only | Cannot check out, switch, fetch, stash, `git add`, commit, or push; no web requests. It reads the PR only through `git show` and `git diff` at the PR's commit. |
-| `people-prep` | `/one-on-one` | Only `draft.md` next to the packet it was given | No shell commands except listing the packet's folder; no web requests. No `guards`, like the scoping agents. |
+| `people-prep` | `/one-on-one` | Only `draft.md` next to the packet it was given | No shell commands except listing the packet's folder; no web requests. No `guards`, like `product-manager`. |
 | `hub` | `/hub` | Only `route.json` and `answer.md` next to the request it was given | Only read-only commands: `git log`, `git show`, `git grep`, `git ls-files`, `rg`, listing and reading files; no web requests. No `guards`. |
 | `chat` | Workshop's Loom: hub follow-ups and the Chat tab (no command) | Nothing | Same read-only commands as `hub`; no web requests. No `guards`. |
 | `quick` | Workshop's Chat: Quick answers (no command) | Nothing | No tools at all (`"*": deny`): Workshop looks up the notes and sends them with the question, and the agent answers in one reply. Its short prompt replaces opencode's long one, so a small local model reads about 1,000 characters instead of 12,000. |
-| `investigator` | `/bug`, `/spike`, `/triage`, `/onboard-repo` | `.work/`. A repo guide and `.git/info/exclude` ask. | Cannot `git add` or `git commit` |
-| `product-manager` | `/scope`, `/refine`, `/shape` | `.work/scope-*/`, `.work/refine-*/` and `.work/shape-*/` only | Only `git log` |
-| `milestone-architect` | `/slice`, `/backlog` | `milestones.md` and `progress.md` in `.work/scope-*/` | Only `git log` and `Export-Backlog.ps1` (pushing to ADO asks) |
-| `writer` | `/pr`, `/docs`, `/tsd`, `/publish`, `/memory`, `/retro`, `/handoff` | Any `*.md` file, `docs/`, `.work/`, the global memory file. opencode config asks. | Cannot `git add` or `git commit` |
+| `investigator` | `/bug`, `/spike`, `/triage`, `/onboard-repo`, `/onboard-product`, `/cover`, `/cloudflare` | `.work/`. A repo guide and `.git/info/exclude` ask. | Cannot `git add` or `git commit` |
+| `product-manager` | `/scope`, `/refine`, `/shape`, `/slice`, `/backlog` | `.work/scope-*/`, `.work/refine-*/` and `.work/shape-*/` only | Only `git log` and `Export-Backlog.ps1` (pushing to ADO asks) |
+| `writer` | `/pr`, `/docs`, `/tsd`, `/publish`, `/memory`, `/retro`, `/handoff`, `/revise`, `/teach`, `/product-notes` | Any `*.md` file, `docs/`, `.work/`, the global memory file. opencode config asks. | Cannot `git add` or `git commit` |
 
-Lanes are kept by what each agent can **edit** and **commit**, not by which shell commands it may run. The two scoping agents, `people-prep`, `hub`, `chat` and `quick` are the exception: they deny every shell command except the few they need, so they do not include `guards`.
+Lanes are kept by what each agent can **edit** and **commit**, not by which shell commands it may run. `product-manager`, `people-prep`, `hub`, `chat` and `quick` are the exception: they deny every shell command except the few they need, so they do not include `guards`.
 
 ## Permissions
 
@@ -251,7 +250,7 @@ Open a pull request to eng-agents. Before merging:
 - [ ] It would help **anyone**. No company names, no personal preferences.
 - [ ] Shell permission changes for everyone go in `core/permissions/`. Changes for one agent go in that agent file, after its `{{BASH:guards}}` line.
 - [ ] `Status: DRAFT` lines in the `spec`, `plan`, `bug`, and `tsd` templates, `Status: PAUSED` in `paused`, and `## [ ] Task N:` headings in `tasks` are unchanged.
-- [ ] If you changed the next-command rules in `core/commands/status.md`, `Get-NextStep` in `core/scripts/dashboard/New-Dashboard.ps1` matches them (the static dashboard uses it, and Workshop's copy of it drives Dispatch).
+- [ ] If you changed the next-command rules in `core/commands/status.md`, Workshop's `.work` parser (`connectors/opencode/lib/workparser.mjs`) gets the same change, so Loom suggests the same next step.
 - [ ] Docs that describe the behavior are updated.
 - [ ] The version is bumped in `core/VERSION` (major for breaking changes, minor for features, patch for fixes), with a `## Core <version> (<date>)` entry at the top of `CHANGELOG.md`. `update.ps1` shows these entries.
 - [ ] `pwsh ./install.ps1 -DryRun` runs cleanly.

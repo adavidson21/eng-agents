@@ -38,7 +38,7 @@ If the last argument is `auto`, nobody is watching (an eval or autopilot run): t
 - **Scope** (use the split rule in the Product notes section of `AGENTS.md`):
   - about one codebase: repo, `/memory <repo folder> <rule>`;
   - true in every repo: global, `/memory -global <rule>`;
-  - a product fact that would survive a rewrite: product, `/memory -product <product> <fact>`.
+  - a product fact that would survive a rewrite: product, `/product-notes add <product> <fact>`.
 - **For Tandem itself:** problems caused by the pipeline (task sizing, plan gaps, unclear commands). Never turn these into memory rules.
 - If nothing is worth a rule, say so. An empty Candidate rules table is a fine result.
 
@@ -68,5 +68,5 @@ If the last argument is `auto`, nobody is watching (an eval or autopilot run): t
 Skip this step in `auto` mode, or if there are no candidate rules: then end with the rules and their `/memory` lines, ready to copy.
 
 - Show the candidate rules as a numbered checklist, one line each with its scope (`repo <folder>`, `global` or `product <name>`), and ask once: "Which should I save? Reply with numbers, `all` or `none`. Edit a rule's words in your reply if it is not quite right." Wait.
-- For each rule they pick, in their wording if they changed it, follow Steps 2 to 6 of `{{ENG_HOME}}/../commands/memory.md` with that scope (it checks for duplicates and secrets, and `-product` facts go through `Set-ProductNote.ps1`). For a "replace the old line" rule, replace that line instead of adding a second one.
+- For each rule they pick, in their wording if they changed it, follow Steps 2 to 6 of `{{ENG_HOME}}/../commands/memory.md` with that scope, or for a product fact the "Add" steps of `{{ENG_HOME}}/../commands/product-notes.md` (both check for duplicates and secrets). For a "replace the old line" rule, replace that line instead of adding a second one.
 - Reply with what was saved, one line each with the file it went to. Rules they did not pick are not saved anywhere.

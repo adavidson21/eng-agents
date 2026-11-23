@@ -1,6 +1,6 @@
 ---
 description: "Export approved milestones as work items: an ADO import file (default), ADO items, or local items. Usage: /backlog scope-<name> [csv|ado|local]"
-agent: milestone-architect
+agent: product-manager
 ---
 
 Export the backlog in **.work/$1/** (the `.work/` part is optional). Mode: **$2** (empty means `csv`). Do not change any code.

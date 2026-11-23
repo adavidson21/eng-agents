@@ -1,6 +1,6 @@
 # Stack: dotnet
 
-Read by `/plan`, `/tasks`, `/do-task` and `/review` when a repo guide's `Stack:` line names `dotnet`. The repo guide wins where it says more.
+Read by `/spec`, `/quick`, `/do-task` and `/review` when a repo guide's `Stack:` line names `dotnet`. The repo guide wins where it says more.
 
 ## Testing
 
@@ -8,7 +8,7 @@ Read by `/plan`, `/tasks`, `/do-task` and `/review` when a repo guide's `Stack:`
 - **Strict TDD.** 1) Write the test. 2) Run it and confirm it FAILS for the expected reason (an assertion or the expected exception, not a compile error elsewhere). 3) Write the code. 4) Run it and confirm it PASSES.
 - Record the failing run under `Red run` and the passing run under `Green run` in `progress.md`, with `red=<test name>` on the Stats line.
 - Mock dependencies. Tests never use a real database.
-- In `/tasks`, the test and the code it tests go in the same task, so the implementer can do TDD.
+- In `tasks.md`, the test and the code it tests go in the same task, so the implementer can do TDD.
 
 ## Review checklist
 

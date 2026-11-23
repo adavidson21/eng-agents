@@ -1,7 +1,7 @@
 {
-  "description": "/plan names real files, a real pattern to follow, covers every AC in the test plan, and puts settings in PricingOptions.",
-  "command": "plan",
-  "arguments": "L1 auto",
+  "description": "/spec <id> plan names real files, a real pattern to follow, covers every AC in the test plan, and puts settings in PricingOptions.",
+  "command": "spec",
+  "arguments": "L1 plan auto",
   "workItem": "L1-bulk-discount",
   "branch": "dev/feature/L1-bulk-discount",
   "work": [{"from":"L1/start","to":"L1-bulk-discount"}, {"from":"L1/spec-approved","to":"L1-bulk-discount"}],

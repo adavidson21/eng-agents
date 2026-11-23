@@ -311,7 +311,7 @@ $result = [ordered]@{
 
 if ($AsJson) {
     $json = $result | ConvertTo-Json -Depth 8 -Compress
-    # ASCII only, like New-Dashboard.ps1 -AsJson.
+    # ASCII only.
     $json = [regex]::Replace($json, '[^\x00-\x7F]', { param($m) '\u{0:x4}' -f [int][char]$m.Value })
     Write-Output $json
     exit 0

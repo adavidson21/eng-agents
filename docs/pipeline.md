@@ -10,12 +10,42 @@ How each phase works, why it is shaped this way, and what to do when it goes wro
                        (add a repo folder or ADO connection as a 3rd argument for another collection)
 /spec <id>             questions one at a time, then spec.md, plan.md and tasks.md
                        (files per repo, pattern to follow, test plan, small tasks)  GATE: /approve <id>
-/plan <id>, /tasks <id> redo the plan or the tasks on their own (older items, or after big edits)
+/spec <id> plan|tasks  redo the plan or the tasks on their own (older items, or after big edits)
 /do-task <id> <n>      one task per fresh session, TDD, commit      repeat
 /review <id>           pass 1 spec, pass 2 quality                  accept findings as tasks
 /pr <id>               short title and description per repo
 You push (or approve the agent pushing) and open the PR. Your normal review and CI/CD take it to production.
 ```
+
+## More commands
+
+The main flows are in the [README](../README.md#daily-use). Everything else:
+
+| Work | Run |
+|---|---|
+| Shape an idea with you first | `/shape <idea>` (or `/shape triage-<name>` after a triage): rounds of up to 5 questions in `.work/shape-<name>/questions.md`, a running `understanding.md`, then `brief.md`. Answer in Slate (or `answers.md`) and run `/shape shape-<name>` again; `/shape shape-<name> brief` writes the brief now. Then `/scope shape-<name>` or `/refine shape-<name>`. |
+| Triage a request before work starts | `/triage <ADO id> [note]` or `/triage <the request in words>`: writes `.work/triage-<id>/triage.md` with a summary, what it touches, questions for the requester, a size, a suggested route (delegate or do it yourself) and a suggested path (interview, brief or decline). Never posts. Then `/shape triage-<name>` (interview) or `/shape triage-<name> brief` (skip to the brief). Loom in Workshop runs it from a button. |
+| Define one story or bug | `/refine <title>` → `/approve refine-<name>`. Writes `refine.md` with a description and Gherkin acceptance criteria, ready to publish (Slate publishes it to ADO). For anything epic-sized, use `/scope`. |
+| Hand work to a teammate | `/handoff <ADO id> <name>`: a brief with context, acceptance criteria, where to start and what to watch. Posts nothing. |
+| An error log: probable root cause, why, and a fix | Paste it on Fix a bug in Loom (**Error log**), or put it in `.work/spike-log-<name>/log.md` and run `/spike spike-log-<name> --log`. It checks the configuration before the code and prefers a fix that changes no code. Changes nothing. |
+| First pass on a teammate's PR | `/pr-review <PR link>` (or **PR reviews** in Loom). Drafts comments in `.work/pr-<id>/review.md`; you post the ones you agree with. Never checks out the PR or posts anything. |
+| Ask or capture from Workshop | Type in the hub in Workshop's Loom (Chat tab). It runs `/hub <request>`: captures become proposals you accept, questions are answered from your repo map, repo guides and code, with sources. It writes nothing but its own two files and never changes ADO or git. |
+| Prep a 1:1 | **Draft talking points** in Workshop's 1:1s app runs `/one-on-one <packet>`. It drafts wins, follow-ups, blockers, growth topics and 3 questions from the app's packet; it never rates or judges anyone. |
+| Technical spec with diagrams | `/tsd <product or repo> [repo ...]` → new session → `/check-docs .work/tsd-<name>/tsd.md` → revise → `/publish tsd-<name>` |
+| Drive it from the browser | Loom in [Workshop](https://github.com/adavidson21/workshop): it runs each step in opencode (see [Dashboard](#dashboard)) |
+| Hands-off build after the plan | Loom: **Approve and build**. It runs tasks, review, and PR text, each step in a new session, and stops only when it needs you (see [Autopilot](#autopilot)) |
+| Is the pipeline helping? | `/stats [--since yyyy-MM-dd]`: days to PR, review rounds, rework, and which gates you approve as written (see [Measuring the pipeline](#measuring-the-pipeline)) |
+| Learn from an item | `/retro <id>` after review: what caused rework and up to 5 rules; tick the ones to save. `/retro --since <date>` finds mistakes that repeat across items. |
+| Standup update | `/standup [days back]` (default 1, or 3 on a Monday) |
+| Cloudflare (your own computer, with Workshop's Cloudflare connector on) | `/cloudflare <what you want>` proposes a change set (DNS, a Worker on a custom domain, Pages projects and variables, rollbacks) that you approve in Workshop's Approvals; `/cloudflare why <worker or project>` reads a failed build's log; `/cloudflare cf-<name> check` confirms what was applied. Agents never hold the token and never apply anything. |
+| New repo in the workspace | `/onboard-repo <folder>` |
+| New product, ready for its first build | `/onboard-product <product>` (repo guides, product note, gaps to answer, a trial run) |
+| Regression tests for a product that has few | `/cover <product> [-- <area>]` (one hands-off Quick change per UI repo that adds end-to-end tests) |
+| Your code review comments (Send back in Workshop) | `/revise <id>`: each comment becomes a fix task, an answer or a declined note; comments marked as rules are remembered. Workshop runs it, then the build comes back to Publish as the next revision. |
+| A published PR's CI failed, or it conflicts with its base | `/pr-fix <id> ci` or `/pr-fix <id> conflict`: fixes it on the branch (a merge of the base for a conflict) and never pushes. Workshop runs it after Publish and shows **Push fix**. |
+| Work item in another ADO collection | `/start <id> <lane> <repo folder or connection>` |
+
+**Workshop holds the tokens.** With Workshop installed and started once, `install.ps1` adds Workshop to opencode as an MCP server (`workshop`): its tools for agents, the tools of MCP servers you add in Workshop, and approval status. The GitHub scripts read through Workshop when no token is set here, so a GitHub token can live in the Mac Keychain.
 
 ## Design choices
 
@@ -40,6 +70,7 @@ A gate is the `Status:` line at the top of a file. Nothing moves past a gate unt
 |---|---|---|---|
 | `spec.md` and `plan.md` (one gate, with `tasks.md`) | `/spec` | `/approve <id>` (approves both) | `/do-task` (feature lane) |
 | `bug.md` | `/bug` | `/approve <id>` | `/do-task` (bug lane) |
+| `quick.md` | `/quick` | `/approve <id>` | `/do-task` (quick lane) |
 | `tsd.md` | `/tsd` | `/publish tsd-<name>` (approves and moves it) | `/tsd` (refuses to overwrite an approved TSD) |
 
 ```mermaid
@@ -109,9 +140,9 @@ Review stops for you only when it finds blockers it cannot turn into fix tasks (
 
 ## Quick lane
 
-For small work even the feature lane's spec, plan and tasks cost more than they catch. `/quick <id>` (planner) writes `quick.md`, one file with the goal, acceptance criteria, assumptions, files and pattern to follow, plus a normal `tasks.md` (at most 2 tasks). You approve once with `/approve <id>`; `/do-task`, `/review` and `/pr` work as in the feature lane and read the criteria from `quick.md`. The branch is `dev/feature/<id>-<name>`.
+For small work even the feature lane's spec, plan and tasks cost more than they catch. `/quick <id>` (planner) writes `quick.md`, one file with the goal, acceptance criteria, assumptions, files and pattern to follow, plus a normal `tasks.md` (at most `quickTasks` tasks, default 3). You approve once with `/approve <id>`; `/do-task`, `/review` and `/pr` work as in the feature lane and read the criteria from `quick.md`. The branch is `dev/feature/<id>-<name>`.
 
-`/quick` steps up to the feature lane on its own when the work needs more than 2 tasks, a second or shared repo, a schema, migration or API contract change, or acceptance criteria it cannot pin down: it sets `Lane: feature` in `repos.md`, writes what it found under Notes, logs `escalated=1`, and tells you to run `/spec`.
+`/quick` steps up to the feature lane on its own when the work needs more tasks than that, a second or shared repo, a schema, migration or API contract change, or acceptance criteria it cannot pin down: it sets `Lane: feature` in `repos.md`, writes what it found under Notes, logs `escalated=1`, and tells you to run `/spec`.
 
 When to widen or narrow it: `/stats` shows quick items next to feature items (days to PR, review rounds) and how many stepped up. If quick items reach PR faster without more review rounds, it is working.
 
@@ -129,9 +160,9 @@ Use this when you have an idea ("add a change request ticket type") and no work 
 |---|---|---|
 | `/scope <idea>` | product-manager | Reads the repo map, product docs, repo guides, and the code for what exists, and `git log` for recent changes. Asks at most 3 questions, one at a time (one is the epic if you did not name it). Writes `epics.md` (MVP features and Icebox) and `stories.md` (Gherkin acceptance criteria). |
 | `/approve scope-<name>` | planner | Approves `stories.md`, and `epics.md` with it. |
-| `/slice scope-<name>` | milestone-architect | Maps each story to real files (as local notes for the builder), makes every feature a vertical slice, sizes each story for one `/start` run, puts schema and setup work first, orders everything, writes a short description and release note per feature, and writes `milestones.md`. Lists every change it made to the stories. Runs `Export-Backlog.ps1 -Check` on the result. |
+| `/slice scope-<name>` | product-manager | Maps each story to real files (as local notes for the builder), makes every feature a vertical slice, sizes each story for one `/start` run, puts schema and setup work first, orders everything, writes a short description and release note per feature, and writes `milestones.md`. Lists every change it made to the stories. Runs `Export-Backlog.ps1 -Check` on the result. |
 | `/approve scope-<name> milestones` | planner | Approves `milestones.md`. |
-| `/backlog scope-<name> [csv\|ado\|local]` | milestone-architect | `csv` (default): `backlog.csv` for ADO's Import Work Items, as an Epic, Feature, story tree. `ado`: a dry run, your yes, then creates the items with parent links. `local`: one `L<number>` item per story. `ado` and `local` record ids in `published.md`, so a failed run continues where it stopped. |
+| `/backlog scope-<name> [csv\|ado\|local]` | product-manager | `csv` (default): `backlog.csv` for ADO's Import Work Items, as an Epic, Feature, story tree. `ado`: a dry run, your yes, then creates the items with parent links. `local`: one `L<number>` item per story. `ado` and `local` record ids in `published.md`, so a failed run continues where it stopped. |
 | `/triage <ADO id> [note]` or `/triage <words>` | investigator | Before any work: fetches the item and its comments (`Get-WorkItem.ps1` into `.work/triage-<id>/`), reads the repo map, guides and code, and writes `triage.md`: summary, products and repos, related items, questions for the requester, `Route:` (delegate, myself, undecided) and `Size:`. A note after the id (who asked, why) goes in `note.md` and counts as part of the request. Run it again after the requester answers (comments, or `answers.md` in the folder). Never posts. |
 | `/shape <idea>` | product-manager | Interviews you about an idea, one round per run, never in the chat: up to 5 questions with options and a recommendation in `.work/shape-<name>/questions.md`, a running `understanding.md` (your edits win), your answers in `answers.md`. When the problem, users, goals, MVP line and key rules are known (or `/shape shape-<name> brief`), writes `brief.md` with a Level and Size. `/shape triage-<name>` starts from a triage. `/shape shape-<name> more` asks another round. Then `/scope shape-<name>` or `/refine shape-<name>`, which ask only what the brief leaves open. |
 | `/refine <title>` | product-manager | One story or bug: asks at most 2 questions, writes `.work/refine-<name>/refine.md` (Description, Gherkin Acceptance criteria, Notes for the builder). Gate: `/approve refine-<name>`. `/refine refine-<name>` revises a draft. |
@@ -217,12 +248,12 @@ Better input gives better diagrams: fill in "External systems" and "Business pro
 - Acceptance criteria the work item already states clearly are kept in its words, marked `(from work item)`. New ones are Given / When / Then.
 - Then it drafts `plan.md` and `tasks.md` from the draft spec in the same run (below). One `/approve` covers all three: the feature lane has one gate, like the quick lane.
 
-**Plan (drafted by /spec, or redone with /plan)**
+**Plan (drafted by /spec, or redone with /spec <id> plan)**
 - Each repo section names a "pattern to follow": a real file that does something similar. This is the most effective way to get consistent code from a weaker model.
 - The test plan maps every acceptance criterion to a test before any code exists.
 
-**Tasks (drafted by /spec, or redone with /tasks)**
-- Each task touches one repo and at most 3 files (or your configured cap). Split big-looking tasks by hand before starting.
+**Tasks (drafted by /spec, or redone with /spec <id> tasks)**
+- Each task touches one repo and at most 6 files, tests not counted (`taskFileCap` in the factory settings). Split big-looking tasks by hand before starting.
 - A coverage table proves every acceptance criterion has a task.
 - Every task has a "Human interface" line (page, button, endpoint, or command) so the implementer knows how a person meets the code.
 
@@ -269,7 +300,6 @@ All state lives in the workspace, outside every git repo, and never leaves the w
 .work/_onboard/<repo>-AGENTS.md          onboard draft when the repo already has a repo guide
                                          (<repo>-AGENTS.local.md when the team committed its own AGENTS.md)
 .work/runway.md                          end-of-day note from /shutdown; overwritten daily
-.work/dashboard.html                     the static dashboard (/dashboard static); never edit
 .work/_dashboard/                        Dispatch (Workshop's opencode connector): sessions.json (item to session
                                          links), autopilot.json, projects.json, pr-queue.json; never edit
 ```
@@ -390,7 +420,6 @@ Dispatch, the Agents app in [Workshop](https://github.com/adavidson21/workshop),
 
 - `/dashboard` opens Dispatch in your browser. `/dashboard <id>` opens it at that item.
 - It starts nothing. If Workshop is not running, it says so (start it with `workshop up`, or Workshop in the Start menu) and stops.
-- `/dashboard static` builds the [static page](#static-page) instead. It needs only PowerShell and git, for terminal-only use.
 - `/status [id]` answers the same question in the terminal.
 
 Where `/dashboard` opens Dispatch: the site Workshop names itself (its `GET /api/health` answer since agent 1.5.0, else the first https site in its `config.json`), or Workshop on this computer (`http://127.0.0.1:<port>/`, port from Workshop's `config.json`) when Workshop is in work mode. Tandem names no website itself. To use another address, set Workshop's address in `config.json`:
@@ -402,45 +431,6 @@ Where `/dashboard` opens Dispatch: the site Workshop names itself (its `GET /api
 ```
 
 Dispatch keeps its own state next to `.work`: `.work\_dashboard\` (item to session links, autopilot, projects, the PR review queue). What Dispatch does, and the full list of its actions, is in Workshop's `connectors/opencode/README.md`.
-
-### Static page
-
-`/dashboard static` writes `.work\dashboard.html`, a read-only summary of the files above plus the git state of every repo in the workspace, for picking up where you left off, and opens it.
-
-| Part of the page | What it shows |
-|---|---|
-| Pick up here | The most recently touched item that is not paused: where it is on the track, the exact next command, and what the last session did. |
-| Track | The pipeline stages for the item's lane. Finished stages have a check mark. The current stage is a filled label in the item's color (blue moving, amber needs you, red blocked, gray paused) with what is happening under it, for example "2 of 5 done" or "Approve". Later stages are faint, on a dashed line. Hover a stage for details. |
-| Needs you | Items waiting on you: a `DRAFT` spec, plan, or bug to review and `/approve`, review findings to accept, or a `/do-task` that failed or was blocked. |
-| In progress, Paused, Ready to ship | Every other item, grouped. Each card shows the next command, where you left off (the last `progress.md` entry, or `paused.md` when paused), its repos, tasks, files, and resume commands. |
-| Pull requests | On Ready to ship items: the PR text from `pr.md` for each repo, with Copy title and Copy description, a **Create PR in ADO** button that opens the new PR page with the branches filled in, and, when the branch is not pushed yet, its push command with a copy button. |
-| Spikes, docs, and TSDs | `spike-`, `docs-`, and `tsd-` folders with their state and next step (for a TSD: fact-check, fix, or `/publish`). |
-| Repos with work in progress | Repos that are off their default branch or have uncommitted or unpushed work, and which item owns each branch. Clean repos are listed in one line. |
-| Recent activity | One line per item per day, newest first, summing up what moved (for example "Did 3 tasks, reviewed, wrote PR text"). A red dot means a verify step failed that day. |
-
-Links are built locally, with no network calls and no PAT:
-
-- **Work item:** the `Link:` line in `workitem.md` (written by `/start`). For older or offline items, it falls back to the `ADO:` line plus `config.json`, then a repo's git remote.
-- **Branch and Create PR:** from each repo's `origin` remote and the branch in `repos.md`. Works for ADO Server and GitHub remotes.
-
-The page is a snapshot: it changes only when you build it again. The header says when it was built and turns amber after 3 hours. A bar at the top links to Dispatch for the live view.
-
-**After a restart**, open `.work\dashboard.html` (bookmark it) to see where everything stood, or run `/dashboard` to open Dispatch. Without opencode, rebuild the static page from any terminal in the workspace root:
-
-```powershell
-cd C:\src\work
-powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\.config\opencode\eng-agents\scripts\dashboard\New-Dashboard.ps1"
-```
-
-Use `pwsh` instead of `powershell` if you installed from PowerShell 7, and your `-Target` folder if you installed somewhere else. The page also has a "Copy shell command" button with the exact path. Each card's resume commands (`cd`, `opencode`, next command) are what to paste into a new terminal.
-
-Options: `-NoOpen` writes the file without opening a browser, `-OutFile <path>` writes it somewhere else, `-Recent <n>` changes how many progress entries Recent activity draws from (default 80), `-AsJson` prints the data as one line of JSON instead of writing the page.
-
-The next-command logic matches `/status`. If you change the rules in `commands/status.md`, change `Get-NextStep` in `scripts/dashboard/New-Dashboard.ps1` to match. Workshop's opencode connector reads `.work` with a copy of `New-Dashboard.ps1 -AsJson`, so Dispatch follows the same rules; change it here first, and Workshop syncs its copy.
-
-### Themes
-
-The static dashboard keeps its own copy of the themes in `dashboard.template.html` (between `themes:begin` and `themes:end`). Edit the block by hand if you change it, and bump Core's version.
 
 ### Autopilot
 
@@ -456,7 +446,7 @@ Autopilot runs the build half of an item for you, so your only stops are approvi
 Each step runs in a **new session**, so every step starts with a clear context:
 
 ```
-/tasks <id>                 feature lane only (the bug lane already has tasks from /bug)
+/spec <id> tasks auto       only when tasks.md is missing (older feature items; /spec and /bug already write it)
 /do-task <id> <n>           once per open task, in order
 /review <id> auto           Blocker findings become fix tasks without asking, then back to /do-task
 /pr <id>                    PR text in pr.md, then autopilot finishes. It never pushes.
@@ -491,7 +481,7 @@ Plus **global memory** in `%USERPROFILE%\.config\eng-agents\memory.md` (`/memory
 
 **Knowledge** (Core 4.7.0, Workshop `docs/knowledge.md`): Workshop keeps products, the glossary and owners in Settings, product notes and the team handbook in Folio, and writes the repo map from them. Agents read all of it for one product with `scripts/notes/Get-Knowledge.ps1 -Product <name>`.
 
-**Product notes** hold what the code cannot tell agents about a product (business rules, gotchas, who to ask, decisions): one note per product in Workshop's Folio app, `<Workshop data folder>/folio/products/<product>.md` (`notes/products/` before Workshop renamed the folder). Agents read the note of each product the work touches (`scripts/notes/Get-ProductNote.ps1`) and add facts they confirm (`scripts/notes/Set-ProductNote.ps1`: one line at a time, with its date and source, keeping the earlier version in Notes' History). Notes marks a note **Changed by Tandem** until you click **Mark reviewed**. A fact that would still be true if the code were rewritten goes in the product note; a fact about one codebase stays in that repo guide. `/memory -product <product> <fact>` saves one yourself, `/onboard-repo` starts a missing note, and `/product-notes move` moves product facts out of repo guides. Without Workshop, or with Notes switched off, agents skip product notes.
+**Product notes** hold what the code cannot tell agents about a product (business rules, gotchas, who to ask, decisions): one note per product in Workshop's Folio app, `<Workshop data folder>/folio/products/<product>.md` (`notes/products/` before Workshop renamed the folder). Agents read the note of each product the work touches (`scripts/notes/Get-ProductNote.ps1`) and add facts they confirm (`scripts/notes/Set-ProductNote.ps1`: one line at a time, with its date and source, keeping the earlier version in Notes' History). Notes marks a note **Changed by Tandem** until you click **Mark reviewed**. A fact that would still be true if the code were rewritten goes in the product note; a fact about one codebase stays in that repo guide. `/product-notes add <product> <fact>` saves one yourself, `/onboard-repo` starts a missing note, and `/product-notes move` moves product facts out of repo guides. Without Workshop, or with Notes switched off, agents skip product notes.
 
 - `/memory <rule>` uses the repo you are working in, or asks. `/memory <repo> <rule>` names it. `/memory -list` shows everything saved.
 - It checks for a duplicate or contradicting line first, and offers to fix a wrong command or path in the repo guide instead of adding a memory line.
@@ -513,7 +503,7 @@ Plus **global memory** in `%USERPROFILE%\.config\eng-agents\memory.md` (`/memory
 - Days from `/start` to `/pr`, review rounds, and how often an item needs a second review.
 - Questions asked versus assumptions written.
 - `/do-task` verify failure rate, and full-suite failures caught before review.
-- Tasks added after `/tasks` (mostly review fixes) and review findings by severity.
+- Tasks added after the first task list (mostly review fixes) and review findings by severity.
 - Per gate: approvals, how many were approved as written versus edited first, and the as-written rate.
 
 It reads the `- Stats:` lines commands add to `progress.md` (Core 2.22.0+), the `Status:` and verdict lines, and `tasks.md`. Older items still show, with `n/a` where the data was never written. `-AsJson` prints the same data for Workshop's Dispatch.
@@ -528,7 +518,7 @@ Read it after about 10 items. A gate approved as written almost every time, with
 |---|---|
 | A session went off the rails | Close it, start a new one, run `/status <id>`. State is on disk. |
 | Autopilot keeps stopping on the same task | Read the agent's last reply and the blocked entry in `progress.md`. Split the task or fix the plan, then click **Resume**. |
-| Lost your terminals (restart, crash) | Open `.work\dashboard.html` to see where you were, or start Workshop and run `/dashboard` to open Dispatch: each item reopens its session. |
+| Lost your terminals (restart, crash) | Start Workshop and run `/dashboard` to open Dispatch: each item reopens its session. Without Workshop, `/status` lists every item and its next command. |
 | A task is marked done but is wrong | Uncheck it in `tasks.md`, revert the commit yourself if needed (`git -C <repo> revert <sha>`), re-run `/do-task`. |
 | A task keeps failing | Read the blocked entry in `progress.md`. Usually the task is too big or the pattern file is wrong. Split the task or fix the plan. |
 | The plan was wrong after tasks started | Edit `plan.md` and `tasks.md` by hand. Add new tasks at the end; do not renumber finished ones. |
@@ -551,6 +541,6 @@ Read it after about 10 items. A gate approved as written almost every time, with
 
 Use the interactive window for real work. In testing, `opencode run "/spec 12345"` did not always expand the slash command (the model had to find the command file itself), and the question tool was unavailable, so questions came back as plain text. Use `opencode run --command spec "12345 auto"` instead: `--command` runs the command file directly, and the rest is its arguments.
 
-**`auto` mode.** `/spec`, `/plan`, `/tasks`, `/bug`, `/do-task` and `/review` take `auto` as their last argument (`/do-task <id> <n> auto`). In `auto` nobody is watching: the command never asks or waits. Planning commands write what they would have asked as assumptions; `/do-task` stops and logs the task as blocked instead of asking. Autopilot and the evals use it.
+**`auto` mode.** `/spec`, `/bug`, `/do-task` and `/review` take `auto` as their last argument (`/do-task <id> <n> auto`). In `auto` nobody is watching: the command never asks or waits. Planning commands write what they would have asked as assumptions; `/do-task` stops and logs the task as blocked instead of asking. Autopilot and the evals use it.
 
 **Evals.** [`evals/`](../evals/README.md) runs commands with a real model against a made-up workspace and grades the results with file and git checks: `./evals/Invoke-Evals.ps1` after `./install.ps1`. Run it before a release and compare with the last results file.

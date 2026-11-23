@@ -26,6 +26,6 @@ Only rules that would have prevented a finding or rework above, and that no exis
 
 ## For Tandem itself
 
-Problems with the pipeline, not this code (for example "/tasks under-sized the UI tasks"). These go to the eng-agents repo, not to memory.
+Problems with the pipeline, not this code (for example "/spec under-sized the UI tasks"). These go to the eng-agents repo, not to memory.
 
 - <one line, or "None">

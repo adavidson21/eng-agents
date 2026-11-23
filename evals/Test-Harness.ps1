@@ -50,9 +50,9 @@ try {
 
     $sizes = @(Get-PromptSizes)
     $cmdCount = @(Get-ChildItem -LiteralPath (Join-Path $script:RepoRoot "core/commands") -Filter *.md).Count
-    $plan = @($sizes | Where-Object { $_.command -eq "plan" })[0]
+    $spec = @($sizes | Where-Object { $_.command -eq "spec" })[0]
     Check "Get-PromptSizes covers every command" ($sizes.Count -eq $cmdCount -and @($sizes | Where-Object { $_.tokens -le 0 }).Count -eq 0) "$($sizes.Count) of $cmdCount"
-    Check "plan loads the planner agent and AGENTS.md" ($plan.agent -eq "planner" -and $plan.agentChars -gt 0 -and $plan.baseChars -gt 0)
+    Check "spec loads the planner agent and AGENTS.md" ($spec.agent -eq "planner" -and $spec.agentChars -gt 0 -and $spec.baseChars -gt 0)
 
     $infos = @(Get-CommandInfos)
     $spec = @($infos | Where-Object { $_.command -eq "spec" })[0]

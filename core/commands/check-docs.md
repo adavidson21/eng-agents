@@ -26,7 +26,7 @@ If the doc has Mermaid blocks, run exactly this command and record the last line
 {{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/diagrams/Test-Mermaid.ps1" -Path "$1"
 ```
 
-If the doc lists commands, run the safe ones (build, test, lint) to confirm they work.
+If the doc lists commands, confirm each one exists where the doc says (a `package.json` script, a project file, the repo guide's Commands table). Do not run them: a fact-check reads, it does not build.
 
 ## Step 3: Check what is missing
 

@@ -48,9 +48,9 @@
     {
       "command": "check-docs",
       "agent": "reviewer",
-      "tokens": 3854,
+      "tokens": 3883,
       "readTokens": 0,
-      "hash": "ba24b557565e",
+      "hash": "21e3dad729a0",
       "files": [
         "core/AGENTS.md",
         "core/agents/reviewer.md",
@@ -120,9 +120,9 @@
     {
       "command": "docs",
       "agent": "writer",
-      "tokens": 3489,
+      "tokens": 3539,
       "readTokens": 0,
-      "hash": "782de0146664",
+      "hash": "3c64ac8dca21",
       "files": [
         "core/AGENTS.md",
         "core/agents/writer.md",
@@ -147,9 +147,9 @@
     {
       "command": "hub",
       "agent": "hub",
-      "tokens": 5094,
+      "tokens": 5139,
       "readTokens": 195,
-      "hash": "eb7fea14b6cd",
+      "hash": "b19678c5aa2e",
       "files": [
         "core/AGENTS.md",
         "core/agents/hub.md",
@@ -331,9 +331,9 @@
     {
       "command": "refine",
       "agent": "product-manager",
-      "tokens": 4740,
+      "tokens": 4773,
       "readTokens": 609,
-      "hash": "7e0d3685e637",
+      "hash": "09288236d3c9",
       "files": [
         "core/AGENTS.md",
         "core/agents/product-manager.md",
@@ -406,9 +406,9 @@
     {
       "command": "scope",
       "agent": "product-manager",
-      "tokens": 5400,
+      "tokens": 5433,
       "readTokens": 875,
-      "hash": "1d7224746be6",
+      "hash": "55195ffa462d",
       "files": [
         "core/AGENTS.md",
         "core/agents/product-manager.md",
@@ -422,9 +422,9 @@
     {
       "command": "shape",
       "agent": "product-manager",
-      "tokens": 5153,
+      "tokens": 5233,
       "readTokens": 732,
-      "hash": "1cc75fc5a3f1",
+      "hash": "df660e90b27a",
       "files": [
         "core/AGENTS.md",
         "core/agents/product-manager.md",
@@ -480,9 +480,9 @@
     {
       "command": "spike",
       "agent": "investigator",
-      "tokens": 5414,
+      "tokens": 5444,
       "readTokens": 1860,
-      "hash": "8bd7107d83af",
+      "hash": "210b35af6d0e",
       "files": [
         "core/AGENTS.md",
         "core/agents/investigator.md",
@@ -583,9 +583,9 @@
     {
       "command": "triage",
       "agent": "investigator",
-      "tokens": 4435,
+      "tokens": 4465,
       "readTokens": 671,
-      "hash": "a6f9b0cd031c",
+      "hash": "c421b49a7f31",
       "files": [
         "core/AGENTS.md",
         "core/agents/investigator.md",

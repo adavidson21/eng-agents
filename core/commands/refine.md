@@ -21,7 +21,7 @@ Follow these steps in order. Do not change any code. For anything bigger than on
   - Read `brief.md`, `understanding.md` and `answers.md` in the shape folder. The brief's title is the title; its Level line sets `Type:` (`Bug` for Bug, otherwise `User Story`).
   - In Step 3, ask only what the brief leaves open under "Open questions". If nothing is open, ask nothing.
 - **New:** otherwise the request is the title, optionally followed by a description on the next lines.
-  - Make a short name: the first 5 meaningful words of the title, lowercase, joined with `-`, at most 40 characters, filler words (a, an, the, to, of, for, and, add, new) dropped.
+  - If the request ends with `--name <short name>` (Loom sends it), take it off the request and use that as the short name. Otherwise make a short name: the first 5 meaningful words of the title, lowercase, joined with `-`, at most 40 characters, filler words (a, an, the, to, of, for, and, add, new) dropped.
   - The folder is `.work/refine-<short name>/`. If it already exists, stop and ask: "`.work/refine-<short name>/` exists. Revise it (`/refine refine-<short name>`) or use another name?"
   - Copy `{{ENG_HOME}}/templates/progress.md` into the folder as `progress.md`, with `refine-<short name>` as the id and the title.
 

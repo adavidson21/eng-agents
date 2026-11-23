@@ -4,6 +4,16 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 4.18.0 (2026-11-23)
+
+Fewer ways for a small local model to trip in Loom's board flows (Workshop opencode connector 1.36.0). Nothing breaks for items in progress, and each change still works with an older Workshop.
+- `--name <short name>`: `/triage`, `/shape`, `/scope` and `/refine` from words, `/spike` and `/docs` take the folder name Workshop picked, instead of deriving "the first 5 meaningful words" themselves. Without it they name the folder as before.
+- `/docs` no longer stops to ask "Does this outline work?": Loom runs it from a button, and the engineer reads the draft next anyway.
+- `/check-docs` confirms that the commands a doc lists exist and no longer runs builds or tests: a fact-check reads.
+- `/shape` from a triage uses the triage's Products and repos and Related items instead of reading the same product note, repo guides and code again.
+- `/hub`: when `request.md` has `Routed: ask` (Workshop already knows it is a question and wrote `route.json`), it skips routing and only answers.
+- Workshop's Loom now approves scope and refine drafts itself (same Status line, draft hash check and `progress.md` Stats line), so `/approve` there is no longer a model run. The command is unchanged for the terminal and for work items.
+
 ## Core 4.17.0 (2026-11-22)
 
 Local and self-hosted models (Workshop's `docs/local-models.md`, opencode connector 1.33.0). Nothing changes in what any command does.

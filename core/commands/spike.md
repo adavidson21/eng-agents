@@ -11,7 +11,8 @@ Run a spike on: **$ARGUMENTS**
 - If `--timebox <t>` is in the arguments, take it out and remember it (`1h`, `2h`, `4h` or `1d`; Loom sends it from the Investigate card). It sets how far you dig in Step 3.
 - If `--log` is in the arguments, take it out: this is **log mode**. `$1` is a `spike-` folder that already has `log.md` (Loom writes it when you paste a log on Fix a bug). If the folder or its `log.md` is missing, say so in one line and stop. Follow "Log mode" at the end instead of Steps 2 to 5.
 - If `$1` is a work item id (a number, or a local id like `L12`) and a folder in `.work/` starts with `$1-`, use that folder.
-- Otherwise create a new folder `.work/spike-<short-name>/`, where `<short-name>` is 3 to 5 lowercase words from the topic joined with hyphens.
+- If `--name <short-name>` is in the arguments (Loom sends it), take it out and remember it.
+- Otherwise create a new folder `.work/spike-<short-name>/`, where `<short-name>` is the `--name` value, or else 3 to 5 lowercase words from the topic joined with hyphens.
 
 ## Step 2: First look, then gather, then aim
 

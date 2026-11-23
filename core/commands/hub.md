@@ -21,6 +21,8 @@ You route, and for a question you answer. You never change anything. Workshop sh
 
 ## Step 3: Route
 
+If `request.md` has a `Routed: ask` line, Workshop already wrote `route.json` (the engineer asked a question): leave it as it is and go to Step 4, picking the repos there yourself.
+
 Pick exactly one intent and write `route.json` next to `request.md`. It must be valid JSON matching Workshop's `docs/schemas/hub-route.schema.json`. Write only the field for the intent.
 
 - The file is the JSON object alone: no code fence, no comments, no text before or after it.

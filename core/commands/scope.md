@@ -34,7 +34,7 @@ Follow these steps in order. Do not change any code.
   - In Step 3, ask only what the brief leaves open (its "Open questions" and the epic, when the brief does not name one). If nothing is open, ask nothing. Record the brief's settled points under "Decisions made during clarification", each ending "(from the shape interview)".
   - Its "MVP, In the first version" are the MVP features in Step 4; "Later" goes to Icebox.
 - **New:** otherwise the request is the idea.
-  - Make a short name from the idea: the first 5 meaningful words, lowercase, joined with `-`, at most 40 characters, filler words (a, an, the, to, of, for, and, add, new) dropped. For example "I want to add a new ticket called a change request" gives `ticket-called-change-request`.
+  - If the request ends with `--name <short name>` (Loom sends it), take it off the request and use that as the short name. Otherwise make a short name from the idea: the first 5 meaningful words, lowercase, joined with `-`, at most 40 characters, filler words (a, an, the, to, of, for, and, add, new) dropped. For example "I want to add a new ticket called a change request" gives `ticket-called-change-request`.
   - The folder is `.work/scope-<short name>/`. If it already exists, stop and ask: "`.work/scope-<short name>/` exists. Refine it (`/scope scope-<short name>`) or use another name?"
   - Copy `{{ENG_HOME}}/templates/progress.md` into the folder as `progress.md`. In its header use `scope-<short name>` in place of `<id>` and the idea as the title.
 

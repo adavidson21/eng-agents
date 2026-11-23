@@ -53,7 +53,7 @@ To step up:
 
 ## Step 6: Write tasks.md
 
-- Start from `{{ENG_HOME}}/templates/tasks.md`. Write it to the work folder as `tasks.md`, following every rule in `/tasks` Step 3: one repo, at most `taskFileCap` files (test files not counted), for .NET the test and its code in the same task, one verify command from the repo guide's Commands table, a "Done when" line, a "Pattern to follow" file and a "Human interface" line.
+- Start from `{{ENG_HOME}}/templates/tasks.md`. Write it to the work folder as `tasks.md`, following every rule in `/spec` Step 7: one repo, at most `taskFileCap` files (test files not counted), for .NET the test and its code in the same task, one verify command from the repo guide's Commands table, a "Done when" line, a "Pattern to follow" file and a "Human interface" line.
 - At most `quickTasks` tasks. Fill the coverage table: every acceptance criterion in `quick.md` is covered.
 
 ## Step 7: Log and hand off

@@ -126,7 +126,7 @@ Override an agent by copying its file from `core/agents/` into your layer. Keep 
 
 | Agent | Runs | Can edit | Shell, beyond `guards` |
 |---|---|---|---|
-| `planner` | `/start`, `/spec`, `/quick`, `/plan`, `/tasks`, `/approve`, `/status`, `/dashboard`, `/stats`, `/standup`, `/pause`, `/resume`, `/shutdown` | `.work/` only | Can commit (WIP commits from `/pause`) |
+| `planner` | `/start`, `/spec`, `/quick`, `/approve`, `/status`, `/dashboard`, `/stats`, `/standup`, `/pause`, `/resume`, `/shutdown` | `.work/` only | Can commit (WIP commits from `/pause`) |
 | `implementer` | `/do-task`, `/pr-fix` | Code and tests. Repo guides, `CLAUDE.md`, and opencode config ask. | Can commit |
 | `reviewer` | `/review`, `/check-docs` | `.work/` only | Cannot `git add` or `git commit` |
 | `pr-reviewer` | `/pr-review` | `.work/` only | Cannot check out, switch, fetch, stash, `git add`, commit, or push; no web requests. It reads the PR only through `git show` and `git diff` at the PR's commit. |

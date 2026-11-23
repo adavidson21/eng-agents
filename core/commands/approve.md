@@ -68,7 +68,7 @@ The engineer approved the epic's breakdown (`milestones.md`), so a story's plan 
 
 - If the file does not exist, or there is no match, reply with the Status line of each of `spec.md`, `plan.md`, `bug.md`, and `quick.md` that exists, and stop.
 - If the file already says `Status: APPROVED`, say so, give the next command from Step 6, and stop.
-- **The feature lane has one gate.** When the file is `spec.md` and `plan.md` exists as a draft, approve both: every step below runs for `spec.md`, then for `plan.md`. If `tasks.md` is missing, say so and stop: suggest `/tasks $1` first.
+- **The feature lane has one gate.** When the file is `spec.md` and `plan.md` exists as a draft, approve both: every step below runs for `spec.md`, then for `plan.md`. If `tasks.md` is missing, say so and stop: suggest `/spec $1 tasks` first.
 - To approve `plan.md` on its own, `spec.md` must already say `Status: APPROVED`. If not, approve `spec.md` with it (above).
 - To approve `milestones.md`, `stories.md` must already say `Status: APPROVED`. If not, stop and suggest `/approve $1 stories`.
 
@@ -124,8 +124,8 @@ The engineer's answers while drafting are facts worth keeping. Only for `spec.md
 | Approved | Next |
 |---|---|
 | `spec.md` and `plan.md` together | Start a new session, then `/do-task $1 1` (in Workshop, approving starts the build on its own) |
-| `spec.md` alone (no plan yet, an older item) | `/plan $1` |
-| `plan.md` alone | `/tasks $1` if there is no `tasks.md`, otherwise start a new session, then `/do-task $1 1` |
+| `spec.md` alone (no plan yet, an older item) | `/spec $1 plan` |
+| `plan.md` alone | `/spec $1 tasks` if there is no `tasks.md`, otherwise start a new session, then `/do-task $1 1` |
 | `bug.md` | Start a new session, then `/do-task $1 1` |
 | `quick.md` | Start a new session, then `/do-task $1 1` |
 | `stories.md` | `/slice $1` |

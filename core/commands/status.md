@@ -42,15 +42,15 @@ Check in this order. The first match wins.
 | No `repos.md` | `/start <id> <feature, bug or quick>` |
 | Lane feature, no `spec.md` | `/spec <id>` |
 | `spec.md` is DRAFT, `plan.md` and `tasks.md` exist | Engineer reviews `spec.md`, `plan.md` and `tasks.md`, then `/approve <id>` |
-| `spec.md` is DRAFT, no `plan.md` | `/spec <id>` again to draft the plan and tasks, or `/plan <id>` |
-| Lane feature, no `plan.md` | `/plan <id>` |
-| `plan.md` is DRAFT, no `tasks.md` | `/tasks <id>` |
+| `spec.md` is DRAFT, no `plan.md` | `/spec <id>` again to draft the plan and tasks |
+| Lane feature, no `plan.md` | `/spec <id> plan` |
+| `plan.md` is DRAFT, no `tasks.md` | `/spec <id> tasks` |
 | `plan.md` is DRAFT | Engineer reviews `plan.md` and `tasks.md`, then `/approve <id>` |
 | Lane bug, no `bug.md` | `/bug <id>` |
 | `bug.md` is DRAFT | Engineer reviews `bug.md`, then `/approve <id>` |
 | Lane quick, no `quick.md` | `/quick <id>` |
 | `quick.md` is DRAFT | Engineer reviews `quick.md` and `tasks.md`, then `/approve <id>` |
-| No `tasks.md` | `/tasks <id>` |
+| No `tasks.md` | `/spec <id> tasks` (bug lane: `/bug <id>`) |
 | Unchecked task exists | `/do-task <id> <first unchecked number>` (new session) |
 | No `review.md`, or tasks were added after it | `/review <id>` |
 | Review is CHANGES NEEDED | Accept findings, then `/do-task` the fix tasks |

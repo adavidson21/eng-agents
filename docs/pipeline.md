@@ -10,7 +10,7 @@ How each phase works, why it is shaped this way, and what to do when it goes wro
                        (add a repo folder or ADO connection as a 3rd argument for another collection)
 /spec <id>             questions one at a time, then spec.md, plan.md and tasks.md
                        (files per repo, pattern to follow, test plan, small tasks)  GATE: /approve <id>
-/plan <id>, /tasks <id> redo the plan or the tasks on their own (older items, or after big edits)
+/spec <id> plan|tasks  redo the plan or the tasks on their own (older items, or after big edits)
 /do-task <id> <n>      one task per fresh session, TDD, commit      repeat
 /review <id>           pass 1 spec, pass 2 quality                  accept findings as tasks
 /pr <id>               short title and description per repo
@@ -217,12 +217,12 @@ Better input gives better diagrams: fill in "External systems" and "Business pro
 - Acceptance criteria the work item already states clearly are kept in its words, marked `(from work item)`. New ones are Given / When / Then.
 - Then it drafts `plan.md` and `tasks.md` from the draft spec in the same run (below). One `/approve` covers all three: the feature lane has one gate, like the quick lane.
 
-**Plan (drafted by /spec, or redone with /plan)**
+**Plan (drafted by /spec, or redone with /spec <id> plan)**
 - Each repo section names a "pattern to follow": a real file that does something similar. This is the most effective way to get consistent code from a weaker model.
 - The test plan maps every acceptance criterion to a test before any code exists.
 
-**Tasks (drafted by /spec, or redone with /tasks)**
-- Each task touches one repo and at most 3 files (or your configured cap). Split big-looking tasks by hand before starting.
+**Tasks (drafted by /spec, or redone with /spec <id> tasks)**
+- Each task touches one repo and at most 6 files, tests not counted (`taskFileCap` in the factory settings). Split big-looking tasks by hand before starting.
 - A coverage table proves every acceptance criterion has a task.
 - Every task has a "Human interface" line (page, button, endpoint, or command) so the implementer knows how a person meets the code.
 
@@ -415,7 +415,7 @@ Autopilot runs the build half of an item for you, so your only stops are approvi
 Each step runs in a **new session**, so every step starts with a clear context:
 
 ```
-/tasks <id>                 feature lane only (the bug lane already has tasks from /bug)
+/spec <id> tasks auto       only when tasks.md is missing (older feature items; /spec and /bug already write it)
 /do-task <id> <n>           once per open task, in order
 /review <id> auto           Blocker findings become fix tasks without asking, then back to /do-task
 /pr <id>                    PR text in pr.md, then autopilot finishes. It never pushes.
@@ -472,7 +472,7 @@ Plus **global memory** in `%USERPROFILE%\.config\eng-agents\memory.md` (`/memory
 - Days from `/start` to `/pr`, review rounds, and how often an item needs a second review.
 - Questions asked versus assumptions written.
 - `/do-task` verify failure rate, and full-suite failures caught before review.
-- Tasks added after `/tasks` (mostly review fixes) and review findings by severity.
+- Tasks added after the first task list (mostly review fixes) and review findings by severity.
 - Per gate: approvals, how many were approved as written versus edited first, and the as-written rate.
 
 It reads the `- Stats:` lines commands add to `progress.md` (Core 2.22.0+), the `Status:` and verdict lines, and `tasks.md`. Older items still show, with `n/a` where the data was never written. `-AsJson` prints the same data for Workshop's Dispatch.
@@ -510,6 +510,6 @@ Read it after about 10 items. A gate approved as written almost every time, with
 
 Use the interactive window for real work. In testing, `opencode run "/spec 12345"` did not always expand the slash command (the model had to find the command file itself), and the question tool was unavailable, so questions came back as plain text. Use `opencode run --command spec "12345 auto"` instead: `--command` runs the command file directly, and the rest is its arguments.
 
-**`auto` mode.** `/spec`, `/plan`, `/tasks`, `/bug`, `/do-task` and `/review` take `auto` as their last argument (`/do-task <id> <n> auto`). In `auto` nobody is watching: the command never asks or waits. Planning commands write what they would have asked as assumptions; `/do-task` stops and logs the task as blocked instead of asking. Autopilot and the evals use it.
+**`auto` mode.** `/spec`, `/bug`, `/do-task` and `/review` take `auto` as their last argument (`/do-task <id> <n> auto`). In `auto` nobody is watching: the command never asks or waits. Planning commands write what they would have asked as assumptions; `/do-task` stops and logs the task as blocked instead of asking. Autopilot and the evals use it.
 
 **Evals.** [`evals/`](../evals/README.md) runs commands with a real model against a made-up workspace and grades the results with file and git checks: `./evals/Invoke-Evals.ps1` after `./install.ps1`. Run it before a release and compare with the last results file.

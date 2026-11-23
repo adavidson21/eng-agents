@@ -7,7 +7,7 @@ Fix type: <Configuration | Data | Infrastructure | Code>
 Confidence: <High | Medium | Low>
 
 <!--
-Written by /spike in log mode from log.md in this folder. Loom reads the "# Spike findings:" title,
+Written by /spike in log mode from log.md in this folder. Builds reads the "# Spike findings:" title,
 the Fix type line, and the Short answer, Recommendation and Next step sections, so keep their shapes.
 Never copy a secret, token, password, connection string or personal data from the log into this file: name it
 ("the connection string in appsettings.Production.json") instead.
@@ -58,7 +58,7 @@ Never copy a secret, token, password, connection string or personal data from th
 
 ## Next step
 
-<For example: "Set Eligibility:TimeoutSeconds to 30 in the production App Service settings, then close this in Loom." or "Fix a bug from these findings: `/start new bug` with this folder.">
+<For example: "Set Eligibility:TimeoutSeconds to 30 in the production App Service settings, then close this in Builds." or "Fix a bug from these findings: `/start new bug` with this folder.">
 
 ## Sources
 

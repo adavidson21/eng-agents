@@ -15,7 +15,7 @@
 
     The LAST line of output is the id (G<n>), or the DUPLICATE line.
 
-    Workshop's Loom and Docket show open gaps as Teach cards. Answering one runs /teach, which writes the
+    Workshop's Builds and Tasks show open gaps as Teach cards. Answering one runs /teach, which writes the
     answer where it belongs and closes the gap with Close-Gap.ps1. Only these two scripts write gaps.md.
 
 .EXAMPLE

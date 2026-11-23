@@ -4,7 +4,7 @@ Status: DRAFT
 Type: <User Story | Bug>
 Parent: <#id or none>
 
-<!-- Written by /refine. The engineer approves it with /approve refine-<name>, or by changing the Status line to "Status: APPROVED". Loom (Workshop) publishes the Description and Acceptance criteria sections to ADO as they are. -->
+<!-- Written by /refine. The engineer approves it with /approve refine-<name>, or by changing the Status line to "Status: APPROVED". Builds (Workshop) publishes the Description and Acceptance criteria sections to ADO as they are. -->
 
 ## Description
 
@@ -25,7 +25,7 @@ Scenario: <name>
 
 ## Release note
 
-<One or two plain, business-friendly sentences about what users can now do. Not published by Loom yet: copy it into the release notes field.>
+<One or two plain, business-friendly sentences about what users can now do. Not published by Builds yet: copy it into the release notes field.>
 
 ## Notes for the builder
 

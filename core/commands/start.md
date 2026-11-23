@@ -20,7 +20,7 @@ Follow these steps in order. Do not skip any step, except the ones marked "only 
 - `$1` is one of:
   - a number: a work item in ADO.
   - a GitHub issue, `owner/repo#<number>` (for example `acme/web#12`): it is fetched into a new local work item (Step 3c). A bare `#12` is a GitHub issue too; then the third argument must be the repo folder it belongs to.
-  - a local id, `L` and a number (for example `L12`): work with no tracker item, already described. Workshop's Loom creates its folder before it runs `/start`.
+  - a local id, `L` and a number (for example `L12`): work with no tracker item, already described. Workshop's Builds creates its folder before it runs `/start`.
   - `new`: work with no tracker item that is not described yet.
 - The lane is optional. If `$2` is `feature`, `bug` or `quick`, that is the lane. Otherwise there is no lane argument: every argument after `$1` moves up one place (what this command calls the third argument is `$2`), and Step 4 takes the lane from the work item's type: `bug` if the type is Bug, otherwise `feature`. `quick` is never inferred; the engineer types it. `quick` is the small lane: one repo, at most 3 tasks, no schema or API contract change (see `/quick`).
 - For `new` with no lane, ask for the lane with the description in Step 3a (`feature`, `bug` or `quick`; recommend `feature`).

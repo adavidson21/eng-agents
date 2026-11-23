@@ -1,11 +1,11 @@
-# Shared helpers for product notes: one note per product in Workshop's Folio app, in
-# <Workshop data folder>/folio/products/<slug>.md (notes/products/ with a Workshop that has not renamed the folder yet),
+# Shared helpers for product notes: one note per product in Workshop's Notes app, in
+# <Workshop data folder>/notes/products/<slug>.md (folio/products/ with a Workshop that has not renamed the folder yet),
 # plus the team handbook (team/handbook.md) and Tandem's change log (tandem/changes.md). Dot-source this file; it
 # defines functions only. Also reads Workshop's knowledge from Settings' folder (Workshop docs/knowledge.md).
 #
-# The rules Tandem follows when it writes these notes are Folio's contract (Workshop apps/notes/README.md,
+# The rules Tandem follows when it writes these notes are Notes' contract (Workshop apps/notes/README.md,
 # "Tandem and product notes"): write only those notes and history/, keep a snapshot of the text it replaces in
-# Folio's history format, write atomically, set tandem-changed, never touch reviewed.
+# Notes' history format, write atomically, set tandem-changed, never touch reviewed.
 #
 # Works in Windows PowerShell 5.1 and PowerShell 7.
 
@@ -74,7 +74,7 @@ tags: [tandem]
 ---
 # Tandem's changes
 
-What Tandem changed outside Folio: repo guides' Remembered sections and the global rules (memory.md). One line each, newest last; review them like a product note.
+What Tandem changed outside Notes: repo guides' Remembered sections and the global rules (memory.md). One line each, newest last; review them like a product note.
 
 ## Changes
 "@ -replace "\r\n", "`n"
@@ -131,9 +131,10 @@ function Get-ProductNotesHome {
     if (-not (Test-Path -LiteralPath $dataDir -PathType Container)) {
         return @{ Ok = $false; Reason = "The Workshop data folder $dataDir does not exist." }
     }
-    # Folio's folder is folio/ (Workshop renames notes/ on start); an older Workshop still has notes/ only.
-    $folder = "folio"
-    if (-not (Test-Path -LiteralPath (Join-Path $dataDir "folio") -PathType Container) -and (Test-Path -LiteralPath (Join-Path $dataDir "notes") -PathType Container)) { $folder = "notes" }
+    # Notes' folder is notes/, its app id (Workshop renames folio/ to notes/ on start since November 2026); a Workshop
+    # that has not started since still has folio/ only, and that is used while it is the only one.
+    $folder = "notes"
+    if (-not (Test-Path -LiteralPath (Join-Path $dataDir "notes") -PathType Container) -and (Test-Path -LiteralPath (Join-Path $dataDir "folio") -PathType Container)) { $folder = "folio" }
     $notesDir = Join-Path $dataDir $folder
     return @{ Ok = $true; Reason = ""; DataDir = $dataDir; Folder = $folder; NotesDir = $notesDir; ProductsDir = (Join-Path $notesDir "products") }
 }

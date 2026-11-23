@@ -4,7 +4,7 @@
 
 ## Follow-ups from last time
 
-- <the follow-up, as written> (<Last 1:1 | Docket>)
+- <the follow-up, as written> (<Last 1:1 | Tasks>)
 
 ## Blockers to ask about
 

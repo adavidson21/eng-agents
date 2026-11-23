@@ -4,7 +4,7 @@ opencode agents (Tandem) that take a piece of work to a ready-to-open pull reque
 
 ## Daily use
 
-Open opencode from your workspace root (for example `C:\src\work`). In Workshop, Loom's **flow cards** run the same steps from buttons: Handle a request, Build a feature, Fix a bug, Investigate, Plan an epic, Hand to a person, Write docs (see [Flow cards](docs/pipeline.md#flow-cards)).
+Open opencode from your workspace root (for example `C:\src\work`). In Workshop, Builds' **flow cards** run the same steps from buttons: Handle a request, Build a feature, Fix a bug, Investigate, Plan an epic, Hand to a person, Write docs (see [Flow cards](docs/pipeline.md#flow-cards)).
 
 | Work | Run |
 |---|---|
@@ -15,7 +15,7 @@ Open opencode from your workspace root (for example `C:\src\work`). In Workshop,
 | Define the work first | `/scope <idea>` → `/approve scope-<name>` → `/slice scope-<name>` → `/approve scope-<name> milestones` → `/backlog scope-<name> [csv\|ado\|local]` → `/start <story id> feature` |
 | Question or a vague ask, no code changes (writes a shareable `brief.html`) | `/spike <id or topic> [--for business\|engineering\|leadership] [--timebox 1h\|2h\|4h\|1d]` |
 | Docs | `/docs <target>` → read the draft → new session → `/check-docs <doc path>` → fix → `/publish docs-<name>` (approves it in place; you commit it) |
-| Where was I? | `/dashboard [id]` (opens Loom in Workshop, at the item when you give an id) or `/status [id]` |
+| Where was I? | `/dashboard [id]` (opens Builds in Workshop, at the item when you give an id) or `/status [id]` |
 | Switch to something urgent | `/pause <id> [reason]`, later `/resume <id>` |
 | End of day | `/shutdown`: writes `.work/runway.md` with where you left off, tomorrow's first step, and open loops. Next morning, `/status` shows it first. |
 | Remember a rule | `/memory <rule>` (one repo) or `/memory -global <rule>` (every repo). `/memory -list` shows them. |
@@ -29,7 +29,7 @@ Every other command (triage, shaping, PR reviews, handoffs, TSDs, retros, stats,
 - **New session** (`/new`) before every `/do-task`.
 - **Review findings** you accept become new tasks. Run `/do-task` for each, then `/review` again.
 - **You approve every push** and open the PR. No agent can merge or deploy. Outside changes (Cloudflare change sets, MCP tools that change something) are only ever asked for; you approve them in Workshop's Approvals, and Workshop's Activity lists every call.
-- Every command ends with the next command to run. If lost, run `/dashboard` (Loom in Workshop) or `/status <id>`.
+- Every command ends with the next command to run. If lost, run `/dashboard` (Builds in Workshop) or `/status <id>`.
 
 Something went wrong? See [Recovering from problems](docs/pipeline.md#recovering-from-problems).
 
@@ -54,9 +54,9 @@ Running on a model you host (Ollama, LM Studio, llama.cpp, vLLM or your company'
 
 ## What Workshop relies on
 
-Loom's Health > Tandem reads the same numbers as `/stats` with its own port of `Get-PipelineStats.ps1` and `Get-ReviewFindings.ps1`, checked against Workshop's `docs/examples/work/expected-health.json` by `core/scripts/stats/Test-HealthFormat.ps1` in CI.
+Builds' Health > Tandem reads the same numbers as `/stats` with its own port of `Get-PipelineStats.ps1` and `Get-ReviewFindings.ps1`, checked against Workshop's `docs/examples/work/expected-health.json` by `core/scripts/stats/Test-HealthFormat.ps1` in CI.
 
-Workshop's Loom reads `.work` with its own parser. The two repos meet only at the `.work` format, written down in Workshop's [docs/work-format.md](https://github.com/adavidson21/workshop/blob/main/docs/work-format.md), and at the command names Loom runs. Change the format, or the next-step rules in `core/commands/status.md`, in Workshop too.
+Workshop's Builds reads `.work` with its own parser. The two repos meet only at the `.work` format, written down in Workshop's [docs/work-format.md](https://github.com/adavidson21/workshop/blob/main/docs/work-format.md), and at the command names Builds runs. Change the format, or the next-step rules in `core/commands/status.md`, in Workshop too.
 
 ## License
 

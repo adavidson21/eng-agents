@@ -9,15 +9,15 @@ You interview the engineer (it is their idea, or a request they want to understa
 
 This is the interview the engineer asked for, so core rule 3's limit of 3 questions per command does not apply here: each round asks at most 3, in `questions.md`, and the brief comes by round 3. The rest of rule 3 does: never ask what the files, the code, the triage or earlier answers already settle, and when a recommended answer is safe to assume, write it in `understanding.md` (as "Assumed: ...") instead of asking.
 
-**You never ask questions in the chat.** Each round's questions go in `questions.md`, and the run ends. The engineer answers in Workshop's Loom (or in `answers.md` by hand) and runs `/shape shape-<name>` again.
+**You never ask questions in the chat.** Each round's questions go in `questions.md`, and the run ends. The engineer answers in Workshop's Builds (or in `answers.md` by hand) and runs `/shape shape-<name>` again.
 
 ## Step 1: Pick the folder
 
 - If the request above is empty, stop and reply: `Usage: /shape <idea>, /shape triage-<name>, or /shape shape-<name> [brief|more]`.
-- The mode is the second word, if it is `brief` (write the brief now, ask nothing more) or `more` (ask another round, even if a brief exists). Otherwise there is no mode. `/shape triage-<name> brief` is Loom's **Skip to the brief**: write the brief on the first run, from the triage, its answers and the code, with no round of questions; what is still open goes under Open questions.
+- The mode is the second word, if it is `brief` (write the brief now, ask nothing more) or `more` (ask another round, even if a brief exists). Otherwise there is no mode. `/shape triage-<name> brief` is Builds' **Skip to the brief**: write the brief on the first run, from the triage, its answers and the code, with no round of questions; what is still open goes under Open questions.
 - **Continue:** if the first word starts with `shape-`, the folder is `.work/<that word>/`. If it does not exist, list the `.work/shape-*` folders and stop.
 - **From a triage:** if the first word starts with `triage-`, the folder is `.work/shape-<the rest>/` (for `triage-1234`, `.work/shape-1234/`). If `.work/<first word>/triage.md` does not exist, list the `.work/triage-*` folders and stop. If the shape folder exists, continue it; otherwise create it as below.
-- **New:** otherwise the whole request is the idea. If the request ends with `--name <short name>` (Loom sends it), take it off the request and use that as the short name. Otherwise make a short name: the first 5 meaningful words, lowercase, joined with `-`, at most 40 characters, filler words (a, an, the, to, of, for, and, add, new) dropped. The folder is `.work/shape-<short name>/`. If it already exists, stop and ask: "`.work/shape-<short name>/` exists. Continue it (`/shape shape-<short name>`) or use another name?"
+- **New:** otherwise the whole request is the idea. If the request ends with `--name <short name>` (Builds sends it), take it off the request and use that as the short name. Otherwise make a short name: the first 5 meaningful words, lowercase, joined with `-`, at most 40 characters, filler words (a, an, the, to, of, for, and, add, new) dropped. The folder is `.work/shape-<short name>/`. If it already exists, stop and ask: "`.work/shape-<short name>/` exists. Continue it (`/shape shape-<short name>`) or use another name?"
 - A new folder: copy `{{ENG_HOME}}/templates/progress.md` into it as `progress.md`, with the folder name as the id and the idea (or the triage's title) as the title. Write the idea, as given, to `idea.md` (from a triage: the triage's title and summary, and a line `From: .work/<triage folder>/`).
 
 ## Step 2: Read
@@ -62,5 +62,5 @@ Otherwise (or when the mode is `more`), ask a round (Step 5).
 
 - Add a `progress.md` entry for `/shape` (round, questions asked or brief written).
 - Reply in 3 lines or fewer:
-  - After a round: "Round <n>: <k> questions in `.work/shape-<name>/questions.md`. Answer them in Loom, or in `answers.md`, then `/shape shape-<name>`." Do not repeat the questions in the chat.
+  - After a round: "Round <n>: <k> questions in `.work/shape-<name>/questions.md`. Answer them in Builds, or in `answers.md`, then `/shape shape-<name>`." Do not repeat the questions in the chat.
   - After the brief: the problem in one line, the level and size, open questions if any, and the next step: `/scope shape-<name>` (Epic or Feature) or `/refine shape-<name>` (User Story or Bug). `/shape shape-<name> more` asks another round.

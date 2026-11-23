@@ -5,7 +5,7 @@ Route: <delegate | myself | undecided>
 Size: <S | M | L | XL>
 Path: <interview | brief | decline>
 
-<!-- Written by /triage. Loom (Workshop) reads the Route, Size and Path lines and the "Questions for the requester" list, so keep their shapes. Path is the next step it suggests at Loom's triage fork. -->
+<!-- Written by /triage. Builds (Workshop) reads the Route, Size and Path lines and the "Questions for the requester" list, so keep their shapes. Path is the next step it suggests at Builds' triage fork. -->
 
 ## Summary
 

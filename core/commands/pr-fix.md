@@ -42,4 +42,4 @@ The branch is already on the remote and the team may be reviewing it. So:
 - Append the `- Result:` line to the `ci/` file from Step 1 (nothing else in it changes).
 - Add a `progress.md` entry for `/pr-fix` with `- Stats: pr-fix=<fixed, not-fixed or needs-you> kind=$2 attempts=<runs of the failing command>`.
 - `auto`: end your reply with the Result line and stop.
-- Not `auto`: say what you found and did in 2 lines, then: "Push it from Loom (**Push fix**), or `git -C <repo> push`."
+- Not `auto`: say what you found and did in 2 lines, then: "Push it from Builds (**Push fix**), or `git -C <repo> push`."

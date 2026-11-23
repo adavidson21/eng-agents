@@ -1,6 +1,6 @@
 # First look: <topic or log>
 
-Written in the first few minutes, before the deep work. Loom shows it on the card. Plain words; no secrets, no customer data.
+Written in the first few minutes, before the deep work. Builds shows it on the card. Plain words; no secrets, no customer data.
 
 <Question mode: keep these three lines.>
 Quick answer: <1 to 3 sentences from what is obvious so far>

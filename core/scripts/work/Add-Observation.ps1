@@ -13,7 +13,7 @@
 
     The LAST line of output is the id (O<n>), or the DUPLICATE line.
 
-    Workshop's Loom reads this file (its Inbox, Noticed). Loom keeps what you did with each
+    Workshop's Builds reads this file (its Inbox, Noticed). Builds keeps what you did with each
     line in its own state; this file is only ever appended to.
 
 .EXAMPLE
@@ -65,7 +65,7 @@ if (-not (Test-Path -LiteralPath $WorkRoot)) { New-Item -ItemType Directory -Pat
 $file = Join-Path $WorkRoot "observations.md"
 $idsFile = Join-Path $WorkRoot ".observation-ids"
 
-$header = "# Observations`n`nThings agents noticed that were out of scope. Added by Add-Observation.ps1 only; Workshop's Loom shows them in its Inbox. Never edit or reorder lines.`n`n"
+$header = "# Observations`n`nThings agents noticed that were out of scope. Added by Add-Observation.ps1 only; Workshop's Builds shows them in its Inbox. Never edit or reorder lines.`n`n"
 $existing = if (Test-Path -LiteralPath $file) { [System.IO.File]::ReadAllText($file) } else { "" }
 
 $norm = { param($s) (($s.ToLowerInvariant()) -replace "\s+", " ").Trim() }

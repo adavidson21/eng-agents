@@ -7,7 +7,7 @@ Write documentation for: **$ARGUMENTS**
 
 ## Step 1: Clarify
 
-If the request ends with `--name <short-name>` (Loom sends it), take it off the request: it is the `<short-name>` in Step 5.
+If the request ends with `--name <short-name>` (Builds sends it), take it off the request: it is the `<short-name>` in Step 5.
 
 Work out these three things from the request, the repo and its existing docs. Do not ask: pick the most likely answer for anything missing, and show your picks in Step 6 so the engineer can change them:
 - **Where** the doc lives (file path, new or existing).
@@ -33,7 +33,7 @@ Work out these three things from the request, the repo and its existing docs. Do
 ## Step 5: Save sources for the fact check
 
 - Create `.work/docs-<short-name>/sources.md` listing each factual claim and the file that supports it. `<short-name>` is the `--name` value from Step 1, or else 3 to 5 lowercase words from the doc's topic joined with hyphens.
-- The first line of `sources.md` is `Doc: <the doc's path from the workspace root>`, for example `Doc: gateway/docs/run-locally.md`. Loom reads it to save the doc to Folio, and `/publish` reads it to approve the doc.
+- The first line of `sources.md` is `Doc: <the doc's path from the workspace root>`, for example `Doc: gateway/docs/run-locally.md`. Builds reads it to save the doc to Notes, and `/publish` reads it to approve the doc.
 
 ## Step 6: Hand off
 

@@ -17,6 +17,36 @@ How each phase works, why it is shaped this way, and what to do when it goes wro
 You push (or approve the agent pushing) and open the PR. Your normal review and CI/CD take it to production.
 ```
 
+## More commands
+
+The main flows are in the [README](../README.md#daily-use). Everything else:
+
+| Work | Run |
+|---|---|
+| Shape an idea with you first | `/shape <idea>` (or `/shape triage-<name>` after a triage): rounds of up to 5 questions in `.work/shape-<name>/questions.md`, a running `understanding.md`, then `brief.md`. Answer in Slate (or `answers.md`) and run `/shape shape-<name>` again; `/shape shape-<name> brief` writes the brief now. Then `/scope shape-<name>` or `/refine shape-<name>`. |
+| Triage a request before work starts | `/triage <ADO id> [note]` or `/triage <the request in words>`: writes `.work/triage-<id>/triage.md` with a summary, what it touches, questions for the requester, a size, a suggested route (delegate or do it yourself) and a suggested path (interview, brief or decline). Never posts. Then `/shape triage-<name>` (interview) or `/shape triage-<name> brief` (skip to the brief). Loom in Workshop runs it from a button. |
+| Define one story or bug | `/refine <title>` → `/approve refine-<name>`. Writes `refine.md` with a description and Gherkin acceptance criteria, ready to publish (Slate publishes it to ADO). For anything epic-sized, use `/scope`. |
+| Hand work to a teammate | `/handoff <ADO id> <name>`: a brief with context, acceptance criteria, where to start and what to watch. Posts nothing. |
+| An error log: probable root cause, why, and a fix | Paste it on Fix a bug in Loom (**Error log**), or put it in `.work/spike-log-<name>/log.md` and run `/spike spike-log-<name> --log`. It checks the configuration before the code and prefers a fix that changes no code. Changes nothing. |
+| First pass on a teammate's PR | `/pr-review <PR link>` (or **PR reviews** in Loom). Drafts comments in `.work/pr-<id>/review.md`; you post the ones you agree with. Never checks out the PR or posts anything. |
+| Ask or capture from Workshop | Type in the hub in Workshop's Loom (Chat tab). It runs `/hub <request>`: captures become proposals you accept, questions are answered from your repo map, repo guides and code, with sources. It writes nothing but its own two files and never changes ADO or git. |
+| Prep a 1:1 | **Draft talking points** in Workshop's 1:1s app runs `/one-on-one <packet>`. It drafts wins, follow-ups, blockers, growth topics and 3 questions from the app's packet; it never rates or judges anyone. |
+| Technical spec with diagrams | `/tsd <product or repo> [repo ...]` → new session → `/check-docs .work/tsd-<name>/tsd.md` → revise → `/publish tsd-<name>` |
+| Drive it from the browser | Loom in [Workshop](https://github.com/adavidson21/workshop): it runs each step in opencode (see [Dashboard](#dashboard)) |
+| Hands-off build after the plan | Loom: **Approve and build**. It runs tasks, review, and PR text, each step in a new session, and stops only when it needs you (see [Autopilot](#autopilot)) |
+| Is the pipeline helping? | `/stats [--since yyyy-MM-dd]`: days to PR, review rounds, rework, and which gates you approve as written (see [Measuring the pipeline](#measuring-the-pipeline)) |
+| Learn from an item | `/retro <id>` after review: what caused rework and up to 5 rules; tick the ones to save. `/retro --since <date>` finds mistakes that repeat across items. |
+| Standup update | `/standup [days back]` (default 1, or 3 on a Monday) |
+| Cloudflare (your own computer, with Workshop's Cloudflare connector on) | `/cloudflare <what you want>` proposes a change set (DNS, a Worker on a custom domain, Pages projects and variables, rollbacks) that you approve in Workshop's Approvals; `/cloudflare why <worker or project>` reads a failed build's log; `/cloudflare cf-<name> check` confirms what was applied. Agents never hold the token and never apply anything. |
+| New repo in the workspace | `/onboard-repo <folder>` |
+| New product, ready for its first build | `/onboard-product <product>` (repo guides, product note, gaps to answer, a trial run) |
+| Regression tests for a product that has few | `/cover <product> [-- <area>]` (one hands-off Quick change per UI repo that adds end-to-end tests) |
+| Your code review comments (Send back in Workshop) | `/revise <id>`: each comment becomes a fix task, an answer or a declined note; comments marked as rules are remembered. Workshop runs it, then the build comes back to Publish as the next revision. |
+| A published PR's CI failed, or it conflicts with its base | `/pr-fix <id> ci` or `/pr-fix <id> conflict`: fixes it on the branch (a merge of the base for a conflict) and never pushes. Workshop runs it after Publish and shows **Push fix**. |
+| Work item in another ADO collection | `/start <id> <lane> <repo folder or connection>` |
+
+**Workshop holds the tokens.** With Workshop installed and started once, `install.ps1` adds Workshop to opencode as an MCP server (`workshop`): its tools for agents, the tools of MCP servers you add in Workshop, and approval status. The GitHub scripts read through Workshop when no token is set here, so a GitHub token can live in the Mac Keychain.
+
 ## Design choices
 
 Built for a slower model that needs explicit procedures.
@@ -40,6 +70,7 @@ A gate is the `Status:` line at the top of a file. Nothing moves past a gate unt
 |---|---|---|---|
 | `spec.md` and `plan.md` (one gate, with `tasks.md`) | `/spec` | `/approve <id>` (approves both) | `/do-task` (feature lane) |
 | `bug.md` | `/bug` | `/approve <id>` | `/do-task` (bug lane) |
+| `quick.md` | `/quick` | `/approve <id>` | `/do-task` (quick lane) |
 | `tsd.md` | `/tsd` | `/publish tsd-<name>` (approves and moves it) | `/tsd` (refuses to overwrite an approved TSD) |
 
 ```mermaid
@@ -109,9 +140,9 @@ Review stops for you only when it finds blockers it cannot turn into fix tasks (
 
 ## Quick lane
 
-For small work even the feature lane's spec, plan and tasks cost more than they catch. `/quick <id>` (planner) writes `quick.md`, one file with the goal, acceptance criteria, assumptions, files and pattern to follow, plus a normal `tasks.md` (at most 2 tasks). You approve once with `/approve <id>`; `/do-task`, `/review` and `/pr` work as in the feature lane and read the criteria from `quick.md`. The branch is `dev/feature/<id>-<name>`.
+For small work even the feature lane's spec, plan and tasks cost more than they catch. `/quick <id>` (planner) writes `quick.md`, one file with the goal, acceptance criteria, assumptions, files and pattern to follow, plus a normal `tasks.md` (at most `quickTasks` tasks, default 3). You approve once with `/approve <id>`; `/do-task`, `/review` and `/pr` work as in the feature lane and read the criteria from `quick.md`. The branch is `dev/feature/<id>-<name>`.
 
-`/quick` steps up to the feature lane on its own when the work needs more than 2 tasks, a second or shared repo, a schema, migration or API contract change, or acceptance criteria it cannot pin down: it sets `Lane: feature` in `repos.md`, writes what it found under Notes, logs `escalated=1`, and tells you to run `/spec`.
+`/quick` steps up to the feature lane on its own when the work needs more tasks than that, a second or shared repo, a schema, migration or API contract change, or acceptance criteria it cannot pin down: it sets `Lane: feature` in `repos.md`, writes what it found under Notes, logs `escalated=1`, and tells you to run `/spec`.
 
 When to widen or narrow it: `/stats` shows quick items next to feature items (days to PR, review rounds) and how many stepped up. If quick items reach PR faster without more review rounds, it is working.
 

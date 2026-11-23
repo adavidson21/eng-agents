@@ -4,10 +4,17 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
-## Core 4.18.1 (2026-11-23)
+## Core 4.19.0 (2026-11-23)
 
-- Removed `scripts/dashboard/New-Dashboard.ps1.orig`, a leftover merge backup that `install.ps1` copied into every install.
-- `docs/customization.md`: the Agents table now lists every command each agent runs (it was missing `/quick`, `/dashboard`, `/stats`, `/pr-fix`, `/onboard-product`, `/cover`, `/cloudflare`, `/revise`, `/teach` and `/product-notes`).
+Fewer moving parts: two commands, one agent and the static dashboard are gone, with nothing lost. Needs Workshop opencode connector 1.38.0 or later, which suggests and runs the new command names.
+- `/plan` and `/tasks` are folded into `/spec`. `/spec <id>` still drafts spec, plan and tasks for one approval; `/spec <id> plan` and `/spec <id> tasks` redo one part (older items, or after big edits). `progress.md` keeps its `/plan` and `/tasks` entries, so `/stats` reads old and new items the same.
+- The static dashboard is retired: `/dashboard static`, `New-Dashboard.ps1`, its HTML template and `Test-WorkFormat.ps1` are deleted (about 1,900 lines). `/dashboard` opens Loom in Workshop; without Workshop, `/status` shows every item and its next command. `install.ps1` removes the old files from your install.
+- `milestone-architect` is merged into `product-manager`, which now runs `/slice` and `/backlog` too (and may run `Export-Backlog.ps1`; pushing to ADO still asks).
+- One way to save a product fact: `/product-notes add <product> <fact>`. `/memory` is for repo and global rules only; `/memory -product` now points you to `/product-notes add`.
+- README: the daily-use table keeps the main flows; every other command moved to [More commands](docs/pipeline.md#more-commands).
+- Agent files: descriptions now match the commands each agent runs (planner, writer, investigator, reviewer); the reviewer skips its two code passes for `/check-docs`; the PR reviewer and hub follow the same voice and product-note rules as the other agents.
+- Fixed stale docs: the quick lane allows `quickTasks` tasks (default 3), a task's file cap is 6, and `docs/customization.md`'s Agents table lists every command.
+- Removed `scripts/dashboard/New-Dashboard.ps1.orig`, a leftover merge backup.
 
 ## Core 4.18.0 (2026-11-23)
 

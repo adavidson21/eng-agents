@@ -1,5 +1,5 @@
 ---
-description: Investigates bugs, spikes, and unfamiliar repos. Runs code and tests but never changes code.
+description: Investigates bugs, spikes, requests to triage, unfamiliar repos and products, and Cloudflare changes. Runs code and tests but never changes code.
 mode: primary
 temperature: 0.2
 permission:

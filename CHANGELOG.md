@@ -4,9 +4,9 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
-## Core 4.19.0 (2026-11-23)
+## Core 4.20.0 (2026-11-23)
 
-Fewer moving parts: two commands, one agent and the static dashboard are gone, with nothing lost. Needs Workshop opencode connector 1.38.0 or later, which suggests and runs the new command names.
+Fewer moving parts: two commands, one agent and the static dashboard are gone, with nothing lost. Needs Workshop opencode connector 1.39.0 or later, which suggests and runs the new command names.
 - `/plan` and `/tasks` are folded into `/spec`. `/spec <id>` still drafts spec, plan and tasks for one approval; `/spec <id> plan` and `/spec <id> tasks` redo one part (older items, or after big edits). `progress.md` keeps its `/plan` and `/tasks` entries, so `/stats` reads old and new items the same.
 - The static dashboard is retired: `/dashboard static`, `New-Dashboard.ps1`, its HTML template and `Test-WorkFormat.ps1` are deleted (about 1,900 lines). `/dashboard` opens Loom in Workshop; without Workshop, `/status` shows every item and its next command. `install.ps1` removes the old files from your install.
 - `milestone-architect` is merged into `product-manager`, which now runs `/slice` and `/backlog` too (and may run `Export-Backlog.ps1`; pushing to ADO still asks).
@@ -15,6 +15,11 @@ Fewer moving parts: two commands, one agent and the static dashboard are gone, w
 - Agent files: descriptions now match the commands each agent runs (planner, writer, investigator, reviewer); the reviewer skips its two code passes for `/check-docs`; the PR reviewer and hub follow the same voice and product-note rules as the other agents.
 - Fixed stale docs: the quick lane allows `quickTasks` tasks (default 3), a task's file cap is 6, and `docs/customization.md`'s Agents table lists every command.
 - Removed `scripts/dashboard/New-Dashboard.ps1.orig`, a leftover merge backup.
+
+## Core 4.19.0 (2026-11-23)
+
+Quick answers in Workshop's Chat (Chat 4.5.0, opencode connector 1.38.0). Nothing else changes.
+- New agent `quick`: no tools (`"*": deny`) and a short prompt. Workshop looks up the engineer's notes that fit a question and sends them with it, so the model answers in one request. Its prompt replaces opencode's own, so with a stand-in model the whole request was about 1,900 characters instead of about 11,900 with `plan` and tools off. Without it, Workshop falls back to `plan` with tools off for that chat.
 
 ## Core 4.18.0 (2026-11-23)
 

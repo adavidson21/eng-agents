@@ -54,6 +54,12 @@
       { "kind": "edit", "target": ".work/L1-bulk-discount/spec.md", "expect": "deny" },
       { "kind": "bash", "target": "git log --oneline", "expect": "allow" },
       { "kind": "bash", "target": "rm -rf sample-api", "expect": "deny" }
+    ],
+    "quick": [
+      { "kind": "edit", "target": "sample-api/src/Orders/OrderTotals.cs", "expect": "deny" },
+      { "kind": "edit", "target": ".work/L1-bulk-discount/spec.md", "expect": "deny" },
+      { "kind": "bash", "target": "git log --oneline", "expect": "deny" },
+      { "kind": "bash", "target": "rm -rf sample-api", "expect": "deny" }
     ]
   }
 }

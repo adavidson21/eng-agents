@@ -4,6 +4,11 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 4.19.0 (2026-11-23)
+
+Quick answers in Workshop's Chat (Chat 4.5.0, opencode connector 1.38.0). Nothing else changes.
+- New agent `quick`: no tools (`"*": deny`) and a short prompt. Workshop looks up the engineer's notes that fit a question and sends them with it, so the model answers in one request. Its prompt replaces opencode's own, so with a stand-in model the whole request was about 1,900 characters instead of about 11,900 with `plan` and tools off. Without it, Workshop falls back to `plan` with tools off for that chat.
+
 ## Core 4.18.0 (2026-11-23)
 
 Fewer ways for a small local model to trip in Loom's board flows (Workshop opencode connector 1.36.0). Nothing breaks for items in progress, and each change still works with an older Workshop.

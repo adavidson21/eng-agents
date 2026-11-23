@@ -50,8 +50,7 @@ Open opencode from your workspace root (for example `C:\src\work`). In Workshop,
 - **You approve every push** and open the PR. No agent can merge or deploy. Outside changes (Cloudflare change sets, MCP tools that change something) are only ever asked for; you approve them in Workshop's Approvals, and Workshop's Activity lists every call.
 - **Workshop holds the tokens.** With Workshop installed and started once, `install.ps1` adds Workshop to opencode as an MCP server (`workshop`): its tools for agents, the tools of MCP servers you add in Workshop, and approval status. The GitHub scripts read through Workshop when no token is set here, so a GitHub token can live in the Mac Keychain.
 - Every command ends with the next command to run. If lost, run `/dashboard` or `/status <id>`.
-- Loom in Workshop is the live UI; `/dashboard` opens it and says to start Workshop if it is not running. The static dashboard (`.work\dashboard.html`, `/dashboard static`) remains for terminal-only use.
-- **After a restart**, open `.work\dashboard.html` (bookmark it) to see where you were, or start Workshop and run `/dashboard` (see [Dashboard](docs/pipeline.md#dashboard)).
+- Loom in Workshop is the live UI; `/dashboard` opens it and says to start Workshop if it is not running. Without Workshop, `/status` shows where each item is.
 
 Something went wrong? See [Recovering from problems](docs/pipeline.md#recovering-from-problems).
 

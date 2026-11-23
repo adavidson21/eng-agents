@@ -1,6 +1,6 @@
 # Where Dispatch is. Dispatch (the Agents app in adavidson21/workshop) is the live view of .work
 # and the opencode agents; it replaced the live dashboard that used to run from this folder.
-# Dot-sourced by Open-Dispatch.ps1 (/dashboard) and New-Dashboard.ps1 (the static page's link).
+# Dot-sourced by Open-Dispatch.ps1 (/dashboard).
 # Reads two files and makes no network calls. Names no website: Workshop says where it lives
 # (its health answer, or the sites in its config.json).
 

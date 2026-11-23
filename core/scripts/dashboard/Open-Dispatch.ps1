@@ -62,7 +62,7 @@ if (-not $running) {
     else {
         Write-Output "Workshop is not installed on this computer. Dispatch, the live view of your work, runs in Workshop: see https://github.com/adavidson21/workshop#dispatch to install it, then run /dashboard again."
     }
-    Write-Output "Without Workshop, /dashboard static builds a snapshot page and /status shows where each item is."
+    Write-Output "Without Workshop, /status shows where each item is."
     Write-Output $url
     exit 2
 }

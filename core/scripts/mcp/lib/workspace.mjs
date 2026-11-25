@@ -76,7 +76,9 @@ export function readReposMd(workFolder) {
   if (!workFolder) return [];
   const file = path.join(workFolder.dir, 'repos.md');
   if (!fs.existsSync(file)) return [];
-  return readTable(fs.readFileSync(file, 'utf8'), null).filter((r) => r['repo folder']);
+  return readTable(fs.readFileSync(file, 'utf8'), null)
+    .map((r) => (r['repo folder'] || !r.repo ? r : { ...r, 'repo folder': r.repo }))
+    .filter((r) => r['repo folder']);
 }
 
 // The folder git, build and test commands run in: the repo row's Path (a worktree) when it has one.

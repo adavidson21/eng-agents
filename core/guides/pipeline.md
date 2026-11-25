@@ -50,6 +50,11 @@ Templates for these files are in `{{ENG_HOME}}/templates/`. Always start a new f
 | `git add <files>` then `git commit -m` | `tandem_repo_commit` (agents that may commit) |
 | running the repo guide's Build, All unit tests, Pre-commit check, Lint or Format check | `tandem_checks_run` with `kind`; `kind: command` for a verify or One test class line. With the item it compares with `baseline.md` (`baseline.new` are this item's failures); `save` keeps a Red or Green run; `baseline: true` writes the row at `/start` |
 | `Start-UiApp.ps1`, `Stop-UiApp.ps1`, `Test-Ui.ps1`, `Test-Suite.ps1` | `tandem_ui_app_start`, `tandem_ui_app_stop`, `tandem_ui_check`, `tandem_tests_suite` (same arguments by name) |
+| writing a `progress.md` entry | `tandem_work_progress_add`: give the saved logs (`outputLog`, `redLog`, `greenLog`), never pasted output |
+| ticking `## [ ] Task <n>` in `tasks.md` | `tandem_work_task_done` (with the passing log) |
+| the result tables of `review.md` and the Checks block of `pr.md` | `tandem_work_fill_results` after you write the file; the rest stays yours |
+
+Before a command that wrote files in the work folder ends, run `tandem_work_lint` on the item and fix every error (warnings are for you to judge).
 
 ## Factory settings
 

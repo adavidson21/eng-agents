@@ -20,8 +20,12 @@
 | `tests_detect` | Angular project and port, unit runner, Playwright, config, browsers, test folder, routes, what is missing |
 | `tests_ensure_env` | Installs only what is missing: `@playwright/test`, `playwright.config.ts` (webServer on `ng serve`), test folder, Chromium |
 | `tests_scaffold` | A new spec with one `[AC-n]` test per criterion, an API mock and `page.goto`; each test fails until written |
+| `work_progress_add` | A `progress.md` entry in Workshop's format, with output copied from saved logs; refuses a PASS no log shows |
+| `work_task_done` | Ticks a task in `tasks.md`, only when its saved verify run passed (with `log`) |
+| `work_fill_results` | `review.md`'s result tables and `pr.md`'s Checks lines from recorded runs and result files |
+| `work_lint` | Checks a work item's files against their templates and Workshop's `.work` contract; errors and warnings with line numbers |
 
-Agents that must not change code have the write tools turned off in their frontmatter (`tools:`): chat, hub, quick and people-prep get none; product-manager and pr-reviewer get the read tools; planner, reviewer, investigator and writer get everything except `repo_commit`, `tests_ensure_env` and `tests_scaffold`.
+The `work_*` tools write only in `.work`. Agents that must not change code have the code-writing tools turned off in their frontmatter (`tools:`): chat, hub, quick and people-prep get none; product-manager and pr-reviewer get the read tools; planner, reviewer, investigator and writer get everything except `repo_commit`, `tests_ensure_env` and `tests_scaffold`.
 
 ## Where things run
 

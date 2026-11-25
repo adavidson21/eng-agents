@@ -114,6 +114,17 @@ export async function checksRun(args) {
       result.baseline = compareWithBaseline(parsed.failing, baselineRow(fs.readFileSync(bfile, 'utf8'), ctx.repo));
       result.baseline.newFailures = !passed && (result.baseline.new.length > 0 || parsed.failing.length === 0);
     }
+    // Every run with an item is recorded, so review.md and pr.md can be filled from what really ran.
+    try {
+      const dir = path.join(ctx.work.dir, 'checks');
+      fs.mkdirSync(dir, { recursive: true });
+      const record = {
+        at: new Date().toISOString(), repo: ctx.repo, kind: picked.used, command, passed, exitCode: r.code, timedOut: r.timedOut,
+        tests: parsed.tests, failing: parsed.failing, errors: parsed.errors.slice(0, 3),
+        new: result.baseline ? result.baseline.new : null, save: args.save || null, baseline: !!args.baseline,
+      };
+      fs.appendFileSync(path.join(dir, 'runs.jsonl'), `${JSON.stringify(record)}\n`, 'utf8');
+    } catch { /* the run itself still counts */ }
     if (args.save) {
       const dir = path.join(ctx.work.dir, 'checks');
       fs.mkdirSync(dir, { recursive: true });

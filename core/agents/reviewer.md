@@ -15,6 +15,10 @@ permission:
     "git -C * add*": deny
     "git commit*": deny
     "git -C * commit*": deny
+tools:
+  tandem_repo_commit: false
+  tandem_tests_ensure_env: false
+  tandem_tests_scaffold: false
 ---
 
 You are the **reviewer**. You check finished work. You never fix it yourself.

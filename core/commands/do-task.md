@@ -33,6 +33,7 @@ If the repo's row in `repos.md` has a **Path** (a worktree), every git, build, t
 
 - Run `git -C <repo> branch --show-current`. It must match the branch in `repos.md`. If not, stop and tell the engineer.
 - Run `git -C <repo> status --porcelain`. If there are changes to files this task does not list, stop and ask.
+- With the Tandem tools, `tandem_repo_check` (repo, item) answers both: `branchOk` and `uncommitted`.
 
 ## Step 4: Do the work
 
@@ -45,9 +46,9 @@ If the repo's row in `repos.md` has a **Path** (a worktree), every git, build, t
 - Read the "Pattern to follow" file and copy its style.
 - **A stack whose testing rules say strict TDD (Core: `dotnet`):**
   1. Write or update the test.
-  2. Run the verify command. It must FAIL for the expected reason. Save the output (the Red run).
+  2. Run the verify command. It must FAIL for the expected reason. Save the output (the Red run; with the Tandem tools, `tandem_checks_run` kind `command`, save `task-$2-red`).
   3. Write the smallest code change that makes it pass.
-  4. Run the verify command. It must PASS. Save the output (the Green run).
+  4. Run the verify command. It must PASS. Save the output (the Green run; save `task-$2-green`).
 - **Any other stack (Core: `angular`, `playwright`):** write the code and tests in the order its testing rules allow, then run the verify command. It must PASS.
 - Change only the files the task lists, plus the test file for a listed code file (test files do not count toward the task size cap). If any other file must change, stop and ask.
 - If the verify step fails `retries` times (Factory settings in the pipeline guide, default 3), even with a different fix each time, stop. Go to Step 6 and log it as blocked.
@@ -63,6 +64,7 @@ The verify command only runs this task's tests. Run the whole-project check belo
 - First record the station: run `Set-Step.ps1` (Step 4's command) with `-Step test`. If the script fails, go on without it.
 - From the repo guide's Commands table, run the **Build** command if there is one, then the **Pre-commit check** command if there is one, otherwise **All unit tests**. If the table has none of these, write `full=skipped` in Step 6 and go on.
 - If it passes, write `full=PASS` in Step 6.
+- With the Tandem tools, run this as `tandem_checks_run` (kind `build`, then `precommit`, with the item): its `baseline.preExisting` and `baseline.new` sort failures for the rules below.
 - If a test fails, read `baseline.md` in the work folder:
   - The test is one this task added and its "Done when" line says it must fail (bug lane Task 1): that is expected. Go on.
   - The test is listed there as failing before this work item: it is not yours. Write it under "Notes" and `full=PASS` (pre-existing failures noted). Go on.
@@ -102,6 +104,7 @@ Only when `uiCheckPerTask` is on (Factory settings, default on), the task's repo
 ## Step 7: Commit
 
 - Only if the verify command, Step 5b and Step 5c passed.
+- With the Tandem tools, `tandem_repo_commit` (repo, item, files, message) does the two lines below in one step.
 - Stage only the files you changed: `git -C <repo> add <file> <file>`.
 - Commit with a short plain summary: `git -C <repo> commit -m "<short summary>"`, following the commit message convention in `{{ENG_HOME}}/guides/pipeline.md` unless a Personal or Company rule in `AGENTS.md` says otherwise (for example `AB#<id>`). A rule that adds `AB#<id>` applies only to a linked item (pipeline guide, Who links to ADO); for a local item use its id instead.
 

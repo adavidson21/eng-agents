@@ -20,6 +20,10 @@
                                    When Workshop is installed (its agent token
                                    exists), an MCP server "workshop" too: its
                                    tools for agents (-NoWorkshopMcp to skip).
+                                   And an MCP server "tandem" when Node is
+                                   installed: repo, checks, UI and test tools
+                                   (-NoTandemMcp to skip). -PlaywrightMcp adds
+                                   Microsoft's Playwright MCP server too.
       eng-agents\templates\        templates (later layer replaces same name)
       eng-agents\scripts\          scripts
       eng-agents\stacks\           rules per tech stack, read when a repo guide names the stack
@@ -63,6 +67,8 @@ param(
     [ValidateSet("all", "dashboard")]
     [string]$Component = "all",
     [switch]$NoWorkshopMcp,
+    [switch]$NoTandemMcp,
+    [switch]$PlaywrightMcp,
     [switch]$DryRun
 )
 
@@ -499,6 +505,49 @@ function Add-WorkshopMcp {
     Write-Host ("  opencode.json: Workshop MCP server {0} ({1})" -f $(if ($had) { "refreshed" } else { "added" }), $workshopMcp.url)
 }
 
+# Tandem's own MCP server (scripts/mcp/tandem.mjs, Core 4.22.0): repo, checks, UI and test tools over stdio. It
+# needs Node, which the UI checks need already; no packages and no network listener. -PlaywrightMcp adds Microsoft's
+# Playwright MCP server (fetched by npx on first start) for exploring a running app in a browser.
+$tandemNode = $null
+if (-not $NoTandemMcp) {
+    $tandemNode = Get-Command node -ErrorAction SilentlyContinue
+    if (-not $tandemNode) { Write-Warning "Node was not found, so the Tandem MCP server was not added. Install Node and run install again." }
+}
+
+function Get-McpList {
+    param($Config, [string]$Name)
+    if (-not $Config.Contains("mcp")) { $Config["mcp"] = [ordered]@{} }
+    $mcp = $Config["mcp"]
+    if ($mcp -isnot [System.Collections.Specialized.OrderedDictionary]) { Write-Warning "opencode.json: 'mcp' is not an object, so the $Name MCP server was not added."; return $null }
+    $v2 = $mcp.Contains("servers") -and ($mcp["servers"] -is [System.Collections.Specialized.OrderedDictionary])
+    return [pscustomobject]@{ List = $(if ($v2) { $mcp["servers"] } else { $mcp }); V2 = $v2 }
+}
+
+function Set-LocalMcp {
+    param($Config, [string]$Key, [object[]]$Command, $Environment)
+    $m = Get-McpList $Config $Key
+    if (-not $m) { return }
+    $list = $m.List
+    $had = $list.Contains($Key) -and ($list[$Key] -is [System.Collections.Specialized.OrderedDictionary])
+    $entry = if ($had) { $list[$Key] } else { [ordered]@{} }
+    $entry["type"] = "local"
+    $entry["command"] = $Command
+    if ($Environment) { $entry["environment"] = $Environment }
+    if (-not $had -and -not $m.V2) { $entry["enabled"] = $true }
+    $list[$Key] = $entry
+    Write-Host ("  opencode.json: {0} MCP server {1}" -f $Key, $(if ($had) { "refreshed" } else { "added" }))
+}
+
+function Add-TandemMcp {
+    param($Config)
+    if ($tandemNode) {
+        Set-LocalMcp $Config "tandem" @("node", "$($script:EngHomeToken)/scripts/mcp/tandem.mjs") ([ordered]@{ TANDEM_PS = $script:PsToken })
+    }
+    if ($PlaywrightMcp) {
+        Set-LocalMcp $Config "playwright" @("npx", "-y", "@playwright/mcp@latest", "--headless") $null
+    }
+}
+
 $writeSidecar = $false
 if (Test-Path $jsoncPath) {
     Write-Warning "Found opencode.jsonc. It may contain comments, so it was not modified."
@@ -511,6 +560,7 @@ elseif (Test-Path $jsonPath) {
         Merge-Ordered $config $layerConfig
         Merge-Bash $config
         Add-WorkshopMcp $config
+        Add-TandemMcp $config
         if ($DryRun) { Write-Host "  would merge permissions into: $jsonPath" }
         else { Write-Utf8 $jsonPath ($config | ConvertTo-Json -Depth 32); Write-Host "  opencode.json: permissions merged (other settings kept)" }
     }
@@ -521,6 +571,7 @@ elseif (Test-Path $jsonPath) {
 }
 else {
     Add-WorkshopMcp $layerConfig
+    Add-TandemMcp $layerConfig
     if ($DryRun) { Write-Host "  would write: $jsonPath" }
     else { Write-Utf8 $jsonPath ($layerConfig | ConvertTo-Json -Depth 32); Write-Host "  opencode.json: created" }
 }

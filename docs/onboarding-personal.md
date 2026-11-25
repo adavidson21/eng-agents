@@ -101,6 +101,7 @@ pwsh ./install.ps1
 - No warning about `TODO(you)`.
 - In opencode, ask: "What does the Personal section of your instructions say?"
 - With Workshop installed and started once (its agent token exists), install adds an MCP server `workshop` to `opencode.json`. While Workshop runs, `opencode mcp list` shows it connected. `-NoWorkshopMcp` leaves it out.
+- With Node installed, install adds Tandem's own MCP server `tandem` (repo, checks, UI and test tools). `opencode mcp list` shows it connected. `-NoTandemMcp` leaves it out; `-PlaywrightMcp` adds Microsoft's Playwright MCP server too (npx fetches it on first start).
 
 On Windows, run `.\install.ps1` instead. Never run it with `sudo` (it refuses to run as root).
 

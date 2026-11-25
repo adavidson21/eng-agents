@@ -47,6 +47,8 @@ The main flows are in the [README](../README.md#daily-use). Everything else:
 
 **Workshop holds the tokens.** With Workshop installed and started once, `install.ps1` adds Workshop to opencode as an MCP server (`workshop`): its tools for agents, the tools of MCP servers you add in Workshop, and approval status. The GitHub scripts read through Workshop when no token is set here, so a GitHub token can live in the Mac Keychain.
 
+**Tandem's own tools.** With Node installed, `install.ps1` also adds Tandem's MCP server (`tandem`): repo state, commits of named files, the repo guide's build and test commands with results as data, UI checks, the regression suite, and Playwright setup and test skeletons. Commands use them when they are there and fall back to command lines when they are not. Details in [core/scripts/mcp/README.md](../core/scripts/mcp/README.md).
+
 ## Design choices
 
 Built for a slower model that needs explicit procedures.

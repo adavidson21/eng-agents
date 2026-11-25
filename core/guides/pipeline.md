@@ -40,6 +40,17 @@ Other `.work` folders are described by the commands that write them: `scope-<nam
 
 Templates for these files are in `{{ENG_HOME}}/templates/`. Always start a new file from its template.
 
+**Tandem tools.** When tools named `tandem_*` are available (the `tandem` MCP server), use them in place of these command lines. They take the repo folder and the item id, find the Path, branch and Base in `repos.md` themselves, and answer in JSON. A tool's error starts with a word (`NOREPO:`, `NOGUIDE:`, `NOCOMMAND:`, `REFUSED:`, `GIT:`): act on it as you would on the command's error. Without the tools, run the command lines as written.
+
+| Instead of | Use |
+|---|---|
+| `git branch --show-current`, `git status --porcelain` | `tandem_repo_check` (`ok`, `problems`) |
+| `git log <base>..HEAD`, `git diff --stat <base>...HEAD`, `git diff <base>...HEAD -- <file>` | `tandem_repo_changes` (`file` for one diff) |
+| fetching and trying a merge only to see if it conflicts | `tandem_repo_merge_check` (changes nothing) |
+| `git add <files>` then `git commit -m` | `tandem_repo_commit` (agents that may commit) |
+| running the repo guide's Build, All unit tests, Pre-commit check, Lint or Format check | `tandem_checks_run` with `kind`; `kind: command` for a verify or One test class line. With the item it compares with `baseline.md` (`baseline.new` are this item's failures); `save` keeps a Red or Green run; `baseline: true` writes the row at `/start` |
+| `Start-UiApp.ps1`, `Stop-UiApp.ps1`, `Test-Ui.ps1`, `Test-Suite.ps1` | `tandem_ui_app_start`, `tandem_ui_app_stop`, `tandem_ui_check`, `tandem_tests_suite` (same arguments by name) |
+
 ## Factory settings
 
 Workshop's Settings, Factory writes `.work/factory.json`. Read it once per command with `Get-Content .work/factory.json`. A missing file, a missing key or a value out of range means the default:

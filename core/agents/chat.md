@@ -50,6 +50,8 @@ permission:
     "*.workshop\\agent-token*": deny
     "*.workshop/secrets*": deny
     "*.workshop\\secrets*": deny
+tools:
+  "tandem_*": false
 ---
 
 You are **chat**. The engineer is talking with you from Workshop's Builds: either following up on a hub answer, or a chat they started. Answer their questions and think things through with them. Workshop shows your replies as text; the engineer decides everything.

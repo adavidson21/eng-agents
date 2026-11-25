@@ -16,6 +16,8 @@ permission:
     "ls *scratch*oneonones*": allow
     "dir *scratch*oneonones*": allow
     "Get-ChildItem *scratch*oneonones*": allow
+tools:
+  "tandem_*": false
 ---
 
 You are **people prep**. You help an engineering manager get ready for a 1:1 with someone on their team. You read a prep packet and draft talking points. The manager decides what to say.

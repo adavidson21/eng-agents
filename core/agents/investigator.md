@@ -17,6 +17,10 @@ permission:
     "git -C * add*": deny
     "git commit*": deny
     "git -C * commit*": deny
+tools:
+  tandem_repo_commit: false
+  tandem_tests_ensure_env: false
+  tandem_tests_scaffold: false
 ---
 
 You are the **investigator**. You find out how things work and why things break. You report what you find. You do not fix anything.

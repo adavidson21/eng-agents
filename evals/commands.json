@@ -4,9 +4,9 @@
     {
       "command": "approve",
       "agent": "planner",
-      "tokens": 5959,
+      "tokens": 5984,
       "readTokens": 587,
-      "hash": "88a9daf954c9",
+      "hash": "b4a444d5cd5e",
       "files": [
         "core/AGENTS.md",
         "core/agents/planner.md",
@@ -20,9 +20,9 @@
     {
       "command": "backlog",
       "agent": "product-manager",
-      "tokens": 5088,
+      "tokens": 5147,
       "readTokens": 0,
-      "hash": "992f5eea81a3",
+      "hash": "c4c0380daf4a",
       "files": [
         "core/AGENTS.md",
         "core/agents/product-manager.md",
@@ -33,9 +33,9 @@
     {
       "command": "bug",
       "agent": "investigator",
-      "tokens": 4169,
+      "tokens": 4194,
       "readTokens": 594,
-      "hash": "e68cacdf5180",
+      "hash": "9a1071019746",
       "files": [
         "core/AGENTS.md",
         "core/agents/investigator.md",
@@ -48,9 +48,9 @@
     {
       "command": "check-docs",
       "agent": "reviewer",
-      "tokens": 3917,
+      "tokens": 3942,
       "readTokens": 0,
-      "hash": "d206899019b8",
+      "hash": "ac9cbea1f1bd",
       "files": [
         "core/AGENTS.md",
         "core/agents/reviewer.md",
@@ -61,9 +61,9 @@
     {
       "command": "cloudflare",
       "agent": "investigator",
-      "tokens": 5000,
-      "readTokens": 3453,
-      "hash": "8fc00f21605c",
+      "tokens": 5025,
+      "readTokens": 3813,
+      "hash": "8d8fd7e8b002",
       "files": [
         "core/AGENTS.md",
         "core/agents/investigator.md",
@@ -75,9 +75,9 @@
     {
       "command": "cover",
       "agent": "investigator",
-      "tokens": 3932,
+      "tokens": 3995,
       "readTokens": 1353,
-      "hash": "1250bc3795b5",
+      "hash": "1853d3a464bb",
       "files": [
         "core/AGENTS.md",
         "core/agents/investigator.md",
@@ -90,9 +90,9 @@
     {
       "command": "dashboard",
       "agent": "planner",
-      "tokens": 3699,
+      "tokens": 3723,
       "readTokens": 0,
-      "hash": "2a8d308e4ee8",
+      "hash": "c2b85bb3e5b3",
       "files": [
         "core/AGENTS.md",
         "core/agents/planner.md",
@@ -103,9 +103,9 @@
     {
       "command": "do-task",
       "agent": "implementer",
-      "tokens": 5984,
-      "readTokens": 3453,
-      "hash": "94e6b850d382",
+      "tokens": 6109,
+      "readTokens": 3813,
+      "hash": "db4474aadda2",
       "files": [
         "core/AGENTS.md",
         "core/agents/implementer.md",
@@ -119,9 +119,9 @@
     {
       "command": "docs",
       "agent": "writer",
-      "tokens": 3645,
+      "tokens": 3670,
       "readTokens": 0,
-      "hash": "1b959f945d1c",
+      "hash": "6c818c7a5018",
       "files": [
         "core/AGENTS.md",
         "core/agents/writer.md",
@@ -131,9 +131,9 @@
     {
       "command": "handoff",
       "agent": "writer",
-      "tokens": 3741,
+      "tokens": 3765,
       "readTokens": 547,
-      "hash": "32dec8113cec",
+      "hash": "990be446fd1a",
       "files": [
         "core/AGENTS.md",
         "core/agents/writer.md",
@@ -146,9 +146,9 @@
     {
       "command": "hub",
       "agent": "hub",
-      "tokens": 5232,
+      "tokens": 5238,
       "readTokens": 196,
-      "hash": "c3118496d801",
+      "hash": "1a545b943c93",
       "files": [
         "core/AGENTS.md",
         "core/agents/hub.md",
@@ -159,9 +159,9 @@
     {
       "command": "memory",
       "agent": "writer",
-      "tokens": 4499,
+      "tokens": 4523,
       "readTokens": 587,
-      "hash": "42e1de02a345",
+      "hash": "1f9cfbbef90a",
       "files": [
         "core/AGENTS.md",
         "core/agents/writer.md",
@@ -173,9 +173,9 @@
     {
       "command": "onboard-product",
       "agent": "investigator",
-      "tokens": 4222,
+      "tokens": 4247,
       "readTokens": 0,
-      "hash": "483192008c5e",
+      "hash": "bbebf5e36f86",
       "files": [
         "core/AGENTS.md",
         "core/agents/investigator.md",
@@ -188,9 +188,9 @@
     {
       "command": "onboard-repo",
       "agent": "investigator",
-      "tokens": 5157,
+      "tokens": 5182,
       "readTokens": 1353,
-      "hash": "d48d898d3e63",
+      "hash": "431d528278af",
       "files": [
         "core/AGENTS.md",
         "core/agents/investigator.md",
@@ -203,9 +203,9 @@
     {
       "command": "one-on-one",
       "agent": "people-prep",
-      "tokens": 3814,
+      "tokens": 3821,
       "readTokens": 90,
-      "hash": "73c200a158e5",
+      "hash": "aa66b00bd3c8",
       "files": [
         "core/AGENTS.md",
         "core/agents/people-prep.md",
@@ -216,9 +216,9 @@
     {
       "command": "pause",
       "agent": "planner",
-      "tokens": 3998,
+      "tokens": 4023,
       "readTokens": 219,
-      "hash": "4a8dce04ff75",
+      "hash": "5b72291bba49",
       "files": [
         "core/AGENTS.md",
         "core/agents/planner.md",
@@ -229,9 +229,9 @@
     {
       "command": "pr-fix",
       "agent": "implementer",
-      "tokens": 4976,
-      "readTokens": 3453,
-      "hash": "b91b3b164be4",
+      "tokens": 5010,
+      "readTokens": 3813,
+      "hash": "556b191ea2aa",
       "files": [
         "core/AGENTS.md",
         "core/agents/implementer.md",
@@ -242,9 +242,9 @@
     {
       "command": "pr-review",
       "agent": "pr-reviewer",
-      "tokens": 5724,
+      "tokens": 5783,
       "readTokens": 340,
-      "hash": "91f2752d6cee",
+      "hash": "a9958980d4bd",
       "files": [
         "core/AGENTS.md",
         "core/agents/pr-reviewer.md",
@@ -257,9 +257,9 @@
     {
       "command": "pr",
       "agent": "writer",
-      "tokens": 4094,
-      "readTokens": 3698,
-      "hash": "19613c5a86c8",
+      "tokens": 4136,
+      "readTokens": 4059,
+      "hash": "5883c07aa40c",
       "files": [
         "core/AGENTS.md",
         "core/agents/writer.md",
@@ -272,9 +272,9 @@
     {
       "command": "product-notes",
       "agent": "writer",
-      "tokens": 4987,
+      "tokens": 5012,
       "readTokens": 587,
-      "hash": "11f9ffc09a5c",
+      "hash": "ebdd2f26e0b5",
       "files": [
         "core/AGENTS.md",
         "core/agents/writer.md",
@@ -288,9 +288,9 @@
     {
       "command": "publish",
       "agent": "writer",
-      "tokens": 4325,
+      "tokens": 4350,
       "readTokens": 0,
-      "hash": "c202f301596d",
+      "hash": "1367a8e60e1f",
       "files": [
         "core/AGENTS.md",
         "core/agents/writer.md",
@@ -300,9 +300,9 @@
     {
       "command": "quick",
       "agent": "planner",
-      "tokens": 4482,
+      "tokens": 4507,
       "readTokens": 547,
-      "hash": "2d52a4f480b2",
+      "hash": "514e685ea51d",
       "files": [
         "core/AGENTS.md",
         "core/agents/planner.md",
@@ -315,9 +315,9 @@
     {
       "command": "refine",
       "agent": "product-manager",
-      "tokens": 5252,
+      "tokens": 5311,
       "readTokens": 610,
-      "hash": "f84878ffd0c7",
+      "hash": "c0c7cc0d2e68",
       "files": [
         "core/AGENTS.md",
         "core/agents/product-manager.md",
@@ -330,9 +330,9 @@
     {
       "command": "resume",
       "agent": "planner",
-      "tokens": 4218,
+      "tokens": 4243,
       "readTokens": 0,
-      "hash": "e882a45a0593",
+      "hash": "e813a6effe06",
       "files": [
         "core/AGENTS.md",
         "core/agents/planner.md",
@@ -343,9 +343,9 @@
     {
       "command": "retro",
       "agent": "writer",
-      "tokens": 4413,
+      "tokens": 4438,
       "readTokens": 258,
-      "hash": "aec9c3f8578e",
+      "hash": "79f70814c871",
       "files": [
         "core/AGENTS.md",
         "core/agents/writer.md",
@@ -357,9 +357,9 @@
     {
       "command": "review",
       "agent": "reviewer",
-      "tokens": 6393,
-      "readTokens": 3931,
-      "hash": "081e3edbfa9b",
+      "tokens": 6448,
+      "readTokens": 4291,
+      "hash": "0635cc106c1b",
       "files": [
         "core/AGENTS.md",
         "core/agents/reviewer.md",
@@ -375,9 +375,9 @@
     {
       "command": "revise",
       "agent": "writer",
-      "tokens": 4641,
-      "readTokens": 3749,
-      "hash": "a8a2a7372ee5",
+      "tokens": 4665,
+      "readTokens": 4109,
+      "hash": "206a08d18331",
       "files": [
         "core/AGENTS.md",
         "core/agents/writer.md",
@@ -390,9 +390,9 @@
     {
       "command": "scope",
       "agent": "product-manager",
-      "tokens": 5912,
+      "tokens": 5971,
       "readTokens": 875,
-      "hash": "ef605f33fcae",
+      "hash": "36618e980632",
       "files": [
         "core/AGENTS.md",
         "core/agents/product-manager.md",
@@ -406,9 +406,9 @@
     {
       "command": "shape",
       "agent": "product-manager",
-      "tokens": 5713,
+      "tokens": 5772,
       "readTokens": 733,
-      "hash": "1d7ed8fb8a25",
+      "hash": "6a6764d9a96c",
       "files": [
         "core/AGENTS.md",
         "core/agents/product-manager.md",
@@ -422,9 +422,9 @@
     {
       "command": "shutdown",
       "agent": "planner",
-      "tokens": 4230,
+      "tokens": 4255,
       "readTokens": 240,
-      "hash": "f58f1974122e",
+      "hash": "9592842eccae",
       "files": [
         "core/AGENTS.md",
         "core/agents/planner.md",
@@ -435,9 +435,9 @@
     {
       "command": "slice",
       "agent": "product-manager",
-      "tokens": 5497,
+      "tokens": 5556,
       "readTokens": 637,
-      "hash": "cc9a1f232efb",
+      "hash": "4b0ec7f91a1c",
       "files": [
         "core/AGENTS.md",
         "core/agents/product-manager.md",
@@ -450,9 +450,9 @@
     {
       "command": "spec",
       "agent": "planner",
-      "tokens": 5435,
+      "tokens": 5459,
       "readTokens": 765,
-      "hash": "dc537489a9c1",
+      "hash": "0fed65c9344f",
       "files": [
         "core/AGENTS.md",
         "core/agents/planner.md",
@@ -466,9 +466,9 @@
     {
       "command": "spike",
       "agent": "investigator",
-      "tokens": 5462,
+      "tokens": 5486,
       "readTokens": 1861,
-      "hash": "f88f77cd16d4",
+      "hash": "5922f906231f",
       "files": [
         "core/AGENTS.md",
         "core/agents/investigator.md",
@@ -483,9 +483,9 @@
     {
       "command": "standup",
       "agent": "planner",
-      "tokens": 3935,
+      "tokens": 3960,
       "readTokens": 0,
-      "hash": "23fc9a48000f",
+      "hash": "1d2097334747",
       "files": [
         "core/AGENTS.md",
         "core/agents/planner.md",
@@ -495,9 +495,9 @@
     {
       "command": "start",
       "agent": "planner",
-      "tokens": 7522,
-      "readTokens": 4439,
-      "hash": "398b416d667e",
+      "tokens": 7588,
+      "readTokens": 4800,
+      "hash": "76edd4dbbc4b",
       "files": [
         "core/AGENTS.md",
         "core/agents/planner.md",
@@ -516,9 +516,9 @@
     {
       "command": "stats",
       "agent": "planner",
-      "tokens": 3783,
+      "tokens": 3807,
       "readTokens": 0,
-      "hash": "101c99ee0c25",
+      "hash": "f3c49c5c1ee7",
       "files": [
         "core/AGENTS.md",
         "core/agents/planner.md",
@@ -529,9 +529,9 @@
     {
       "command": "status",
       "agent": "planner",
-      "tokens": 4050,
+      "tokens": 4074,
       "readTokens": 0,
-      "hash": "005f2ee8d2e4",
+      "hash": "be5ac6d088ae",
       "files": [
         "core/AGENTS.md",
         "core/agents/planner.md",
@@ -541,9 +541,9 @@
     {
       "command": "teach",
       "agent": "writer",
-      "tokens": 3800,
+      "tokens": 3825,
       "readTokens": 587,
-      "hash": "92683f97e2f7",
+      "hash": "77bbb42a2538",
       "files": [
         "core/AGENTS.md",
         "core/agents/writer.md",
@@ -556,9 +556,9 @@
     {
       "command": "triage",
       "agent": "investigator",
-      "tokens": 4481,
+      "tokens": 4506,
       "readTokens": 672,
-      "hash": "46756f5e297c",
+      "hash": "9397cceaca52",
       "files": [
         "core/AGENTS.md",
         "core/agents/investigator.md",
@@ -571,9 +571,9 @@
     {
       "command": "tsd",
       "agent": "writer",
-      "tokens": 5401,
+      "tokens": 5426,
       "readTokens": 4858,
-      "hash": "bdad38528998",
+      "hash": "d1c95ee71132",
       "files": [
         "core/AGENTS.md",
         "core/agents/writer.md",

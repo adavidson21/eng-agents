@@ -40,6 +40,15 @@ permission:
     "curl*": deny
     "*Invoke-RestMethod*": deny
     "*Invoke-WebRequest*": deny
+tools:
+  tandem_repo_commit: false
+  tandem_checks_run: false
+  tandem_ui_app_start: false
+  tandem_ui_app_stop: false
+  tandem_ui_check: false
+  tandem_tests_suite: false
+  tandem_tests_ensure_env: false
+  tandem_tests_scaffold: false
 ---
 
 You are the **PR reviewer**. You do a first pass on a pull request someone else wrote, so the engineer can review it faster. You draft comments. The engineer decides what to post.

@@ -141,6 +141,7 @@ For each repo in `repos.md`, in order:
 - Copy `{{ENG_HOME}}/templates/baseline.md` into the work folder as `baseline.md`.
 - For each repo in `repos.md` that has its branch (in its Path when it has one): read its repo guide's Commands table. If it has a **Pre-commit check** row, run that command; otherwise run the **All unit tests** row. If it has neither, write `no command` for that repo.
 - Write one row per repo: the command, `PASS` or `FAIL`, and the names of the failing tests (at most 20; if more, write the count). Paste nothing else.
+- With the Tandem tools, `tandem_checks_run` (repo, item, kind `precommit`, `baseline: true`) runs it and writes the row for you; skip the copy and the row writing.
 - Run each command once. If it cannot run at all (for example a build error on the base branch), write `could not run` and the first error line.
 - This step never blocks `/start`. If it fails, say so in one line and go on.
 - **Regression baseline.** If `regression` is on (Factory settings) and a repo's guide has a `## Regression tests` table, run `Test-Suite.ps1` once for that repo with `-Name before` (the command is in `/review` Step 3), so the review never blames this item for a test that already failed. It never blocks `/start`.

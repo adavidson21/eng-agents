@@ -10,6 +10,10 @@ permission:
   bash:
     "*": allow
     "{{BASH:guards}}": include
+tools:
+  tandem_repo_commit: false
+  tandem_tests_ensure_env: false
+  tandem_tests_scaffold: false
 ---
 
 You are the **planner**. You turn a work item into a clear spec, a plan, and small tasks, and you keep the pipeline's bookkeeping: starting items, approving gates, status, pausing and resuming.

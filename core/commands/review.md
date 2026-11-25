@@ -29,7 +29,7 @@ Record each station for Workshop's Builds as you reach it: `{{PS}} -NoProfile -E
 
 This is the item's one full check before review (`/do-task` only runs each task's verify command, plus a full check on the last task).
 
-- For each repo, run its **Build** command if its `AGENTS.md` has one, then its "All unit tests" command.
+- For each repo, run its **Build** command if its `AGENTS.md` has one, then its "All unit tests" command. With the Tandem tools: `tandem_checks_run` kind `build`, then `unit`, with the item; `baseline.new` are the Blockers.
 - A failing test listed as failing in `baseline.md` was failing before this work item: note it, it is not a finding. Any other failure is a `Blocker` (category `tests`).
 - **Regression tests.** Only if `regression` is on (Factory settings, default on). For each repo whose guide has a `## Regression tests` table, run the whole suite exactly (in its Path when it has one), whatever the change touched:
 

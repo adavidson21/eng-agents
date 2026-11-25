@@ -4,6 +4,18 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 4.22.0 (2026-11-24)
+
+Tandem's own MCP server, so the mechanical steps are tools with typed arguments and JSON answers instead of command lines the model has to copy. Built for smaller and self-hosted models. Every command still works without it.
+- New `scripts/mcp/tandem.mjs`: a local stdio MCP server, Node standard library only (no packages, no listener). `install.ps1` adds it to `opencode.json` as `tandem` when Node is found (`-NoTandemMcp` to skip). See `scripts/mcp/README.md`.
+- Repo tools: `repo_check` (branch, uncommitted files, base, ahead and behind), `repo_changes` (commits, files, one file's diff), `repo_merge_check` (would merging the base conflict; `git merge-tree`, changes nothing), `repo_commit` (exactly the named files; refuses the wrong branch, other staged files or a multi-line message).
+- Checks tools: `checks_list` and `checks_run` (the repo guide's Build, All unit tests, Pre-commit check, Lint, Format check or your own line, with test counts, failing test names, compiler errors and lint counts for dotnet, Jest, Vitest, Karma, Angular and ESLint). With the item it splits failures by `baseline.md`, `save` keeps Red and Green logs, `baseline: true` writes the row at `/start`. In a worktree, repo paths in the command are pointed at it.
+- UI and test tools: `ui_app_start`, `ui_app_stop`, `ui_check` and `tests_suite` run the existing scripts and return their result files; `tests_detect`, `tests_ensure_env` (Playwright setup for Angular and other Node front ends, only what is missing) and `tests_scaffold` (one failing `[AC-n]` placeholder test per criterion).
+- `-PlaywrightMcp` adds Microsoft's Playwright MCP server to `opencode.json` for exploring a running app.
+- The pipeline guide maps each command line to its tool (Tandem tools); `/do-task`, `/review`, `/pr`, `/pr-fix`, `/start`, `/cover` and the playwright stack name the tool where it applies.
+- Agents that must not change code have the write tools off in their frontmatter (`tools:`); chat, hub, quick and people-prep get no Tandem tools.
+- CI runs the server's tests (`node --test`) on Linux and Windows.
+
 ## Core 4.21.0 (2026-11-23)
 
 Names follow Workshop's rename of November 2026: Docket is Tasks, Loom is Builds, Rapport is People, Folio is Notes and Runway is Roadmaps, and each app's id and data folder is that name (`tasks`, `builds`, `people`, `notes`, `roadmaps`). Nothing breaks with a Workshop that has not renamed yet.

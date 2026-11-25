@@ -15,7 +15,7 @@ Ask nothing in this command. What you cannot find out becomes a gap (core rule 3
 
 ## Step 2: Make sure each repo has a suite
 
-For each UI repo, read its guide (`AGENTS.local.md`, else `AGENTS.md`):
+For each UI repo, read its guide (`AGENTS.local.md`, else `AGENTS.md`). With the Tandem tools, `tandem_tests_detect` answers the questions below (config, testDir, routes for Step 3):
 
 - **Has a `## Regression tests` table:** go on.
 - **Has `playwright.config.*` but no table:** add the table to the guide (template in `{{ENG_HOME}}/templates/repo-agents.md`): Command from `package.json`'s e2e script, else `npx playwright test`; Runner `playwright`; Folder the config's testDir.
@@ -37,7 +37,7 @@ One local item per repo, run exactly:
 {{PS}} -NoProfile -ExecutionPolicy Bypass -File "{{ENG_HOME}}/scripts/work/New-LocalWorkItem.ps1" -WorkRoot ".work" -Title "Regression tests for <repo>: <pages, short>" -Description "<sentence>" -AcceptanceCriteria "<the criteria, one per line>" -Repos "<repo>" -Areas "<the suite's Folder>" -Coverage "<product>"
 ```
 
-The description is one sentence: "Add end-to-end tests for what these pages do today, with every API mocked. No change to product code." For a repo with no Playwright, add: "First set up Playwright: a config whose webServer starts the app with mocked APIs, and one smoke test." Its last output line is the new folder.
+The description is one sentence: "Add end-to-end tests for what these pages do today, with every API mocked. No change to product code." For a repo with no Playwright, add: "First set up Playwright (`tandem_tests_ensure_env` when available): a config whose webServer starts the app with mocked APIs, and one smoke test." Its last output line is the new folder.
 
 ## Step 5: Hand off
 

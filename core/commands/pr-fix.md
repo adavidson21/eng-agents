@@ -31,6 +31,7 @@ The branch is already on the remote and the team may be reviewing it. So:
 
 ## Step 2b: Conflict with the base (`conflict`)
 
+0. With the Tandem tools, first run `tandem_repo_merge_check` (repo, item): `needsYou` files mean NEEDS YOU without merging (as in 3).
 1. `git -C <repo> fetch origin <base without origin/>`, then `git -C <repo> merge --no-edit <base>`.
 2. It merges cleanly: go to 4.
 3. It stops on conflicts: list them with `git -C <repo> diff --name-only --diff-filter=U`. Resolve a file only when every conflict in it keeps both sides with no decision about behavior: both sides added different imports, list or table entries, routes, or independent lines next to each other. Lock files and generated files, and anything that needs a decision, are not mechanical: run `git -C <repo> merge --abort`, write `- Result: NEEDS YOU conflicts in <files>`, and go to Step 3.

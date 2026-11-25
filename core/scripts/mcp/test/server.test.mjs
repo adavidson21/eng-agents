@@ -15,7 +15,12 @@ function talk(cwd, messages) {
     child.stdout.on('data', (c) => {
       out += c.toString();
       const got = out.split('\n').filter(Boolean);
-      if (got.length >= want) { child.stdin.end(); resolve(got.map((l) => JSON.parse(l)).sort((a, b) => a.id - b.id)); }
+      if (got.length >= want && !child.stdin.writableEnded) {
+        const replies = got.map((l) => JSON.parse(l)).sort((a, b) => a.id - b.id);
+        // Wait for the server to exit: on Windows its working folder stays locked until then.
+        child.on('exit', () => resolve(replies));
+        child.stdin.end();
+      }
     });
     child.on('error', reject);
     setTimeout(() => { child.kill(); reject(new Error(`timed out; got: ${out}`)); }, 20000);

@@ -70,5 +70,5 @@ Lane: feature
 }
 
 export function cleanup(root) {
-  fs.rmSync(root, { recursive: true, force: true });
+  fs.rmSync(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
 }

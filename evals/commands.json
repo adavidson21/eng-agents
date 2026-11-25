@@ -62,8 +62,8 @@
       "command": "cloudflare",
       "agent": "investigator",
       "tokens": 5025,
-      "readTokens": 3813,
-      "hash": "8d8fd7e8b002",
+      "readTokens": 3945,
+      "hash": "c701f180ec4b",
       "files": [
         "core/AGENTS.md",
         "core/agents/investigator.md",
@@ -103,9 +103,9 @@
     {
       "command": "do-task",
       "agent": "implementer",
-      "tokens": 6109,
-      "readTokens": 3813,
-      "hash": "db4474aadda2",
+      "tokens": 6140,
+      "readTokens": 3945,
+      "hash": "4b6a484ad680",
       "files": [
         "core/AGENTS.md",
         "core/agents/implementer.md",
@@ -230,8 +230,8 @@
       "command": "pr-fix",
       "agent": "implementer",
       "tokens": 5010,
-      "readTokens": 3813,
-      "hash": "556b191ea2aa",
+      "readTokens": 3945,
+      "hash": "22bcb4fd84e5",
       "files": [
         "core/AGENTS.md",
         "core/agents/implementer.md",
@@ -257,9 +257,9 @@
     {
       "command": "pr",
       "agent": "writer",
-      "tokens": 4136,
-      "readTokens": 4059,
-      "hash": "5883c07aa40c",
+      "tokens": 4173,
+      "readTokens": 4191,
+      "hash": "44b0ceb7bb52",
       "files": [
         "core/AGENTS.md",
         "core/agents/writer.md",
@@ -357,9 +357,9 @@
     {
       "command": "review",
       "agent": "reviewer",
-      "tokens": 6448,
-      "readTokens": 4291,
-      "hash": "0635cc106c1b",
+      "tokens": 6478,
+      "readTokens": 4423,
+      "hash": "2d91dac077cc",
       "files": [
         "core/AGENTS.md",
         "core/agents/reviewer.md",
@@ -376,8 +376,8 @@
       "command": "revise",
       "agent": "writer",
       "tokens": 4665,
-      "readTokens": 4109,
-      "hash": "206a08d18331",
+      "readTokens": 4241,
+      "hash": "5ea78f013304",
       "files": [
         "core/AGENTS.md",
         "core/agents/writer.md",
@@ -496,8 +496,8 @@
       "command": "start",
       "agent": "planner",
       "tokens": 7588,
-      "readTokens": 4800,
-      "hash": "76edd4dbbc4b",
+      "readTokens": 4931,
+      "hash": "50562dc00ade",
       "files": [
         "core/AGENTS.md",
         "core/agents/planner.md",

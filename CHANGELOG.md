@@ -4,6 +4,15 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 4.23.0 (2026-11-24)
+
+The `.work` bookkeeping Workshop and `/stats` read is now written by code, and every file a command writes can be checked against its template. Needs Core 4.22.0's `tandem` MCP server; without it, commands work as before.
+- `work_progress_add`: appends a `progress.md` entry in the exact format Workshop reads. Output, Red and Green blocks come from logs `checks_run` saved, so they are the real output: a PASS needs a log, a result that disagrees with its log is refused, a Red run must have failed and a Green run passed. Stats must be `key=value` words.
+- `work_task_done`: ticks `## [ ] Task <n>`; with a log, only when that run passed.
+- `work_fill_results`: fills `review.md`'s Reviewed at, Test results, Regression tests and UI checks, and `pr.md`'s Builds, Unit tests, Regression tests and Review lines, from what really ran (`checks_run` now records every run with an item in `checks/runs.jsonl`, plus the newest `tests/` and `ui/` results). The rest of each file stays the model's.
+- `work_lint`: checks a work item's files: leftover `<placeholders>`, sections missing from the template (warnings), the Status line, AC ids, task headings Workshop can read, one Verify per task, the file cap (test files not counted), every criterion covered by a task and no unknown ones, the review verdict against its findings, progress entry headings and Stats lines, `pr.md` sections, `repos.md`. Every eval golden marked pass has no errors.
+- The pipeline guide maps the three writes to their tools and asks for `work_lint` before a command that wrote `.work` ends; `/do-task`, `/review` and `/pr` name them where they apply.
+
 ## Core 4.22.0 (2026-11-24)
 
 Tandem's own MCP server, so the mechanical steps are tools with typed arguments and JSON answers instead of command lines the model has to copy. Built for smaller and self-hosted models. Every command still works without it.

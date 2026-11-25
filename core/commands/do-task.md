@@ -98,7 +98,7 @@ Only when `uiCheckPerTask` is on (Factory settings, default on), the task's repo
 
 ## Step 6: Record
 
-- In `tasks.md`, change `## [ ] Task $2` to `## [x] Task $2`. Only if it passed.
+- In `tasks.md`, change `## [ ] Task $2` to `## [x] Task $2`. Only if it passed. With the Tandem tools: `tandem_work_task_done`, then `tandem_work_progress_add` with the saved logs, for the two bullets.
 - Add a `progress.md` entry using the template format. Paste the real last lines of the verify output. For .NET, paste the failing run under `Red run` and the passing run under `Green run`, and add `red=<name of the test that failed first>` to the Stats line. If it passed, include the Manual Validation Checklist (see your agent instructions), built from the task's "Human interface" line. If blocked, write what you tried and what failed, and skip the checklist. Add a `- Stats: verify=<PASS or FAIL> full=<PASS, FAIL or skipped> ui=<PASS, FAIL or skipped> attempts=<runs of the verify command>` line.
 
 ## Step 7: Commit

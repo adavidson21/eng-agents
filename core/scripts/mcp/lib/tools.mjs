@@ -1,6 +1,7 @@
 // The Tandem tools: name, what it is for, its arguments, and the function that runs it.
 import { repoCheck, repoChanges, repoMergeCheck, repoCommit } from './repo.mjs';
 import { checksList, checksRun } from './checks.mjs';
+import { workProgressAdd, workTaskDone, workFillResults, workLint } from './work.mjs';
 import { uiAppStart, uiAppStop, uiCheck, testsSuite, testsDetect, testsEnsureEnv, testsScaffold } from './ui.mjs';
 
 const repo = { type: 'string', description: 'Repo folder name, directly inside the workspace root (for example portal-ui).' };
@@ -143,5 +144,48 @@ export const TOOLS = [
     }, ['repo', 'file', 'route', 'criteria']),
     annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
     run: testsScaffold,
+  },
+  {
+    name: 'work_progress_add',
+    description: 'Append a progress.md entry in the exact format Workshop and /stats read. Output, Red and Green blocks are copied from logs saved by checks_run (save), so they are the real output; a PASS needs outputLog, and a verifyResult that disagrees with the log is refused. Use instead of writing the entry by hand.',
+    inputSchema: obj({
+      item: itemRequired,
+      command: { type: 'string', description: 'The command, for example do-task, review or pr.' },
+      agent: { type: 'string', description: 'Your agent name, for example implementer.' },
+      did: { type: 'string', description: 'One or two lines: what this command did.' },
+      files: { type: 'array', items: { type: 'string' }, description: 'Files changed (repo/path). Empty for none.' },
+      outputLog: { type: 'string', description: 'Saved log of the verify run (checks_run save), for example task-2-green.' },
+      verifyCommand: { type: 'string', description: 'Only without outputLog: the verify command that could not be run.' },
+      verifyResult: { type: 'string', enum: ['PASS', 'FAIL', 'not run'] },
+      redLog: { type: 'string', description: 'Saved log of the Red run (must have failed).' },
+      greenLog: { type: 'string', description: 'Saved log of the Green run (must have passed).' },
+      manual: { type: 'array', items: { type: 'string' }, description: 'Manual validation steps, in order (do-task only).' },
+      stats: { type: 'object', additionalProperties: { type: ['string', 'number'] }, description: 'The Stats pairs the command asks for, for example { verify: "PASS", full: "skipped", ui: "PASS", attempts: 1 }.' },
+      notes: { type: 'string', description: 'Problems or things noticed, for example "Noticed: O12". Default none.' },
+      next: { type: 'string', description: 'The exact next command, for example `/do-task L12 3`.' },
+    }, ['item', 'command', 'did', 'next']),
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+    run: workProgressAdd,
+  },
+  {
+    name: 'work_task_done',
+    description: 'Tick "## [ ] Task <n>" in tasks.md. With log, refuses unless that saved verify run passed. Use instead of editing the checkbox.',
+    inputSchema: obj({ item: itemRequired, n: { type: 'number', description: 'Task number.' }, log: { type: 'string', description: 'Saved log of the passing verify run.' } }, ['item', 'n']),
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+    run: workTaskDone,
+  },
+  {
+    name: 'work_fill_results',
+    description: 'Fill the result parts of review.md (Reviewed at, Test results, Regression tests, UI checks) or pr.md (Checks: Builds, Unit tests, Regression tests, Review) from what really ran: the runs checks_run recorded for the item and the newest tests/ and ui/ results. Write the file from its template first; everything else in it stays yours. missing lists repos with no recorded run.',
+    inputSchema: obj({ item: itemRequired, file: { type: 'string', enum: ['review', 'pr'] } }, ['item', 'file']),
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+    run: workFillResults,
+  },
+  {
+    name: 'work_lint',
+    description: 'Check a work item\'s files against their templates and what Workshop reads: leftover <placeholders>, missing sections, the Status line, AC ids, task headings, one Verify per task, the file cap, every criterion covered, the review verdict and findings, progress entries and Stats lines, pr.md sections, repos.md. Errors break Workshop or the pipeline; fix them before you finish. file checks one (spec, tasks, review, pr, progress...); without it, every file in the folder.',
+    inputSchema: obj({ item: itemRequired, file: { type: 'string', description: 'Optional: one file, for example tasks or review.' } }, ['item']),
+    annotations: ro,
+    run: workLint,
   },
 ];

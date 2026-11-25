@@ -92,7 +92,7 @@ Give every finding a category: the bold word of the checklist item it falls unde
 ## Step 7: Write review.md
 
 - If `review.md` already exists (an earlier review round), first copy it unchanged to `history/review-<yyyy-mm-dd>-<n>.md` in the work folder (`<n>` = 1, 2, ... so nothing is overwritten). `/retro` reads every round.
-- Start from `{{ENG_HOME}}/templates/review.md`. Write it to the work folder as `review.md`. Fill `Reviewed at:` with each repo and `git -C <repo> rev-parse --short HEAD`, the UI checks section with each repo's UI line, and the Regression tests section with each repo's Tests line.
+- Start from `{{ENG_HOME}}/templates/review.md`. Write it to the work folder as `review.md`. Fill `Reviewed at:` with each repo and `git -C <repo> rev-parse --short HEAD`, the UI checks section with each repo's UI line, and the Regression tests section with each repo's Tests line. With the Tandem tools, `tandem_work_fill_results` (file `review`) fills those and the Test results table from what ran.
 - Put every finding, from both passes, in the findings table with its category.
 - Anything you are not sure is a problem goes under "Questions for you" as one line with its location, not in the findings table. Questions do not change the verdict.
 - Copy every task's Manual Validation Checklist into the "Manual validation" section, in task order, so the engineer has one list to walk through.

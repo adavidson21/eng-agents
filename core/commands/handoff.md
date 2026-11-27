@@ -31,7 +31,7 @@ Follow these steps in order. Do not change any code, and never post anything to 
 - Start from `{{ENG_HOME}}/templates/handoff.md`. Write it to the folder as `handoff.md`.
 - Copy the acceptance criteria as written. Do not invent new ones; if there are none, say so under "Questions to settle first".
 - Write for a teammate who has not seen the request: plain words, real paths, no judgment about anyone.
-- Write it in the engineer's voice (the writing rules in the Personal and Company sections of `AGENTS.md`), so it can be pasted into the ADO work item as is.
+- Write it in the engineer's voice (Writing as the engineer in `AGENTS.md`), so it can be pasted into the ADO work item as is.
 - **Definition of done:** what done looks like for this item in one or two plain lines (the outcome a person can check), then anything the team always expects.
 - **Who to ask:** the owners and people `Get-Knowledge.ps1` lists (Owners, and the note's Who to ask or People section), the work item or the triage name for questions about this work. If none are named, write "The requester" and nothing else. Never guess.
 

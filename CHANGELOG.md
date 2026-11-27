@@ -4,6 +4,13 @@ Core has one version (`core/VERSION`). `update.ps1` reads this file to show what
 
 Format: one `## Core <version> (<date>)` heading per release, newest first, with one `- ` line per change. Bump the version in the same pull request.
 
+## Core 4.24.0 (2026-11-27)
+
+Text written as the engineer now has a default reader, so requester messages and briefs stop coming out too technical.
+- `AGENTS.md`, Writing as the engineer: an Audience list (PRs, review comments and handoffs for engineers; requester messages, triage questions, work item comments and briefs for Business teams; status updates and escalations for Leadership), the matching `## For <audience>` section of Workshop's `voice.md`, and plain-language rules for Business teams and Leadership when voice.md has none. A Personal or Company `## Audiences` list overrides it.
+- `/triage` and `/handoff` point at Writing as the engineer, so they read `voice.md` too.
+- `personal/TODO.md`: where your voice and audiences go.
+
 ## Core 4.23.0 (2026-11-24)
 
 The `.work` bookkeeping Workshop and `/stats` read is now written by code, and every file a command writes can be checked against its template. Needs Core 4.22.0's `tandem` MCP server; without it, commands work as before.

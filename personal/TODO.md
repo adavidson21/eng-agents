@@ -35,6 +35,19 @@ Every agent reads `personal/AGENTS.md`, so put agent-specific rules under a head
 - Docs: write for someone in their first week on the team.
 ```
 
+## Your voice and audiences
+
+Your voice comes from Workshop first: Settings, Writing voice (paste 5 to 10 real messages per audience, then **Build my style guide**). It writes `voice.md`, which every agent reads before writing as you.
+
+Core picks a default reader for each kind of text (Audience, in Writing as the engineer in `core/AGENTS.md`). To change it, add an `## Audiences` list to `personal/AGENTS.md`:
+
+```markdown
+## Audiences
+- PR descriptions: engineers, but open with one plain sentence a PM can read.
+- Work item comments: Business teams.
+- Weekly status: Leadership.
+```
+
 ## Commands to add
 
 | Command | Agent | What it does |

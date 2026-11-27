@@ -40,7 +40,7 @@ Run exactly this command:
 
 - Start from `{{ENG_HOME}}/templates/triage.md`. Write it to the folder as `triage.md` (on a re-triage, update it).
 - **Questions for the requester:** only what blocks writing acceptance criteria: rules, limits, who uses it, what "done" looks like. One per line. If nothing is missing, write `- None.`
-- **Message to the requester:** the same questions as one short message the engineer can paste as is, in their voice (the writing rules in the Personal and Company sections of `AGENTS.md`): casual, plain, no headings. Leave it out when there are no questions.
+- **Message to the requester:** the same questions as one short message the engineer can paste as is, in their voice (Writing as the engineer in `AGENTS.md`): casual, plain, no headings. Leave it out when there are no questions.
 - **Area:** suggest the ADO area path that owns it. `Get-Content ~/.workshop/config.json` gives `dataDir` (default `~/Workshop`); read `<dataDir>/settings/products.json` and use the matched product's `areas`, else `<dataDir>/settings/teams.json` and pick the closest of the team's `areas`. Name the area, never a person. If neither file exists or nothing fits, write `unknown`.
 - **Route:** `delegate` when it fits work the team already owns and you can point to where it lives; `myself` when it needs a decision only the engineer can make or is small enough to do now; `undecided` when the questions must be answered first. Never rank or judge people.
 - **Size:** S (a day or less), M (a few days), L (a sprint), XL (more than a sprint: suggest `/scope`).

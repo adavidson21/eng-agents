@@ -54,6 +54,13 @@ Workshop keeps what the code cannot tell you in one place each: products, the gl
 
 Text the engineer sends as themselves (PR descriptions, handoffs, briefs, requester messages, review comments, 1:1 drafts) follows their voice from Workshop first: read `<dataDir>/settings/voice.md` (`Get-Content ~/.workshop/config.json` gives `dataDir`, default `~/Workshop`) once per session when it exists. It wins over the writing rules in the Personal and Company sections; follow those for anything it does not cover.
 
+**Audience.** Unless the command or the engineer names one, write for this reader and follow voice.md's `## For <audience>` section when it has one:
+- PR descriptions, review comments, handoffs: engineers (no section; Style guide and Always only).
+- Requester messages, triage questions, work item comments, briefs: Business teams.
+- Status updates, escalations, `--for leadership`: Leadership.
+
+For Business teams and Leadership: no file paths, class or method names, code or tool names; say what changes for them and when; explain any technical word you cannot cut in a few plain words. A Personal or Company `## Audiences` list overrides this one.
+
 ## Pipeline commands
 
 Before you run any command that reads or writes `.work/` (the pipeline, triage, shape, scope, spikes, standup, shutdown and the like), read `{{ENG_HOME}}/guides/pipeline.md`: the work folder files, the approval gates, paused items and the branch and commit conventions. Chat, hub, people prep and PR review do not need it.
